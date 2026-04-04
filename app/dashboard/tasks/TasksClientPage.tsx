@@ -3,12 +3,12 @@
 import { toggleTaskCompletion } from "@/app/actions/taskActions";
 import { useMemo, useState } from "react";
 import PageHeader from "@/app/components/dashboard/PageHeader";
-import type { Task } from "@prisma/client";
+
 
 type FilterTab = "all" | "active" | "completed";
 
-type TasksClientPageProps = {
-  tasks: Task[];
+type TasksPageProps = {
+  tasks: any[];
 };
 
 export default function TasksClientPage({
@@ -19,8 +19,8 @@ export default function TasksClientPage({
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
 
   const toggleTask = async (id: string, completed: boolean) => {
-  setTasks((prev) =>
-    prev.map((task) =>
+  setTasks((prev: any) =>
+    prev.map((task: any) =>
       task.id === id ? { ...task, completed: !task.completed } : task
     )
   );
@@ -104,7 +104,7 @@ export default function TasksClientPage({
 
         <div className="mt-6 space-y-3">
           {filteredTasks.length > 0 ? (
-            filteredTasks.map((task) => (
+            filteredTasks.map((task: any) => (
               <div
                 key={task.id}
                 className={`flex items-center justify-between rounded-2xl border border-[var(--border)] p-4 transition ${
