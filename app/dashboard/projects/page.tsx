@@ -33,7 +33,7 @@ export default async function ProjectsPage() {
         </div>
 
         <div className="mt-6 grid gap-5 xl:grid-cols-2">
-          {projects.map((project) => (
+          {projects.map((project: any) => (
             <article
               key={project.id}
               className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-[0_25px_60px_rgba(18,185,129,0.18)]"
