@@ -1,3 +1,4 @@
+import type { Task } from "@prisma/client";
 import GradientCard from "@/app/components/dashboard/cards/GradientCard";
 import ProjectCard from "@/app/components/dashboard/cards/ProjectCard";
 import StatCard from "@/app/components/dashboard/cards/StatCard";
@@ -15,8 +16,8 @@ export default async function DashboardPage() {
 
   const totalProjects = projects.length;
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((task) => task.completed).length;
-  const activeTasks = tasks.filter((task) => !task.completed).length;
+  const completedTasks = tasks.filter((task: Task) => task.completed).length;
+const activeTasks = tasks.filter((task: Task) => !task.completed).length;
 
   const stats = [
     {
