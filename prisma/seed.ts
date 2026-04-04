@@ -14,6 +14,18 @@ async function main() {
   await prisma.task.deleteMany();
   console.log("Deleted tasks");
 
+  await prisma.teamMember.deleteMany();
+  console.log("Deleted team members");
+
+  await prisma.billingProfile.deleteMany();
+  console.log("Deleted billing profile");
+
+  await prisma.invoice.deleteMany();
+  console.log("Deleted invoices");
+
+  await prisma.workspaceSettings.deleteMany();
+  console.log("Deleted workspace settings");
+
   await prisma.client.createMany({
     data: [
       {
@@ -109,6 +121,88 @@ async function main() {
     ],
   });
   console.log("Inserted tasks");
+
+  await prisma.teamMember.createMany({
+    data: [
+      {
+        name: "Antonis Roussos",
+        email: "roussos.ado@gmail.com",
+        role: "Owner",
+        status: "Active",
+      },
+      {
+        name: "Maria K.",
+        email: "maria@example.com",
+        role: "Manager",
+        status: "Active",
+      },
+      {
+        name: "Alex Dev",
+        email: "alex@example.com",
+        role: "Developer",
+        status: "Pending",
+      },
+    ],
+  });
+  console.log("Inserted team members");
+
+  await prisma.billingProfile.create({
+    data: {
+      planName: "Pro Workspace",
+      billingCycle: "Monthly",
+      status: "Active",
+      cardBrand: "Visa",
+      cardLast4: "4242",
+      currentPeriod: "Apr 1, 2026 - Apr 30, 2026",
+      monthlyPrice: 29,
+      seatsUsed: 3,
+      seatsIncluded: 10,
+      projectsUsed: 3,
+      projectsIncluded: 15,
+    },
+  });
+  console.log("Inserted billing profile");
+
+  await prisma.invoice.createMany({
+    data: [
+      {
+        invoiceNo: "INV-2026-001",
+        amount: 29,
+        status: "Paid",
+        issuedDate: "Apr 1, 2026",
+        dueDate: "Apr 1, 2026",
+      },
+      {
+        invoiceNo: "INV-2026-002",
+        amount: 29,
+        status: "Paid",
+        issuedDate: "Mar 1, 2026",
+        dueDate: "Mar 1, 2026",
+      },
+      {
+        invoiceNo: "INV-2026-003",
+        amount: 29,
+        status: "Pending",
+        issuedDate: "May 1, 2026",
+        dueDate: "May 1, 2026",
+      },
+    ],
+  });
+  console.log("Inserted invoices");
+
+  await prisma.workspaceSettings.create({
+    data: {
+      workspaceName: "OrbitOps Workspace",
+      companyEmail: "hello@orbitops.app",
+      timezone: "Europe/Athens",
+      brandColor: "Neo Mint",
+      emailNotifications: true,
+      productUpdates: true,
+      weeklyReports: false,
+    },
+  });
+
+  console.log("Inserted workspace settings");
 
   console.log("✅ Seeding finished successfully");
 }
