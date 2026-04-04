@@ -1,33 +1,12 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
+import { prisma } from "@/app/lib/prisma";
+import { createClient } from "@/app/actions/clientActions";
 
-const clients = [
-  {
-    name: "Aether Labs",
-    company: "Aether Labs Ltd",
-    email: "contact@aetherlabs.io",
-    status: "Active",
-  },
-  {
-    name: "Nova Studio",
-    company: "Nova Studio",
-    email: "team@novastudio.dev",
-    status: "Pending",
-  },
-  {
-    name: "Helio Systems",
-    company: "Helio Systems",
-    email: "hello@heliosystems.com",
-    status: "Active",
-  },
-  {
-    name: "Vertex Finance",
-    company: "Vertex Finance",
-    email: "ops@vertexfinance.co",
-    status: "Inactive",
-  },
-];
+export default async function ClientsPage() {
+  const clients = await prisma.client.findMany({
+    orderBy: { createdAt: "desc" },
+  });
 
-export default function ClientsPage() {
   return (
     <section className="space-y-6">
       <PageHeader
@@ -38,6 +17,52 @@ export default function ClientsPage() {
       />
 
       <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[0_8px_30px_rgba(15,46,40,0.04)]">
+        <form
+          action={createClient}
+          className="mb-6 grid gap-3 rounded-[1.5rem] border border-[var(--border)] bg-[var(--muted)] p-4 md:grid-cols-2 xl:grid-cols-5"
+        >
+          <input
+            name="name"
+            type="text"
+            placeholder="Client name"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            required
+          />
+
+          <input
+            name="company"
+            type="text"
+            placeholder="Company"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            required
+          />
+
+          <input
+            name="email"
+            type="email"
+            placeholder="Email"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            required
+          />
+
+          <select
+            name="status"
+            defaultValue="Active"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+          >
+            <option value="Active">Active</option>
+            <option value="Pending">Pending</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+
+          <button
+            type="submit"
+            className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
+          >
+            Create Client
+          </button>
+        </form>
+
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-1 items-center gap-3">
             <div className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--muted-foreground)] md:max-w-sm">
@@ -79,8 +104,12 @@ export default function ClientsPage() {
             <tbody>
               {clients.map((client, index) => (
                 <tr
-                  key={client.email}
-                  className={index !== clients.length - 1 ? "border-t border-[var(--border)]" : ""}
+                  key={client.id}
+                  className={
+                    index !== clients.length - 1
+                      ? "border-t border-[var(--border)]"
+                      : ""
+                  }
                 >
                   <td className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
                     {client.name}
@@ -120,6 +149,17 @@ export default function ClientsPage() {
                   </td>
                 </tr>
               ))}
+
+              {clients.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-5 py-10 text-center text-sm text-[var(--muted-foreground)]"
+                  >
+                    No clients found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

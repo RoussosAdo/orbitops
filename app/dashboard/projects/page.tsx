@@ -1,45 +1,11 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
+import { prisma } from "@/app/lib/prisma";
 
-const projects = [
-  {
-    name: "Orbit Analytics",
-    description: "Internal analytics workspace for reporting, insights and KPI monitoring.",
-    status: "In Progress",
-    progress: 74,
-    budget: "$12,400",
-    dueDate: "Sep 28, 2026",
-    team: "4 members",
-  },
-  {
-    name: "Client Portal",
-    description: "Secure portal for clients to access deliverables, invoices and updates.",
-    status: "Planning",
-    progress: 21,
-    budget: "$8,200",
-    dueDate: "Oct 14, 2026",
-    team: "3 members",
-  },
-  {
-    name: "Finance Sync",
-    description: "Automated billing and finance sync system for monthly reporting.",
-    status: "Completed",
-    progress: 100,
-    budget: "$16,900",
-    dueDate: "Aug 30, 2026",
-    team: "5 members",
-  },
-  {
-    name: "Growth Engine",
-    description: "Campaign performance dashboard with lead tracking and attribution.",
-    status: "In Review",
-    progress: 88,
-    budget: "$10,600",
-    dueDate: "Sep 10, 2026",
-    team: "2 members",
-  },
-];
+export default async function ProjectsPage() {
+  const projects = await prisma.project.findMany({
+    orderBy: { createdAt: "desc" },
+  });
 
-export default function ProjectsPage() {
   return (
     <section className="space-y-6">
       <PageHeader
@@ -69,8 +35,8 @@ export default function ProjectsPage() {
         <div className="mt-6 grid gap-5 xl:grid-cols-2">
           {projects.map((project) => (
             <article
-              key={project.name}
-              className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm transition hover:shadow-[0_25px_60px_rgba(18,185,129,0.18)] hover:-translate-y-1 transition-all duration-300"
+              key={project.id}
+              className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-[0_25px_60px_rgba(18,185,129,0.18)]"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
