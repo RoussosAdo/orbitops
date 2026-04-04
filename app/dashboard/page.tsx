@@ -43,6 +43,8 @@ export default async function DashboardPage() {
     },
   ];
 
+  type ProjectRow = (typeof projects)[number];
+
   return (
     <section className="space-y-6 bg-[var(--background)]">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -127,7 +129,7 @@ export default async function DashboardPage() {
             </p>
 
             <div className="mt-4 space-y-4">
-              {projects.map((project) => (
+              {projects.map((project: ProjectRow) => (
                 <ProjectCard
                   key={project.id}
                   name={project.name}
