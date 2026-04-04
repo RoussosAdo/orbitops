@@ -13,7 +13,7 @@ type TasksPageProps = {
 
 export default function TasksClientPage({
   tasks: initialTasks,
-}: TasksClientPageProps) {
+}: TasksPageProps) {
   const [tasks, setTasks] = useState(initialTasks);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
@@ -29,7 +29,7 @@ export default function TasksClientPage({
 };
 
   const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
+    return tasks.filter((task: any) => {
       const matchesSearch = task.title
         .toLowerCase()
         .includes(search.toLowerCase());
