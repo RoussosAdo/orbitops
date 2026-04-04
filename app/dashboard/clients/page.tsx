@@ -1,10 +1,10 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
 import { createClient } from "@/app/actions/clientActions";
-import type { Client } from "@prisma/client";
+
 
 export default async function ClientsPage() {
-  const clients: Client[] = await prisma.client.findMany({
+  const clients = await prisma.client.findMany({
   orderBy: { createdAt: "desc" },
 });
 
@@ -103,7 +103,7 @@ export default async function ClientsPage() {
             </thead>
 
             <tbody>
-              {clients.map((client, index) => (
+              {clients.map((client: (typeof clients)[number], index: number) => (
                 <tr
                   key={client.id}
                   className={
