@@ -1,11 +1,12 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
 import { createClient } from "@/app/actions/clientActions";
+import type { Client } from "@prisma/client";
 
 export default async function ClientsPage() {
-  const clients = await prisma.client.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  const clients: Client[] = await prisma.client.findMany({
+  orderBy: { createdAt: "desc" },
+});
 
   return (
     <section className="space-y-6">
