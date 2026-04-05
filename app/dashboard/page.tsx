@@ -2,8 +2,17 @@ import GradientCard from "@/app/components/dashboard/cards/GradientCard";
 import ProjectCard from "@/app/components/dashboard/cards/ProjectCard";
 import StatCard from "@/app/components/dashboard/cards/StatCard";
 import { prisma } from "@/app/lib/prisma";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+import { authOptions } from "@/auth";
 
 export default async function DashboardPage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    redirect("/login");
+  }
+
   const [clientsCount, projects, tasks] = await Promise.all([
     prisma.client.count(),
     prisma.project.findMany({
@@ -15,7 +24,9 @@ export default async function DashboardPage() {
 
   const totalProjects = projects.length;
   const totalTasks = tasks.length;
+
   type TaskRow = (typeof tasks)[number];
+  type ProjectRow = (typeof projects)[number];
 
   const completedTasks = tasks.filter((task: TaskRow) => task.completed).length;
   const activeTasks = tasks.filter((task: TaskRow) => !task.completed).length;
@@ -42,8 +53,6 @@ export default async function DashboardPage() {
       change: `${totalTasks} total tasks`,
     },
   ];
-
-  type ProjectRow = (typeof projects)[number];
 
   return (
     <section className="space-y-6 bg-[var(--background)]">

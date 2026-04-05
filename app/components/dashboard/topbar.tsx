@@ -1,5 +1,7 @@
 "use client";
 
+import AuthUserMenu from "@/app/components/dashboard/auth-user-menu";
+
 type TopbarProps = {
   onOpenMobileMenu: () => void;
 };
@@ -33,9 +35,13 @@ export default function Topbar({ onOpenMobileMenu }: TopbarProps) {
           Invite Team
         </button>
 
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-white shadow-[0_10px_25px_rgba(18,185,129,0.25)]">
-          AR
-        </div>
+        <div className="flex items-center gap-3">
+  <button className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--primary-light)]">
+    Invite Team
+  </button>
+
+  <AuthUserMenu />
+</div>
       </div>
     </header>
   );

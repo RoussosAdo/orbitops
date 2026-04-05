@@ -12,9 +12,6 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  session: {
-    strategy: "jwt", // Χρησιμοποιούμε JWT για ευκολία στο Dashboard
-  },
   pages: {
     signIn: "/login",
   },
