@@ -14,8 +14,11 @@ async function main() {
   await prisma.task.deleteMany();
   console.log("Deleted tasks");
 
-  await prisma.teamMember.deleteMany();
-  console.log("Deleted team members");
+  await prisma.membership.deleteMany();
+  console.log("Deleted memberships");
+
+  await prisma.workspace.deleteMany();
+  console.log("Deleted workspaces");
 
   await prisma.billingProfile.deleteMany();
   console.log("Deleted billing profile");
@@ -122,29 +125,30 @@ async function main() {
   });
   console.log("Inserted tasks");
 
-  await prisma.teamMember.createMany({
-    data: [
-      {
-        name: "Antonis Roussos",
-        email: "roussos.ado@gmail.com",
-        role: "Owner",
-        status: "Active",
-      },
-      {
-        name: "Maria K.",
-        email: "maria@example.com",
-        role: "Manager",
-        status: "Active",
-      },
-      {
-        name: "Alex Dev",
-        email: "alex@example.com",
-        role: "Developer",
-        status: "Pending",
-      },
-    ],
+  const workspace = await prisma.workspace.create({
+    data: {
+      name: "OrbitOps Workspace",
+    },
   });
-  console.log("Inserted team members");
+  console.log("Inserted workspace");
+
+  const ownerUser = await prisma.user.findUnique({
+    where: { email: "roussos.ado@gmail.com" },
+  });
+
+  if (ownerUser) {
+    await prisma.membership.create({
+      data: {
+        userId: ownerUser.id,
+        workspaceId: workspace.id,
+        role: "OWNER",
+        status: "ACTIVE",
+      },
+    });
+    console.log("Inserted owner membership");
+  } else {
+    console.log("Skipped owner membership because user does not exist yet");
+  }
 
   await prisma.billingProfile.create({
     data: {
@@ -201,7 +205,6 @@ async function main() {
       weeklyReports: false,
     },
   });
-
   console.log("Inserted workspace settings");
 
   console.log("✅ Seeding finished successfully");
