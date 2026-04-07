@@ -1,9 +1,9 @@
-import NextAuth from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/app/lib/prisma";
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     GitHubProvider({
@@ -17,29 +17,25 @@ export const authOptions = {
   },
   debug: true,
   callbacks: {
-    async signIn({
-      user,
-    }: {
-      user: { email?: string | null; name?: string | null };
-    }) {
+    async signIn({ user }) {
       if (!user.email) return false;
 
-      const dbUser = await prisma.user.findUnique({
+      // Βεβαιώσου ότι μετά το adapter flow βρίσκουμε user στη βάση.
+      let dbUser = await prisma.user.findUnique({
         where: { email: user.email },
         include: { memberships: true },
       });
 
-      // Αν ο user δεν υπάρχει ακόμα, άστο να συνεχίσει.
-      // Ο adapter θα τον δημιουργήσει.
+      // Αν για οποιονδήποτε λόγο δεν υπάρχει ακόμα στο ακριβές timing του callback,
+      // άφησέ τον να περάσει. Θα τον πιάσουμε στο session flow αμέσως μετά.
       if (!dbUser) {
         return true;
       }
 
-      // Αν υπάρχει αλλά δεν έχει workspace/membership, φτιάξ' το.
       if (dbUser.memberships.length === 0) {
         const workspace = await prisma.workspace.create({
           data: {
-            name: `${user.name || "Workspace"}`,
+            name: user.name ? `${user.name}'s Workspace` : "My Workspace",
           },
         });
 
@@ -51,20 +47,107 @@ export const authOptions = {
             status: "ACTIVE",
           },
         });
+
+        await prisma.workspaceSettings.create({
+          data: {
+            workspaceId: workspace.id,
+            workspaceName: user.name ? `${user.name}'s Workspace` : "My Workspace",
+            companyEmail: user.email,
+            timezone: "Europe/Athens",
+            brandColor: "Neo Mint",
+            emailNotifications: true,
+            productUpdates: true,
+            weeklyReports: false,
+          },
+        });
+
+        await prisma.billingProfile.create({
+          data: {
+            workspaceId: workspace.id,
+            planName: "Free",
+            billingCycle: "Monthly",
+            status: "Active",
+            cardBrand: "-",
+            cardLast4: "0000",
+            currentPeriod: "No billing yet",
+            monthlyPrice: 0,
+            seatsUsed: 1,
+            seatsIncluded: 1,
+            projectsUsed: 0,
+            projectsIncluded: 3,
+          },
+        });
       }
 
       return true;
     },
 
-    async session({ session, user }: any) {
-      if (session?.user) {
-        session.user.id = user.id;
+    async session({ session, user }) {
+      if (session.user) {
+        (session.user as typeof session.user & { id: string }).id = user.id;
       }
+
       return session;
     },
   },
+  events: {
+    async createUser({ user }) {
+      if (!user.email) return;
+
+      const existingMembership = await prisma.membership.findFirst({
+        where: {
+          user: {
+            email: user.email,
+          },
+        },
+      });
+
+      if (existingMembership) return;
+
+      const workspace = await prisma.workspace.create({
+        data: {
+          name: user.name ? `${user.name}'s Workspace` : "My Workspace",
+        },
+      });
+
+      await prisma.membership.create({
+        data: {
+          userId: user.id,
+          workspaceId: workspace.id,
+          role: "OWNER",
+          status: "ACTIVE",
+        },
+      });
+
+      await prisma.workspaceSettings.create({
+        data: {
+          workspaceId: workspace.id,
+          workspaceName: user.name ? `${user.name}'s Workspace` : "My Workspace",
+          companyEmail: user.email,
+          timezone: "Europe/Athens",
+          brandColor: "Neo Mint",
+          emailNotifications: true,
+          productUpdates: true,
+          weeklyReports: false,
+        },
+      });
+
+      await prisma.billingProfile.create({
+        data: {
+          workspaceId: workspace.id,
+          planName: "Free",
+          billingCycle: "Monthly",
+          status: "Active",
+          cardBrand: "-",
+          cardLast4: "0000",
+          currentPeriod: "No billing yet",
+          monthlyPrice: 0,
+          seatsUsed: 1,
+          seatsIncluded: 1,
+          projectsUsed: 0,
+          projectsIncluded: 3,
+        },
+      });
+    },
+  },
 };
-
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };

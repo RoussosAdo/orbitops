@@ -1,10 +1,28 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
+import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
+import { createProject } from "@/app/actions/projectActions";
 
 export default async function ProjectsPage() {
-  const projects = await prisma.project.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  const workspace = await requireCurrentWorkspace();
+
+  const [projects, clients] = await Promise.all([
+    prisma.project.findMany({
+      where: {
+        workspaceId: workspace.id,
+      },
+      include: {
+        client: true,
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.client.findMany({
+      where: {
+        workspaceId: workspace.id,
+      },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   return (
     <section className="space-y-6">
@@ -16,6 +34,100 @@ export default async function ProjectsPage() {
       />
 
       <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[0_8px_30px_rgba(15,46,40,0.04)]">
+        <form
+          action={createProject}
+          className="mb-6 grid gap-3 rounded-[1.5rem] border border-[var(--border)] bg-[var(--muted)] p-4 md:grid-cols-2 xl:grid-cols-4"
+        >
+          <input
+            name="name"
+            type="text"
+            placeholder="Project name"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            required
+          />
+
+          <input
+            name="budget"
+            type="text"
+            placeholder="Budget (e.g. $5,000)"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            required
+          />
+
+          <input
+            name="dueDate"
+            type="text"
+            placeholder="Due date"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            required
+          />
+
+          <input
+            name="team"
+            type="text"
+            placeholder="Team (e.g. 3 members)"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            required
+          />
+
+          <textarea
+            name="description"
+            placeholder="Project description"
+            className="min-h-[120px] rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] md:col-span-2 xl:col-span-2"
+            required
+          />
+
+          <select
+            name="status"
+            defaultValue="Planning"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+          >
+            <option value="Planning">Planning</option>
+            <option value="In Progress">In Progress</option>
+            <option value="In Review">In Review</option>
+            <option value="Completed">Completed</option>
+          </select>
+
+          <input
+            name="progress"
+            type="number"
+            min="0"
+            max="100"
+            defaultValue="0"
+            placeholder="Progress %"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+          />
+
+          <select
+            name="clientId"
+            defaultValue=""
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+          >
+            <option value="">No client selected</option>
+            {clients.map((client) => (
+              <option key={client.id} value={client.id}>
+                {client.name} — {client.company}
+              </option>
+            ))}
+          </select>
+
+          <button
+            type="submit"
+            className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
+          >
+            Create Project
+          </button>
+        </form>
+
+        <div className="mb-4">
+          <p className="text-sm text-[var(--muted-foreground)]">
+            Current workspace:{" "}
+            <span className="font-semibold text-[var(--foreground)]">
+              {workspace.name}
+            </span>
+          </p>
+        </div>
+
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-1 items-center gap-3">
             <div className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--muted-foreground)] md:max-w-sm">
@@ -33,7 +145,7 @@ export default async function ProjectsPage() {
         </div>
 
         <div className="mt-6 grid gap-5 xl:grid-cols-2">
-          {projects.map((project: any) => (
+          {projects.map((project) => (
             <article
               key={project.id}
               className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-[0_25px_60px_rgba(18,185,129,0.18)]"
@@ -43,8 +155,18 @@ export default async function ProjectsPage() {
                   <h3 className="text-xl font-bold text-[var(--foreground)]">
                     {project.name}
                   </h3>
+
                   <p className="mt-2 max-w-md text-sm leading-6 text-[var(--muted-foreground)]">
                     {project.description}
+                  </p>
+
+                  <p className="mt-3 text-xs font-medium text-[var(--muted-foreground)]">
+                    Client:{" "}
+                    <span className="font-semibold text-[var(--foreground)]">
+                      {project.client
+                        ? `${project.client.name} — ${project.client.company}`
+                        : "No client linked"}
+                    </span>
                   </p>
                 </div>
 
@@ -121,6 +243,12 @@ export default async function ProjectsPage() {
               </div>
             </article>
           ))}
+
+          {projects.length === 0 && (
+            <div className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)] xl:col-span-2">
+              No projects found in this workspace yet.
+            </div>
+          )}
         </div>
       </div>
     </section>

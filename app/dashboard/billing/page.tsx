@@ -1,11 +1,21 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
 import { updateBillingPlan } from "@/app/actions/billingActions";
+import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
 
 export default async function BillingPage() {
+  const workspace = await requireCurrentWorkspace();
+
   const [profile, invoices] = await Promise.all([
-    prisma.billingProfile.findFirst(),
+    prisma.billingProfile.findUnique({
+      where: {
+        workspaceId: workspace.id,
+      },
+    }),
     prisma.invoice.findMany({
+      where: {
+        workspaceId: workspace.id,
+      },
       orderBy: { createdAt: "desc" },
     }),
   ]);
@@ -25,7 +35,7 @@ export default async function BillingPage() {
             No billing profile found
           </p>
           <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-            Seed your database to view billing information.
+            This workspace does not have a billing profile yet.
           </p>
         </div>
       </section>
@@ -40,6 +50,15 @@ export default async function BillingPage() {
         description="Manage your subscription, usage, invoices and payment method."
         actionLabel="Manage Billing"
       />
+
+      <div className="mb-2">
+        <p className="text-sm text-[var(--muted-foreground)]">
+          Current workspace:{" "}
+          <span className="font-semibold text-[var(--foreground)]">
+            {workspace.name}
+          </span>
+        </p>
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.3fr_1fr]">
         <div className="space-y-6">
@@ -126,7 +145,7 @@ export default async function BillingPage() {
                 </thead>
 
                 <tbody>
-                  {invoices.map((invoice: any, index: number) => (
+                  {invoices.map((invoice, index) => (
                     <tr
                       key={invoice.id}
                       className={
@@ -167,7 +186,7 @@ export default async function BillingPage() {
                         colSpan={4}
                         className="px-5 py-10 text-center text-sm text-[var(--muted-foreground)]"
                       >
-                        No invoices found.
+                        No invoices found in this workspace.
                       </td>
                     </tr>
                   )}
@@ -204,6 +223,7 @@ export default async function BillingPage() {
                 defaultValue={profile.planName}
                 className="w-full rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
               >
+                <option value="Free">Free</option>
                 <option value="Starter">Starter</option>
                 <option value="Pro Workspace">Pro Workspace</option>
                 <option value="Enterprise">Enterprise</option>

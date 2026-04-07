@@ -2,15 +2,29 @@ import GradientCard from "@/app/components/dashboard/cards/GradientCard";
 import ProjectCard from "@/app/components/dashboard/cards/ProjectCard";
 import StatCard from "@/app/components/dashboard/cards/StatCard";
 import { prisma } from "@/app/lib/prisma";
+import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
 
 export default async function DashboardPage() {
+  const workspace = await requireCurrentWorkspace();
+
   const [clientsCount, projects, tasks] = await Promise.all([
-    prisma.client.count(),
+    prisma.client.count({
+      where: {
+        workspaceId: workspace.id,
+      },
+    }),
     prisma.project.findMany({
+      where: {
+        workspaceId: workspace.id,
+      },
       orderBy: { createdAt: "desc" },
       take: 3,
     }),
-    prisma.task.findMany(),
+    prisma.task.findMany({
+      where: {
+        workspaceId: workspace.id,
+      },
+    }),
   ]);
 
   const totalProjects = projects.length;
@@ -26,12 +40,12 @@ export default async function DashboardPage() {
     {
       label: "Clients",
       value: clientsCount.toString(),
-      change: "Live database data",
+      change: "Workspace scoped",
     },
     {
       label: "Projects",
       value: totalProjects.toString(),
-      change: "Seeded from Prisma",
+      change: "Current workspace",
     },
     {
       label: "Open Tasks",
@@ -68,10 +82,13 @@ export default async function DashboardPage() {
               <h2 className="mt-2 text-2xl font-bold text-[var(--foreground)]">
                 Live Platform Metrics
               </h2>
+              <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                {workspace.name}
+              </p>
             </div>
 
             <span className="rounded-full bg-[var(--muted)] px-3 py-1 text-xs font-semibold text-[var(--primary-dark)]">
-              Real Data
+              Workspace Data
             </span>
           </div>
 
@@ -117,9 +134,9 @@ export default async function DashboardPage() {
         <div className="space-y-6">
           <GradientCard
             eyebrow="Database Status"
-            title="Neon Connected"
-            description="OrbitOps is now powered by a live PostgreSQL database with Prisma and seeded production-style records."
-            primaryAction="Database Live"
+            title="Workspace Connected"
+            description="OrbitOps is now reading dashboard data from the active workspace only."
+            primaryAction="Scoped Data"
             secondaryAction="Prisma Ready"
           />
 

@@ -1,35 +1,56 @@
 "use client";
 
-import { toggleTaskCompletion } from "@/app/actions/taskActions";
+import { createTask, toggleTaskCompletion } from "@/app/actions/taskActions";
 import { useMemo, useState } from "react";
 import PageHeader from "@/app/components/dashboard/PageHeader";
 
-
 type FilterTab = "all" | "active" | "completed";
 
+type TaskItem = {
+  id: string;
+  title: string;
+  priority: string;
+  dueDate: string;
+  completed: boolean;
+  projectId: string | null;
+  project?: {
+    id: string;
+    name: string;
+  } | null;
+};
+
+type ProjectItem = {
+  id: string;
+  name: string;
+};
+
 type TasksPageProps = {
-  tasks: any[];
+  tasks: TaskItem[];
+  projects: ProjectItem[];
+  workspaceName: string;
 };
 
 export default function TasksClientPage({
   tasks: initialTasks,
+  projects,
+  workspaceName,
 }: TasksPageProps) {
   const [tasks, setTasks] = useState(initialTasks);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
 
   const toggleTask = async (id: string, completed: boolean) => {
-  setTasks((prev: any) =>
-    prev.map((task: any) =>
-      task.id === id ? { ...task, completed: !task.completed } : task
-    )
-  );
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      )
+    );
 
-  await toggleTaskCompletion(id, completed);
-};
+    await toggleTaskCompletion(id, completed);
+  };
 
   const filteredTasks = useMemo(() => {
-    return tasks.filter((task: any) => {
+    return tasks.filter((task) => {
       const matchesSearch = task.title
         .toLowerCase()
         .includes(search.toLowerCase());
@@ -55,6 +76,66 @@ export default function TasksClientPage({
       />
 
       <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[0_8px_30px_rgba(15,46,40,0.04)]">
+        <form
+          action={createTask}
+          className="mb-6 grid gap-3 rounded-[1.5rem] border border-[var(--border)] bg-[var(--muted)] p-4 md:grid-cols-2 xl:grid-cols-5"
+        >
+          <input
+            name="title"
+            type="text"
+            placeholder="Task title"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            required
+          />
+
+          <input
+            name="dueDate"
+            type="text"
+            placeholder="Due date"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            required
+          />
+
+          <select
+            name="priority"
+            defaultValue="Medium"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+          >
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+
+          <select
+            name="projectId"
+            defaultValue=""
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+          >
+            <option value="">No project selected</option>
+            {projects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </select>
+
+          <button
+            type="submit"
+            className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
+          >
+            Create Task
+          </button>
+        </form>
+
+        <div className="mb-4">
+          <p className="text-sm text-[var(--muted-foreground)]">
+            Current workspace:{" "}
+            <span className="font-semibold text-[var(--foreground)]">
+              {workspaceName}
+            </span>
+          </p>
+        </div>
+
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
             <input
@@ -104,7 +185,7 @@ export default function TasksClientPage({
 
         <div className="mt-6 space-y-3">
           {filteredTasks.length > 0 ? (
-            filteredTasks.map((task: any) => (
+            filteredTasks.map((task) => (
               <div
                 key={task.id}
                 className={`flex items-center justify-between rounded-2xl border border-[var(--border)] p-4 transition ${
@@ -138,6 +219,13 @@ export default function TasksClientPage({
 
                     <p className="text-sm text-[var(--muted-foreground)]">
                       Due: {task.dueDate}
+                    </p>
+
+                    <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+                      Project:{" "}
+                      <span className="font-medium text-[var(--foreground)]">
+                        {task.project?.name ?? "No project linked"}
+                      </span>
                     </p>
                   </div>
                 </div>

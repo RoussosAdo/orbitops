@@ -1,12 +1,17 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
 import { createClient } from "@/app/actions/clientActions";
-
+import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
 
 export default async function ClientsPage() {
+  const workspace = await requireCurrentWorkspace();
+
   const clients = await prisma.client.findMany({
-  orderBy: { createdAt: "desc" },
-});
+    where: {
+      workspaceId: workspace.id,
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <section className="space-y-6">
@@ -64,6 +69,15 @@ export default async function ClientsPage() {
           </button>
         </form>
 
+        <div className="mb-4">
+          <p className="text-sm text-[var(--muted-foreground)]">
+            Current workspace:{" "}
+            <span className="font-semibold text-[var(--foreground)]">
+              {workspace.name}
+            </span>
+          </p>
+        </div>
+
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-1 items-center gap-3">
             <div className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--muted-foreground)] md:max-w-sm">
@@ -103,7 +117,7 @@ export default async function ClientsPage() {
             </thead>
 
             <tbody>
-              {clients.map((client: (typeof clients)[number], index: number) => (
+              {clients.map((client, index) => (
                 <tr
                   key={client.id}
                   className={
@@ -157,7 +171,7 @@ export default async function ClientsPage() {
                     colSpan={5}
                     className="px-5 py-10 text-center text-sm text-[var(--muted-foreground)]"
                   >
-                    No clients found.
+                    No clients found in this workspace yet.
                   </td>
                 </tr>
               )}

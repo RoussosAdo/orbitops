@@ -7,17 +7,27 @@ datasource db {
 }
 
 model Client {
-  id        String   @id @default(cuid())
-  name      String
-  company   String
-  email     String   @unique
-  status    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  workspaceId String
+  name        String
+  company     String
+  email       String
+  status      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  projects  Project[]
+  invoices  Invoice[]
+
+  @@unique([workspaceId, email])
+  @@index([workspaceId])
 }
 
 model Project {
   id          String   @id @default(cuid())
+  workspaceId String
+  clientId    String?
   name        String
   description String
   status      String
@@ -27,20 +37,36 @@ model Project {
   team        String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  client    Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  tasks     Task[]
+
+  @@index([workspaceId])
+  @@index([clientId])
 }
 
 model Task {
-  id        String   @id @default(cuid())
-  title     String
-  priority  String
-  dueDate   String
-  completed Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  workspaceId String
+  projectId   String?
+  title       String
+  priority    String
+  dueDate     String
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  project   Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@index([projectId])
 }
 
 model BillingProfile {
   id               String   @id @default(cuid())
+  workspaceId      String   @unique
   planName         String
   billingCycle     String
   status           String
@@ -54,21 +80,37 @@ model BillingProfile {
   projectsIncluded Int
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invoices  Invoice[]
 }
 
 model Invoice {
-  id         String   @id @default(cuid())
-  invoiceNo  String   @unique
-  amount     Int
-  status     String
-  issuedDate String
-  dueDate    String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id               String   @id @default(cuid())
+  workspaceId      String
+  billingProfileId String?
+  clientId         String?
+  invoiceNo        String
+  amount           Int
+  status           String
+  issuedDate       String
+  dueDate          String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  billingProfile BillingProfile? @relation(fields: [billingProfileId], references: [id], onDelete: SetNull)
+  client         Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  @@unique([workspaceId, invoiceNo])
+  @@index([workspaceId])
+  @@index([billingProfileId])
+  @@index([clientId])
 }
 
 model WorkspaceSettings {
   id                 String   @id @default(cuid())
+  workspaceId        String   @unique
   workspaceName      String
   companyEmail       String
   timezone           String
@@ -78,41 +120,50 @@ model WorkspaceSettings {
   weeklyReports      Boolean  @default(false)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
 
 model Workspace {
-  id          String       @id @default(cuid())
-  name        String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  memberships Membership[]
-  invitations Invitation[]
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships    Membership[]
+  invitations    Invitation[]
+  clients        Client[]
+  projects       Project[]
+  tasks          Task[]
+  billingProfile BillingProfile?
+  invoices       Invoice[]
+  settings       WorkspaceSettings?
 }
 
 model Membership {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   userId      String
   workspaceId String
   role        String
   status      String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([userId, workspaceId])
 }
 
 model User {
-  id            String       @id @default(cuid())
-  name          String?
-  email         String?      @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  memberships   Membership[]
+  id              String       @id @default(cuid())
+  name            String?
+  email           String?      @unique
+  emailVerified   DateTime?
+  image           String?
+  accounts        Account[]
+  sessions        Session[]
+  memberships     Membership[]
   sentInvitations Invitation[] @relation("InvitationSender")
 }
 
@@ -130,7 +181,7 @@ model Account {
   id_token          String? @db.Text
   session_state     String?
 
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -141,7 +192,7 @@ model Session {
   userId       String
   expires      DateTime
 
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -157,15 +208,15 @@ model Invitation {
   email       String
   token       String   @unique
   role        String
-  status      String   // PENDING | ACCEPTED | EXPIRED
+  status      String
   workspaceId String
   invitedById String?
   expiresAt   DateTime
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  invitedBy   User?     @relation("InvitationSender", fields: [invitedById], references: [id], onDelete: SetNull)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy User?     @relation("InvitationSender", fields: [invitedById], references: [id], onDelete: SetNull)
 
   @@index([email])
   @@index([workspaceId])

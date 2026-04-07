@@ -1,22 +1,5 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
-import GitHubProvider from "next-auth/providers/github";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "@/app/lib/prisma"; // Σιγουρέψου ότι το path είναι σωστό
-
-export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
-  providers: [
-    GitHubProvider({
-      clientId: process.env.AUTH_GITHUB_ID!,
-      clientSecret: process.env.AUTH_GITHUB_SECRET!,
-    }),
-  ],
-  secret: process.env.NEXTAUTH_SECRET,
-  pages: {
-    signIn: "/login",
-  },
-  debug: true,
-};
+import NextAuth from "next-auth";
+import { authOptions } from "@/auth";
 
 const handler = NextAuth(authOptions);
 
