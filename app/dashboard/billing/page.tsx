@@ -6,7 +6,7 @@ import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
 export default async function BillingPage() {
   const workspace = await requireCurrentWorkspace();
 
-  const [profile, invoices] = await Promise.all([
+  const [profile, invoices, projectsCount, seatsUsed] = await Promise.all([
     prisma.billingProfile.findUnique({
       where: {
         workspaceId: workspace.id,
@@ -17,6 +17,17 @@ export default async function BillingPage() {
         workspaceId: workspace.id,
       },
       orderBy: { createdAt: "desc" },
+    }),
+    prisma.project.count({
+      where: {
+        workspaceId: workspace.id,
+      },
+    }),
+    prisma.membership.count({
+      where: {
+        workspaceId: workspace.id,
+        status: "ACTIVE",
+      },
     }),
   ]);
 
@@ -96,7 +107,7 @@ export default async function BillingPage() {
                   Seats
                 </p>
                 <p className="mt-2 text-2xl font-bold text-[var(--foreground)]">
-                  {profile.seatsUsed}/{profile.seatsIncluded}
+                  {seatsUsed}/{profile.seatsIncluded}
                 </p>
               </div>
 
@@ -105,7 +116,7 @@ export default async function BillingPage() {
                   Projects
                 </p>
                 <p className="mt-2 text-2xl font-bold text-[var(--foreground)]">
-                  {profile.projectsUsed}/{profile.projectsIncluded}
+                  {projectsCount}/{profile.projectsIncluded}
                 </p>
               </div>
             </div>

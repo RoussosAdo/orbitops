@@ -1,6 +1,6 @@
 "use client";
 
-import { createTask, toggleTaskCompletion } from "@/app/actions/taskActions";
+import {createTask,deleteTask,toggleTaskCompletion,updateTask,} from "@/app/actions/taskActions";
 import { useMemo, useState } from "react";
 import PageHeader from "@/app/components/dashboard/PageHeader";
 
@@ -38,6 +38,7 @@ export default function TasksClientPage({
   const [tasks, setTasks] = useState(initialTasks);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const toggleTask = async (id: string, completed: boolean) => {
     setTasks((prev) =>
@@ -148,6 +149,7 @@ export default function TasksClientPage({
 
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={() => setActiveTab("all")}
                 className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
                   activeTab === "all"
@@ -159,6 +161,7 @@ export default function TasksClientPage({
               </button>
 
               <button
+                type="button"
                 onClick={() => setActiveTab("active")}
                 className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
                   activeTab === "active"
@@ -170,6 +173,7 @@ export default function TasksClientPage({
               </button>
 
               <button
+                type="button"
                 onClick={() => setActiveTab("completed")}
                 className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
                   activeTab === "completed"
@@ -185,70 +189,161 @@ export default function TasksClientPage({
 
         <div className="mt-6 space-y-3">
           {filteredTasks.length > 0 ? (
-            filteredTasks.map((task) => (
-              <div
-                key={task.id}
-                className={`flex items-center justify-between rounded-2xl border border-[var(--border)] p-4 transition ${
-                  task.completed
-                    ? "bg-[var(--muted)] opacity-70"
-                    : "bg-white hover:shadow-[0_12px_30px_rgba(15,46,40,0.06)]"
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => toggleTask(task.id, task.completed)}
-                    className={`flex h-6 w-6 items-center justify-center rounded-md border transition ${
-                      task.completed
-                        ? "border-[var(--primary)] bg-[var(--primary)] text-white"
-                        : "border-[var(--border)] bg-white"
-                    }`}
-                  >
-                    {task.completed ? "✓" : ""}
-                  </button>
+            filteredTasks.map((task) => {
+              const isEditing = editingId === task.id;
 
-                  <div>
-                    <p
-                      className={`font-semibold ${
+              if (isEditing) {
+                return (
+                  <div
+                    key={task.id}
+                    className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] p-4"
+                  >
+                    <form
+                      action={updateTask}
+                      className="grid gap-3 md:grid-cols-2 xl:grid-cols-5"
+                    >
+                      <input type="hidden" name="taskId" value={task.id} />
+
+                      <input
+                        name="title"
+                        type="text"
+                        defaultValue={task.title}
+                        className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                        required
+                      />
+
+                      <input
+                        name="dueDate"
+                        type="text"
+                        defaultValue={task.dueDate}
+                        className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                        required
+                      />
+
+                      <select
+                        name="priority"
+                        defaultValue={task.priority}
+                        className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                      >
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                      </select>
+
+                      <select
+                        name="projectId"
+                        defaultValue={task.projectId ?? ""}
+                        className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                      >
+                        <option value="">No project selected</option>
+                        {projects.map((project) => (
+                          <option key={project.id} value={project.id}>
+                            {project.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="submit"
+                          className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
+                        >
+                          Save
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setEditingId(null)}
+                          className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={task.id}
+                  className={`flex items-center justify-between rounded-2xl border border-[var(--border)] p-4 transition ${
+                    task.completed
+                      ? "bg-[var(--muted)] opacity-70"
+                      : "bg-white hover:shadow-[0_12px_30px_rgba(15,46,40,0.06)]"
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => toggleTask(task.id, task.completed)}
+                      className={`flex h-6 w-6 items-center justify-center rounded-md border transition ${
                         task.completed
-                          ? "text-[var(--muted-foreground)] line-through"
-                          : "text-[var(--foreground)]"
+                          ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                          : "border-[var(--border)] bg-white"
                       }`}
                     >
-                      {task.title}
-                    </p>
+                      {task.completed ? "✓" : ""}
+                    </button>
 
-                    <p className="text-sm text-[var(--muted-foreground)]">
-                      Due: {task.dueDate}
-                    </p>
+                    <div>
+                      <p
+                        className={`font-semibold ${
+                          task.completed
+                            ? "text-[var(--muted-foreground)] line-through"
+                            : "text-[var(--foreground)]"
+                        }`}
+                      >
+                        {task.title}
+                      </p>
 
-                    <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-                      Project:{" "}
-                      <span className="font-medium text-[var(--foreground)]">
-                        {task.project?.name ?? "No project linked"}
-                      </span>
-                    </p>
+                      <p className="text-sm text-[var(--muted-foreground)]">
+                        Due: {task.dueDate}
+                      </p>
+
+                      <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+                        Project:{" "}
+                        <span className="font-medium text-[var(--foreground)]">
+                          {task.project?.name ?? "No project linked"}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        task.priority === "High"
+                          ? "bg-red-100 text-red-600"
+                          : task.priority === "Medium"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-emerald-100 text-emerald-700"
+                      }`}
+                    >
+                      {task.priority}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(task.id)}
+                      className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
+                    >
+                      Edit
+                    </button>
+
+                    <form action={deleteTask}>
+                      <input type="hidden" name="taskId" value={task.id} />
+                      <button
+                        type="submit"
+                        className="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                      >
+                        Delete
+                      </button>
+                    </form>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      task.priority === "High"
-                        ? "bg-red-100 text-red-600"
-                        : task.priority === "Medium"
-                        ? "bg-amber-100 text-amber-700"
-                        : "bg-emerald-100 text-emerald-700"
-                    }`}
-                  >
-                    {task.priority}
-                  </span>
-
-                  <button className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]">
-                    Edit
-                  </button>
-                </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--muted)] px-6 py-10 text-center">
               <p className="text-base font-semibold text-[var(--foreground)]">

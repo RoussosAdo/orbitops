@@ -1,10 +1,16 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
-import { createClient } from "@/app/actions/clientActions";
+import {createClient, updateClient, deleteClient,} from "@/app/actions/clientActions";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
 
-export default async function ClientsPage() {
+export default async function ClientsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ edit?: string }>;
+}) {
   const workspace = await requireCurrentWorkspace();
+  const params = searchParams ? await searchParams : undefined;
+  const editingId = params?.edit ?? null;
 
   const clients = await prisma.client.findMany({
     where: {
@@ -117,53 +123,141 @@ export default async function ClientsPage() {
             </thead>
 
             <tbody>
-              {clients.map((client, index) => (
-                <tr
-                  key={client.id}
-                  className={
-                    index !== clients.length - 1
-                      ? "border-t border-[var(--border)]"
-                      : ""
-                  }
-                >
-                  <td className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
-                    {client.name}
-                  </td>
+              {clients.map((client, index) => {
+                const isEditing = editingId === client.id;
 
-                  <td className="px-5 py-4 text-sm text-[var(--muted-foreground)]">
-                    {client.company}
-                  </td>
-
-                  <td className="px-5 py-4 text-sm text-[var(--muted-foreground)]">
-                    {client.email}
-                  </td>
-
-                  <td className="px-5 py-4">
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                        client.status === "Active"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : client.status === "Pending"
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-slate-100 text-slate-600"
-                      }`}
+                if (isEditing) {
+                  return (
+                    <tr
+                      key={client.id}
+                      className={
+                        index !== clients.length - 1
+                          ? "border-t border-[var(--border)]"
+                          : ""
+                      }
                     >
-                      {client.status}
-                    </span>
-                  </td>
+                      <td colSpan={5} className="px-5 py-4">
+                        <form
+                          action={updateClient}
+                          className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--muted)] p-4 md:grid-cols-2 xl:grid-cols-6"
+                        >
+                          <input type="hidden" name="clientId" value={client.id} />
 
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-2">
-                      <button className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]">
-                        View
-                      </button>
-                      <button className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]">
-                        Edit
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                          <input
+                            name="name"
+                            type="text"
+                            defaultValue={client.name}
+                            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                            required
+                          />
+
+                          <input
+                            name="company"
+                            type="text"
+                            defaultValue={client.company}
+                            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                            required
+                          />
+
+                          <input
+                            name="email"
+                            type="email"
+                            defaultValue={client.email}
+                            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                            required
+                          />
+
+                          <select
+                            name="status"
+                            defaultValue={client.status}
+                            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                          >
+                            <option value="Active">Active</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Inactive">Inactive</option>
+                          </select>
+
+                          <button
+                            type="submit"
+                            className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
+                          >
+                            Save
+                          </button>
+
+                          <a
+                            href="/dashboard/clients"
+                            className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                          >
+                            Cancel
+                          </a>
+                        </form>
+                      </td>
+                    </tr>
+                  );
+                }
+
+                return (
+                  <tr
+                    key={client.id}
+                    className={
+                      index !== clients.length - 1
+                        ? "border-t border-[var(--border)]"
+                        : ""
+                    }
+                  >
+                    <td className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
+                      {client.name}
+                    </td>
+
+                    <td className="px-5 py-4 text-sm text-[var(--muted-foreground)]">
+                      {client.company}
+                    </td>
+
+                    <td className="px-5 py-4 text-sm text-[var(--muted-foreground)]">
+                      {client.email}
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <span
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                          client.status === "Active"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : client.status === "Pending"
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {client.status}
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+  <button className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]">
+    View
+  </button>
+
+  <a
+    href={`/dashboard/clients?edit=${client.id}`}
+    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
+  >
+    Edit
+  </a>
+
+  <form action={deleteClient}>
+    <input type="hidden" name="clientId" value={client.id} />
+    <button
+      type="submit"
+      className="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+    >
+      Delete
+    </button>
+  </form>
+</div>
+                    </td>
+                  </tr>
+                );
+              })}
 
               {clients.length === 0 && (
                 <tr>

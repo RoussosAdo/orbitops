@@ -1,9 +1,16 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
 import { updateWorkspaceSettings } from "@/app/actions/settingsActions";
+import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
 
 export default async function SettingsPage() {
-  const settings = await prisma.workspaceSettings.findFirst();
+  const workspace = await requireCurrentWorkspace();
+
+  const settings = await prisma.workspaceSettings.findUnique({
+    where: {
+      workspaceId: workspace.id,
+    },
+  });
 
   if (!settings) {
     return (
@@ -20,7 +27,7 @@ export default async function SettingsPage() {
             No settings found
           </p>
           <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-            Seed your database to load workspace settings.
+            This workspace does not have settings yet.
           </p>
         </div>
       </section>
@@ -35,6 +42,15 @@ export default async function SettingsPage() {
         description="Manage your workspace details, preferences and notifications."
         actionLabel="Save Settings"
       />
+
+      <div className="mb-2">
+        <p className="text-sm text-[var(--muted-foreground)]">
+          Current workspace:{" "}
+          <span className="font-semibold text-[var(--foreground)]">
+            {workspace.name}
+          </span>
+        </p>
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.9fr]">
         <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[0_8px_30px_rgba(15,46,40,0.04)]">

@@ -58,3 +58,104 @@ export async function createProject(formData: FormData) {
   revalidatePath("/dashboard/projects");
   revalidatePath("/dashboard");
 }
+
+export async function updateProject(formData: FormData) {
+  const workspace = await requireCurrentWorkspace();
+
+  const projectId = String(formData.get("projectId") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const status = String(formData.get("status") ?? "Planning").trim();
+  const progress = Number(formData.get("progress") ?? 0);
+  const budget = String(formData.get("budget") ?? "").trim();
+  const dueDate = String(formData.get("dueDate") ?? "").trim();
+  const team = String(formData.get("team") ?? "").trim();
+  const clientIdRaw = String(formData.get("clientId") ?? "").trim();
+
+  if (!projectId || !name || !description || !budget || !dueDate || !team) {
+    throw new Error("Project id and all required fields must be filled.");
+  }
+
+  const existingProject = await prisma.project.findFirst({
+    where: {
+      id: projectId,
+      workspaceId: workspace.id,
+    },
+  });
+
+  if (!existingProject) {
+    throw new Error("Project not found in current workspace.");
+  }
+
+  const safeProgress = Number.isNaN(progress)
+    ? 0
+    : Math.max(0, Math.min(100, progress));
+
+  let clientId: string | null = null;
+
+  if (clientIdRaw) {
+    const client = await prisma.client.findFirst({
+      where: {
+        id: clientIdRaw,
+        workspaceId: workspace.id,
+      },
+    });
+
+    if (!client) {
+      throw new Error("Selected client was not found in this workspace.");
+    }
+
+    clientId = client.id;
+  }
+
+  await prisma.project.update({
+    where: {
+      id: projectId,
+    },
+    data: {
+      clientId,
+      name,
+      description,
+      status,
+      progress: safeProgress,
+      budget,
+      dueDate,
+      team,
+    },
+  });
+
+  revalidatePath("/dashboard/projects");
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/tasks");
+}
+
+export async function deleteProject(formData: FormData) {
+  const workspace = await requireCurrentWorkspace();
+
+  const projectId = String(formData.get("projectId") ?? "").trim();
+
+  if (!projectId) {
+    throw new Error("Project id is required.");
+  }
+
+  const existingProject = await prisma.project.findFirst({
+    where: {
+      id: projectId,
+      workspaceId: workspace.id,
+    },
+  });
+
+  if (!existingProject) {
+    throw new Error("Project not found in current workspace.");
+  }
+
+  await prisma.project.delete({
+    where: {
+      id: projectId,
+    },
+  });
+
+  revalidatePath("/dashboard/projects");
+  revalidatePath("/dashboard/tasks");
+  revalidatePath("/dashboard");
+}

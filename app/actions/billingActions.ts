@@ -71,4 +71,5 @@ export async function updateBillingPlan(formData: FormData) {
   });
 
   revalidatePath("/dashboard/billing");
+  revalidatePath("/dashboard");
 }
