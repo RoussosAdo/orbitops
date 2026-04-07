@@ -1,7 +1,5 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 type SendInviteEmailParams = {
   to: string;
   workspaceName: string;
@@ -9,19 +7,37 @@ type SendInviteEmailParams = {
   invitedByName?: string | null;
 };
 
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    console.warn("⚠️ RESEND_API_KEY missing - emails disabled");
+    return null;
+  }
+
+  return new Resend(apiKey);
+}
+
 export async function sendInviteEmail({
   to,
   workspaceName,
   inviteLink,
   invitedByName,
 }: SendInviteEmailParams) {
-  if (!process.env.RESEND_API_KEY) {
-    throw new Error("Missing RESEND_API_KEY");
+  const resend = getResendClient();
+
+  if (!resend) {
+    console.log("📧 [DEV MODE] Invite email skipped:", {
+      to,
+      workspaceName,
+      inviteLink,
+      invitedByName,
+    });
+
+    return { skipped: true };
   }
 
-  if (!process.env.EMAIL_FROM) {
-    throw new Error("Missing EMAIL_FROM");
-  }
+  const from = process.env.EMAIL_FROM || "OrbitOps <onboarding@resend.dev>";
 
   const subject = `You're invited to join ${workspaceName}`;
 
@@ -50,14 +66,15 @@ export async function sendInviteEmail({
   `;
 
   const { data, error } = await resend.emails.send({
-    from: process.env.EMAIL_FROM,
+    from,
     to: [to],
     subject,
     html,
   });
 
   if (error) {
-    throw new Error(error.message || "Failed to send invite email");
+    console.error("❌ Email error:", error);
+    return { error };
   }
 
   return data;
