@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
+import crypto from "crypto";
+import { sendInviteEmail } from "@/app/lib/mail";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -11,18 +13,19 @@ export async function POST(req: Request) {
   }
 
   const formData = await req.formData();
-  const email = String(formData.get("email") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
 
   if (!email) {
     return NextResponse.redirect(new URL("/dashboard/team", req.url));
   }
 
-  // 🔥 current logged-in user
   const currentUser = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: session.user.email.toLowerCase() },
     include: {
       memberships: {
-        include: { workspace: true },
+        include: {
+          workspace: true,
+        },
       },
     },
   });
@@ -33,36 +36,50 @@ export async function POST(req: Request) {
 
   const workspace = currentUser.memberships[0].workspace;
 
-  // 🔥 invited user
-  const invitedUser = await prisma.user.findUnique({
-    where: { email },
-  });
-
-  if (!invitedUser) {
-    console.log("User not registered yet");
-    return NextResponse.redirect(new URL("/dashboard/team", req.url));
-  }
-
-  const existingMembership = await prisma.membership.findFirst({
+  const existingInvitation = await prisma.invitation.findFirst({
     where: {
-      userId: invitedUser.id,
+      email,
       workspaceId: workspace.id,
+      status: "PENDING",
     },
   });
 
-  if (!existingMembership) {
-    await prisma.membership.create({
+  let invitation = existingInvitation;
+
+  if (!invitation) {
+    const token = crypto.randomBytes(32).toString("hex");
+
+    invitation = await prisma.invitation.create({
       data: {
-        userId: invitedUser.id,
-        workspaceId: workspace.id,
+        email,
+        token,
         role: "MEMBER",
-        status: "INVITED",
+        status: "PENDING",
+        workspaceId: workspace.id,
+        invitedById: currentUser.id,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
       },
     });
+  }
 
-    console.log("✅ Member invited");
-  } else {
-    console.log("⚠️ Already member");
+  const baseUrl =
+    process.env.NEXTAUTH_URL ||
+    process.env.AUTH_URL ||
+    new URL(req.url).origin;
+
+  const inviteLink = `${baseUrl}/accept-invite?token=${invitation.token}`;
+
+  try {
+    await sendInviteEmail({
+      to: email,
+      workspaceName: workspace.name,
+      inviteLink,
+      invitedByName: currentUser.name,
+    });
+
+    console.log("✅ Invite email sent:", email);
+  } catch (error) {
+    console.error("❌ Failed to send invite email:", error);
   }
 
   return NextResponse.redirect(new URL("/dashboard/team", req.url));

@@ -86,6 +86,7 @@ model Workspace {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   memberships Membership[]
+  invitations Invitation[]
 }
 
 model Membership {
@@ -112,6 +113,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   memberships   Membership[]
+  sentInvitations Invitation[] @relation("InvitationSender")
 }
 
 model Account {
@@ -148,4 +150,23 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Invitation {
+  id          String   @id @default(cuid())
+  email       String
+  token       String   @unique
+  role        String
+  status      String   // PENDING | ACCEPTED | EXPIRED
+  workspaceId String
+  invitedById String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy   User?     @relation("InvitationSender", fields: [invitedById], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([workspaceId])
 }
