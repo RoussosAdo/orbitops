@@ -2,7 +2,7 @@
 
 A production-style multi-tenant SaaS dashboard built with Next.js, TypeScript, and Tailwind CSS.
 
-https://orbitops-eight.vercel.app
+https://orbitops.tech
 
 ## Overview
 
