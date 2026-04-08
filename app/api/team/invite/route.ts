@@ -14,8 +14,15 @@ export async function POST(req: Request) {
 
   const formData = await req.formData();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const role = String(formData.get("role") ?? "MEMBER").trim().toUpperCase();
 
   if (!email) {
+    return NextResponse.redirect(new URL("/dashboard/team", req.url));
+  }
+
+  const allowedRoles = new Set(["OWNER", "ADMIN", "MEMBER"]);
+
+  if (!allowedRoles.has(role)) {
     return NextResponse.redirect(new URL("/dashboard/team", req.url));
   }
 
@@ -23,8 +30,14 @@ export async function POST(req: Request) {
     where: { email: session.user.email.toLowerCase() },
     include: {
       memberships: {
+        where: {
+          status: "ACTIVE",
+        },
         include: {
           workspace: true,
+        },
+        orderBy: {
+          createdAt: "asc",
         },
       },
     },
@@ -34,7 +47,23 @@ export async function POST(req: Request) {
     return NextResponse.redirect(new URL("/dashboard/team", req.url));
   }
 
-  const workspace = currentUser.memberships[0].workspace;
+  const activeMembership = currentUser.memberships[0];
+  const workspace = activeMembership.workspace;
+
+  const existingMember = await prisma.user.findUnique({
+    where: { email },
+    include: {
+      memberships: {
+        where: {
+          workspaceId: workspace.id,
+        },
+      },
+    },
+  });
+
+  if (existingMember && existingMember.memberships.length > 0) {
+    return NextResponse.redirect(new URL("/dashboard/team", req.url));
+  }
 
   const existingInvitation = await prisma.invitation.findFirst({
     where: {
@@ -53,7 +82,7 @@ export async function POST(req: Request) {
       data: {
         email,
         token,
-        role: "MEMBER",
+        role,
         status: "PENDING",
         workspaceId: workspace.id,
         invitedById: currentUser.id,

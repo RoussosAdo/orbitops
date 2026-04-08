@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   }
 
   const currentUser = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: session.user.email.toLowerCase() },
   });
 
   if (!currentUser) {
@@ -61,6 +61,7 @@ export async function POST(req: Request) {
     await prisma.membership.update({
       where: { id: existingMembership.id },
       data: {
+        role: invitation.role,
         status: "ACTIVE",
       },
     });
@@ -73,5 +74,5 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.redirect(new URL("/dashboard/team", req.url));
+  return NextResponse.redirect(new URL("/dashboard", req.url));
 }

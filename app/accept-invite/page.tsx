@@ -72,7 +72,6 @@ export default async function AcceptInvitePage({
   }
 
   const currentUserEmail = session.user.email.toLowerCase();
-
   const emailMatches = currentUserEmail === invitation.email.toLowerCase();
 
   return (
@@ -103,6 +102,9 @@ export default async function AcceptInvitePage({
             <span className="font-semibold">Your session email:</span>{" "}
             {currentUserEmail}
           </p>
+          <p className="mt-2">
+            <span className="font-semibold">Role:</span> {invitation.role}
+          </p>
         </div>
 
         {!emailMatches ? (
@@ -111,7 +113,7 @@ export default async function AcceptInvitePage({
             {invitation.email} to accept this invite.
           </p>
         ) : (
-          <form action="/api/team/accept-invite" method="POST" className="mt-6">
+          <form action="/api/team/accept" method="POST" className="mt-6">
             <input type="hidden" name="token" value={token} />
             <button
               type="submit"

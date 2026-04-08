@@ -1,13 +1,17 @@
 import GradientCard from "@/app/components/dashboard/cards/GradientCard";
 import ProjectCard from "@/app/components/dashboard/cards/ProjectCard";
 import StatCard from "@/app/components/dashboard/cards/StatCard";
+import WorkspaceSwitcher from "@/app/components/dashboard/WorkspaceSwitcher";
 import { prisma } from "@/app/lib/prisma";
-import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
+import {
+  getUserWorkspaces,
+  requireCurrentWorkspace,
+} from "@/app/lib/get-current-workspace";
 
 export default async function DashboardPage() {
   const workspace = await requireCurrentWorkspace();
 
-  const [clients, projects, tasks, billingProfile, invoices, seatsUsed] =
+  const [clients, projects, tasks, billingProfile, invoices, seatsUsed, workspaces] =
     await Promise.all([
       prisma.client.findMany({
         where: {
@@ -42,6 +46,7 @@ export default async function DashboardPage() {
           status: "ACTIVE",
         },
       }),
+      getUserWorkspaces(),
     ]);
 
   const recentProjects = projects.slice(0, 3);
@@ -111,6 +116,13 @@ export default async function DashboardPage() {
 
   return (
     <section className="space-y-6 bg-[var(--background)]">
+      <div className="flex justify-end">
+        <WorkspaceSwitcher
+          currentWorkspaceId={workspace.id}
+          workspaces={workspaces}
+        />
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
           <StatCard

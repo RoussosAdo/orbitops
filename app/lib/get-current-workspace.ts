@@ -1,6 +1,8 @@
+import "server-only";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
+import { cookies } from "next/headers";
 
 export async function getCurrentWorkspace() {
   const session = await getServerSession(authOptions);
@@ -9,12 +11,34 @@ export async function getCurrentWorkspace() {
     return null;
   }
 
-  const membership = await prisma.membership.findFirst({
-    where: {
-      user: {
-        email: session.user.email,
+  const cookieStore = await cookies();
+  const activeWorkspaceId = cookieStore.get("activeWorkspaceId")?.value;
+
+  if (activeWorkspaceId) {
+    const selectedMembership = await prisma.membership.findFirst({
+      where: {
+        workspaceId: activeWorkspaceId,
+        status: "ACTIVE",
+        user: {
+          email: session.user.email.toLowerCase(),
+        },
       },
+      include: {
+        workspace: true,
+      },
+    });
+
+    if (selectedMembership) {
+      return selectedMembership.workspace;
+    }
+  }
+
+  const fallbackMembership = await prisma.membership.findFirst({
+    where: {
       status: "ACTIVE",
+      user: {
+        email: session.user.email.toLowerCase(),
+      },
     },
     include: {
       workspace: true,
@@ -24,11 +48,11 @@ export async function getCurrentWorkspace() {
     },
   });
 
-  if (!membership) {
+  if (!fallbackMembership) {
     return null;
   }
 
-  return membership.workspace;
+  return fallbackMembership.workspace;
 }
 
 export async function requireCurrentWorkspace() {
@@ -39,4 +63,34 @@ export async function requireCurrentWorkspace() {
   }
 
   return workspace;
+}
+
+export async function getUserWorkspaces() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.email) {
+    return [];
+  }
+
+  const memberships = await prisma.membership.findMany({
+    where: {
+      status: "ACTIVE",
+      user: {
+        email: session.user.email.toLowerCase(),
+      },
+    },
+    include: {
+      workspace: true,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
+
+  return memberships.map((membership) => ({
+    membershipId: membership.id,
+    workspaceId: membership.workspace.id,
+    workspaceName: membership.workspace.name,
+    role: membership.role,
+  }));
 }

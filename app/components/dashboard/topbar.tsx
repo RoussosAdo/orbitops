@@ -35,13 +35,7 @@ export default function Topbar({ onOpenMobileMenu }: TopbarProps) {
           Invite Team
         </button>
 
-        <div className="flex items-center gap-3">
-  <button className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--primary-light)]">
-    Invite Team
-  </button>
-
-  <AuthUserMenu />
-</div>
+        <AuthUserMenu />
       </div>
     </header>
   );
