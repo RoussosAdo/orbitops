@@ -1,20 +1,60 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
-import {createClient, updateClient, deleteClient,} from "@/app/actions/clientActions";
+import {
+  createClient,
+  updateClient,
+  deleteClient,
+} from "@/app/actions/clientActions";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
 
-export default async function ClientsPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ edit?: string }>;
-}) {
+type ClientsPageProps = {
+  searchParams?: Promise<{
+    edit?: string;
+    q?: string;
+    status?: string;
+  }>;
+};
+
+export default async function ClientsPage({ searchParams }: ClientsPageProps) {
   const workspace = await requireCurrentWorkspace();
   const params = searchParams ? await searchParams : undefined;
+
   const editingId = params?.edit ?? null;
+  const searchQuery = (params?.q ?? "").trim();
+  const selectedStatus = (params?.status ?? "").trim();
 
   const clients = await prisma.client.findMany({
     where: {
       workspaceId: workspace.id,
+      ...(searchQuery
+        ? {
+            OR: [
+              {
+                name: {
+                  contains: searchQuery,
+                  mode: "insensitive",
+                },
+              },
+              {
+                company: {
+                  contains: searchQuery,
+                  mode: "insensitive",
+                },
+              },
+              {
+                email: {
+                  contains: searchQuery,
+                  mode: "insensitive",
+                },
+              },
+            ],
+          }
+        : {}),
+      ...(selectedStatus && selectedStatus !== "All"
+        ? {
+            status: selectedStatus,
+          }
+        : {}),
     },
     orderBy: { createdAt: "desc" },
   });
@@ -84,21 +124,52 @@ export default async function ClientsPage({
           </p>
         </div>
 
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-1 items-center gap-3">
-            <div className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--muted-foreground)] md:max-w-sm">
-              Search clients...
-            </div>
+        <form
+          method="GET"
+          className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+        >
+          <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
+            <input
+              name="q"
+              type="text"
+              defaultValue={searchQuery}
+              placeholder="Search clients..."
+              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] md:max-w-sm"
+            />
 
-            <div className="hidden rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--muted-foreground)] md:block">
-              All Statuses
-            </div>
+            <select
+              name="status"
+              defaultValue={selectedStatus || "All"}
+              className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Pending">Pending</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+
+            <button
+              type="submit"
+              className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
+            >
+              Apply
+            </button>
+
+            <a
+              href="/dashboard/clients"
+              className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+            >
+              Reset
+            </a>
           </div>
 
-          <button className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--primary-light)]">
+          <button
+            type="button"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--primary-light)]"
+          >
             Export
           </button>
-        </div>
+        </form>
 
         <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-[var(--border)]">
           <table className="w-full border-collapse">
@@ -185,7 +256,11 @@ export default async function ClientsPage({
                           </button>
 
                           <a
-                            href="/dashboard/clients"
+                            href={`/dashboard/clients?q=${encodeURIComponent(
+                              searchQuery
+                            )}&status=${encodeURIComponent(
+                              selectedStatus || "All"
+                            )}`}
                             className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                           >
                             Cancel
@@ -233,27 +308,31 @@ export default async function ClientsPage({
 
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
-  <button className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]">
-    View
-  </button>
+                        <button className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]">
+                          View
+                        </button>
 
-  <a
-    href={`/dashboard/clients?edit=${client.id}`}
-    className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
-  >
-    Edit
-  </a>
+                        <a
+                          href={`/dashboard/clients?edit=${client.id}&q=${encodeURIComponent(
+                            searchQuery
+                          )}&status=${encodeURIComponent(
+                            selectedStatus || "All"
+                          )}`}
+                          className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
+                        >
+                          Edit
+                        </a>
 
-  <form action={deleteClient}>
-    <input type="hidden" name="clientId" value={client.id} />
-    <button
-      type="submit"
-      className="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
-    >
-      Delete
-    </button>
-  </form>
-</div>
+                        <form action={deleteClient}>
+                          <input type="hidden" name="clientId" value={client.id} />
+                          <button
+                            type="submit"
+                            className="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                          >
+                            Delete
+                          </button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -265,7 +344,7 @@ export default async function ClientsPage({
                     colSpan={5}
                     className="px-5 py-10 text-center text-sm text-[var(--muted-foreground)]"
                   >
-                    No clients found in this workspace yet.
+                    No clients found for the current filters.
                   </td>
                 </tr>
               )}

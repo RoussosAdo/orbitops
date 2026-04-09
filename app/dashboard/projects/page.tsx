@@ -1,21 +1,95 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
-import {createProject, updateProject, deleteProject,} from "@/app/actions/projectActions";
+import {
+  createProject,
+  updateProject,
+  deleteProject,
+} from "@/app/actions/projectActions";
+
+type ProjectsPageProps = {
+  searchParams?: Promise<{
+    edit?: string;
+    q?: string;
+    status?: string;
+  }>;
+};
 
 export default async function ProjectsPage({
   searchParams,
-}: {
-  searchParams?: Promise<{ edit?: string }>;
-}) {
+}: ProjectsPageProps) {
   const workspace = await requireCurrentWorkspace();
   const params = searchParams ? await searchParams : undefined;
+
   const editingId = params?.edit ?? null;
+  const searchQuery = (params?.q ?? "").trim();
+  const selectedStatus = (params?.status ?? "").trim();
 
   const [projects, clients] = await Promise.all([
     prisma.project.findMany({
       where: {
         workspaceId: workspace.id,
+        ...(searchQuery
+          ? {
+              OR: [
+                {
+                  name: {
+                    contains: searchQuery,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  description: {
+                    contains: searchQuery,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  budget: {
+                    contains: searchQuery,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  dueDate: {
+                    contains: searchQuery,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  team: {
+                    contains: searchQuery,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  client: {
+                    is: {
+                      name: {
+                        contains: searchQuery,
+                        mode: "insensitive",
+                      },
+                    },
+                  },
+                },
+                {
+                  client: {
+                    is: {
+                      company: {
+                        contains: searchQuery,
+                        mode: "insensitive",
+                      },
+                    },
+                  },
+                },
+              ],
+            }
+          : {}),
+        ...(selectedStatus && selectedStatus !== "All"
+          ? {
+              status: selectedStatus,
+            }
+          : {}),
       },
       include: {
         client: true,
@@ -134,21 +208,53 @@ export default async function ProjectsPage({
           </p>
         </div>
 
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-1 items-center gap-3">
-            <div className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--muted-foreground)] md:max-w-sm">
-              Search projects...
-            </div>
+        <form
+          method="GET"
+          className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+        >
+          <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
+            <input
+              name="q"
+              type="text"
+              defaultValue={searchQuery}
+              placeholder="Search projects..."
+              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] md:max-w-sm"
+            />
 
-            <div className="hidden rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--muted-foreground)] md:block">
-              All Statuses
-            </div>
+            <select
+              name="status"
+              defaultValue={selectedStatus || "All"}
+              className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Planning">Planning</option>
+              <option value="In Progress">In Progress</option>
+              <option value="In Review">In Review</option>
+              <option value="Completed">Completed</option>
+            </select>
+
+            <button
+              type="submit"
+              className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
+            >
+              Apply
+            </button>
+
+            <a
+              href="/dashboard/projects"
+              className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+            >
+              Reset
+            </a>
           </div>
 
-          <button className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--primary-light)]">
-            Filter
+          <button
+            type="button"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--primary-light)]"
+          >
+            Export
           </button>
-        </div>
+        </form>
 
         <div className="mt-6 grid gap-5 xl:grid-cols-2">
           {projects.map((project) => {
@@ -160,7 +266,10 @@ export default async function ProjectsPage({
                   key={project.id}
                   className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--muted)] p-5 shadow-sm xl:col-span-2"
                 >
-                  <form action={updateProject} className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  <form
+                    action={updateProject}
+                    className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
+                  >
                     <input type="hidden" name="projectId" value={project.id} />
 
                     <input
@@ -243,7 +352,11 @@ export default async function ProjectsPage({
                     </button>
 
                     <a
-                      href="/dashboard/projects"
+                      href={`/dashboard/projects?q=${encodeURIComponent(
+                        searchQuery
+                      )}&status=${encodeURIComponent(
+                        selectedStatus || "All"
+                      )}`}
                       className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                     >
                       Cancel
@@ -341,34 +454,38 @@ export default async function ProjectsPage({
                 </div>
 
                 <div className="mt-5 flex items-center gap-2">
-  <button className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]">
-    View Project
-  </button>
+                  <button className="rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]">
+                    View Project
+                  </button>
 
-  <a
-    href={`/dashboard/projects?edit=${project.id}`}
-    className="rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
-  >
-    Edit
-  </a>
+                  <a
+                    href={`/dashboard/projects?edit=${project.id}&q=${encodeURIComponent(
+                      searchQuery
+                    )}&status=${encodeURIComponent(
+                      selectedStatus || "All"
+                    )}`}
+                    className="rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                  >
+                    Edit
+                  </a>
 
-  <form action={deleteProject}>
-    <input type="hidden" name="projectId" value={project.id} />
-    <button
-      type="submit"
-      className="rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
-    >
-      Delete
-    </button>
-  </form>
-</div>
+                  <form action={deleteProject}>
+                    <input type="hidden" name="projectId" value={project.id} />
+                    <button
+                      type="submit"
+                      className="rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                    >
+                      Delete
+                    </button>
+                  </form>
+                </div>
               </article>
             );
           })}
 
           {projects.length === 0 && (
             <div className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)] xl:col-span-2">
-              No projects found in this workspace yet.
+              No projects found for the current filters.
             </div>
           )}
         </div>
