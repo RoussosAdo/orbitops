@@ -1,6 +1,11 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
+import {
+  removeMember,
+  revokeInvitation,
+  updateMemberRole,
+} from "@/app/actions/teamActions";
 
 export default async function TeamPage() {
   const workspace = await requireCurrentWorkspace();
@@ -27,6 +32,9 @@ export default async function TeamPage() {
   const pendingInvites = invitations.filter(
     (invite) => invite.status === "PENDING"
   );
+  const ownersCount = members.filter(
+    (member) => member.role === "OWNER" && member.status === "ACTIVE"
+  ).length;
 
   return (
     <section className="space-y-6">
@@ -127,60 +135,92 @@ export default async function TeamPage() {
             </thead>
 
             <tbody>
-              {members.map((member, index) => (
-                <tr
-                  key={member.id}
-                  className={
-                    index !== members.length - 1
-                      ? "border-t border-[var(--border)]"
-                      : ""
-                  }
-                >
-                  <td className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
-                    {member.user.name || "Unnamed User"}
-                  </td>
+              {members.map((member, index) => {
+                const isLastOwner =
+                  member.role === "OWNER" &&
+                  member.status === "ACTIVE" &&
+                  ownersCount <= 1;
 
-                  <td className="px-5 py-4 text-sm text-[var(--muted-foreground)]">
-                    {member.user.email || "No email"}
-                  </td>
+                return (
+                  <tr
+                    key={member.id}
+                    className={
+                      index !== members.length - 1
+                        ? "border-t border-[var(--border)]"
+                        : ""
+                    }
+                  >
+                    <td className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
+                      {member.user.name || "Unnamed User"}
+                    </td>
 
-                  <td className="px-5 py-4">
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                        member.role === "OWNER"
-                          ? "bg-purple-100 text-purple-700"
-                          : member.role === "ADMIN"
-                          ? "bg-sky-100 text-sky-700"
-                          : "bg-slate-100 text-slate-700"
-                      }`}
-                    >
-                      {member.role}
-                    </span>
-                  </td>
+                    <td className="px-5 py-4 text-sm text-[var(--muted-foreground)]">
+                      {member.user.email || "No email"}
+                    </td>
 
-                  <td className="px-5 py-4">
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                        member.status === "ACTIVE"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-amber-100 text-amber-700"
-                      }`}
-                    >
-                      {member.status}
-                    </span>
-                  </td>
+                    <td className="px-5 py-4">
+                      <form action={updateMemberRole} className="flex items-center gap-2">
+                        <input
+                          type="hidden"
+                          name="membershipId"
+                          value={member.id}
+                        />
+                        <select
+                          name="role"
+                          defaultValue={member.role}
+                          disabled={isLastOwner}
+                          className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <option value="OWNER">OWNER</option>
+                          <option value="ADMIN">ADMIN</option>
+                          <option value="MEMBER">MEMBER</option>
+                        </select>
 
-                  <td className="px-5 py-4 text-sm text-[var(--muted-foreground)]">
-                    {new Date(member.createdAt).toLocaleDateString()}
-                  </td>
+                        <button
+                          type="submit"
+                          disabled={isLastOwner}
+                          className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Save
+                        </button>
+                      </form>
+                    </td>
 
-                  <td className="px-5 py-4">
-                    <span className="text-xs text-[var(--muted-foreground)]">
-                      —
-                    </span>
-                  </td>
-                </tr>
-              ))}
+                    <td className="px-5 py-4">
+                      <span
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                          member.status === "ACTIVE"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        {member.status}
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-4 text-sm text-[var(--muted-foreground)]">
+                      {new Date(member.createdAt).toLocaleDateString()}
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <form action={removeMember}>
+                        <input
+                          type="hidden"
+                          name="membershipId"
+                          value={member.id}
+                        />
+                        <button
+                          type="submit"
+                          disabled={isLastOwner}
+                          className="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Remove
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                );
+              })}
 
               {members.length === 0 && (
                 <tr>
@@ -225,6 +265,9 @@ export default async function TeamPage() {
                 <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
                   Expires
                 </th>
+                <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
+                  Actions
+                </th>
               </tr>
             </thead>
 
@@ -265,13 +308,29 @@ export default async function TeamPage() {
                   <td className="px-5 py-4 text-sm text-[var(--muted-foreground)]">
                     {new Date(invite.expiresAt).toLocaleDateString()}
                   </td>
+
+                  <td className="px-5 py-4">
+                    <form action={revokeInvitation}>
+                      <input
+                        type="hidden"
+                        name="invitationId"
+                        value={invite.id}
+                      />
+                      <button
+                        type="submit"
+                        className="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                      >
+                        Revoke
+                      </button>
+                    </form>
+                  </td>
                 </tr>
               ))}
 
               {pendingInvites.length === 0 && (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-5 py-10 text-center text-sm text-[var(--muted-foreground)]"
                   >
                     No pending invitations for this workspace.
