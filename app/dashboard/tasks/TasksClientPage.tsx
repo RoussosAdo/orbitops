@@ -36,6 +36,21 @@ type TasksPageProps = {
   workspaceName: string;
 };
 
+function PriorityBadge({ priority }: { priority: string }) {
+  const styles =
+    priority === "High"
+      ? "bg-red-100 text-red-600"
+      : priority === "Medium"
+      ? "bg-amber-100 text-amber-700"
+      : "bg-emerald-100 text-emerald-700";
+
+  return (
+    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${styles}`}>
+      {priority}
+    </span>
+  );
+}
+
 export default function TasksClientPage({
   tasks: initialTasks,
   projects,
@@ -86,68 +101,100 @@ export default function TasksClientPage({
     });
   }, [tasks, search, activeTab, priorityFilter, projectFilter]);
 
+  const completedCount = tasks.filter((task) => task.completed).length;
+  const highPriorityCount = tasks.filter((task) => task.priority === "High").length;
+
   return (
     <section className="space-y-6">
       <PageHeader
         eyebrow="Workspace"
         title="Tasks"
-        description="Track your team’s daily work, priorities and deadlines."
+        description="Track daily execution, manage deadlines and keep priority work under control."
         actionLabel="New Task"
       />
 
-      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[0_8px_30px_rgba(15,46,40,0.04)]">
-        <form
-          action={createTask}
-          className="mb-6 grid gap-3 rounded-[1.5rem] border border-[var(--border)] bg-[var(--muted)] p-4 md:grid-cols-2 xl:grid-cols-5"
-        >
-          <input
-            name="title"
-            type="text"
-            placeholder="Task title"
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
-            required
-          />
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+          <p className="text-sm font-medium text-[var(--muted-foreground)]">Total Tasks</p>
+          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
+            {tasks.length}
+          </p>
+        </div>
 
-          <input
-            name="dueDate"
-            type="text"
-            placeholder="Due date"
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
-            required
-          />
+        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+          <p className="text-sm font-medium text-[var(--muted-foreground)]">Completed</p>
+          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-emerald-600">
+            {completedCount}
+          </p>
+        </div>
 
-          <select
-            name="priority"
-            defaultValue="Medium"
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+          <p className="text-sm font-medium text-[var(--muted-foreground)]">High Priority</p>
+          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-red-500">
+            {highPriorityCount}
+          </p>
+        </div>
+      </div>
+
+      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+        <div className="mb-6 rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+            Create task
+          </p>
+
+          <form
+            action={createTask}
+            className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5"
           >
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
-          </select>
+            <input
+              name="title"
+              type="text"
+              placeholder="Task title"
+              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              required
+            />
 
-          <select
-            name="projectId"
-            defaultValue=""
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
-          >
-            <option value="">No project selected</option>
-            {projects.map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
+            <input
+              name="dueDate"
+              type="text"
+              placeholder="Due date"
+              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              required
+            />
 
-          <button
-            type="submit"
-            className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
-          >
-            Create Task
-          </button>
-        </form>
+            <select
+              name="priority"
+              defaultValue="Medium"
+              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+            >
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
 
-        <div className="mb-4">
+            <select
+              name="projectId"
+              defaultValue=""
+              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+            >
+              <option value="">No project selected</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="submit"
+              className="rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
+            >
+              Create Task
+            </button>
+          </form>
+        </div>
+
+        <div className="mb-5">
           <p className="text-sm text-[var(--muted-foreground)]">
             Current workspace:{" "}
             <span className="font-semibold text-[var(--foreground)]">
@@ -156,101 +203,97 @@ export default function TasksClientPage({
           </p>
         </div>
 
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-1 flex-col gap-3">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center">
-              <input
-                type="text"
-                placeholder="Search tasks..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] md:max-w-sm"
-              />
+        <div className="mb-6 rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-4">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[1.2fr_auto_auto_auto_auto_auto]">
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            />
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("all")}
-                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                    activeTab === "all"
-                      ? "bg-[var(--primary)] text-white"
-                      : "border border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]"
-                  }`}
-                >
-                  All
-                </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("all")}
+              className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                activeTab === "all"
+                  ? "bg-[var(--primary)] text-white"
+                  : "border border-[var(--border)] bg-white text-[var(--foreground)]"
+              }`}
+            >
+              All
+            </button>
 
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("active")}
-                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                    activeTab === "active"
-                      ? "bg-[var(--primary)] text-white"
-                      : "border border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]"
-                  }`}
-                >
-                  Active
-                </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("active")}
+              className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                activeTab === "active"
+                  ? "bg-[var(--primary)] text-white"
+                  : "border border-[var(--border)] bg-white text-[var(--foreground)]"
+              }`}
+            >
+              Active
+            </button>
 
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("completed")}
-                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                    activeTab === "completed"
-                      ? "bg-[var(--primary)] text-white"
-                      : "border border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]"
-                  }`}
-                >
-                  Completed
-                </button>
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => setActiveTab("completed")}
+              className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                activeTab === "completed"
+                  ? "bg-[var(--primary)] text-white"
+                  : "border border-[var(--border)] bg-white text-[var(--foreground)]"
+              }`}
+            >
+              Completed
+            </button>
 
-            <div className="flex flex-col gap-3 md:flex-row md:items-center">
-              <select
-                value={priorityFilter}
-                onChange={(e) =>
-                  setPriorityFilter(e.target.value as PriorityFilter)
-                }
-                className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
-              >
-                <option value="all">All Priorities</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-              </select>
+            <select
+              value={priorityFilter}
+              onChange={(e) =>
+                setPriorityFilter(e.target.value as PriorityFilter)
+              }
+              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+            >
+              <option value="all">All Priorities</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
 
-              <select
-                value={projectFilter}
-                onChange={(e) => setProjectFilter(e.target.value)}
-                className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
-              >
-                <option value="all">All Projects</option>
-                <option value="none">No Project Linked</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
+            <select
+              value={projectFilter}
+              onChange={(e) => setProjectFilter(e.target.value)}
+              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+            >
+              <option value="all">All Projects</option>
+              <option value="none">No Project Linked</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setSearch("");
-                  setActiveTab("all");
-                  setPriorityFilter("all");
-                  setProjectFilter("all");
-                }}
-                className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
-              >
-                Reset Filters
-              </button>
-            </div>
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                setActiveTab("all");
+                setPriorityFilter("all");
+                setProjectFilter("all");
+              }}
+              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+            >
+              Reset Filters
+            </button>
           </div>
         </div>
 
-        <div className="mt-6 space-y-3">
+        <div className="space-y-3">
           {filteredTasks.length > 0 ? (
             filteredTasks.map((task) => {
               const isEditing = editingId === task.id;
@@ -309,7 +352,7 @@ export default function TasksClientPage({
                       <div className="flex items-center gap-2">
                         <button
                           type="submit"
-                          className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
+                          className="rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
                         >
                           Save
                         </button>
@@ -332,8 +375,8 @@ export default function TasksClientPage({
                   key={task.id}
                   className={`flex items-center justify-between rounded-2xl border border-[var(--border)] p-4 transition ${
                     task.completed
-                      ? "bg-[var(--muted)] opacity-70"
-                      : "bg-white hover:shadow-[0_12px_30px_rgba(15,46,40,0.06)]"
+                      ? "bg-[var(--muted)] opacity-80"
+                      : "bg-white hover:shadow-[var(--shadow-xs)]"
                   }`}
                 >
                   <div className="flex items-center gap-4">
@@ -374,22 +417,12 @@ export default function TasksClientPage({
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        task.priority === "High"
-                          ? "bg-red-100 text-red-600"
-                          : task.priority === "Medium"
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-emerald-100 text-emerald-700"
-                      }`}
-                    >
-                      {task.priority}
-                    </span>
+                    <PriorityBadge priority={task.priority} />
 
                     <button
                       type="button"
                       onClick={() => setEditingId(task.id)}
-                      className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
+                      className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                     >
                       Edit
                     </button>

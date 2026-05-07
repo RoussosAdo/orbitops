@@ -15,6 +15,21 @@ type ClientsPageProps = {
   }>;
 };
 
+function StatusBadge({ status }: { status: string }) {
+  const styles =
+    status === "Active"
+      ? "bg-emerald-100 text-emerald-700"
+      : status === "Pending"
+      ? "bg-amber-100 text-amber-700"
+      : "bg-slate-100 text-slate-600";
+
+  return (
+    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}>
+      {status}
+    </span>
+  );
+}
+
 export default async function ClientsPage({ searchParams }: ClientsPageProps) {
   const workspace = await requireCurrentWorkspace();
   const params = searchParams ? await searchParams : undefined;
@@ -59,49 +74,129 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
     orderBy: { createdAt: "desc" },
   });
 
+  const activeCount = clients.filter((client) => client.status === "Active").length;
+  const pendingCount = clients.filter((client) => client.status === "Pending").length;
+  const inactiveCount = clients.filter((client) => client.status === "Inactive").length;
+
   return (
     <section className="space-y-6">
       <PageHeader
         eyebrow="Workspace"
         title="Clients"
-        description="Manage your client relationships, monitor account status and keep your workspace organized."
+        description="Manage relationships, filter account status and keep your customer pipeline organized."
         actionLabel="Add Client"
       />
 
-      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[0_8px_30px_rgba(15,46,40,0.04)]">
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+          <p className="text-sm font-medium text-[var(--muted-foreground)]">Total Clients</p>
+          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
+            {clients.length}
+          </p>
+        </div>
+
+        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+          <p className="text-sm font-medium text-[var(--muted-foreground)]">Active Accounts</p>
+          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-emerald-600">
+            {activeCount}
+          </p>
+        </div>
+
+        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+          <p className="text-sm font-medium text-[var(--muted-foreground)]">Pending / Inactive</p>
+          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--primary)]">
+            {pendingCount + inactiveCount}
+          </p>
+        </div>
+      </div>
+
+      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+        <div className="mb-6 rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+            Create client
+          </p>
+
+          <form
+            action={createClient}
+            className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5"
+          >
+            <input
+              name="name"
+              type="text"
+              placeholder="Client name"
+              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              required
+            />
+
+            <input
+              name="company"
+              type="text"
+              placeholder="Company"
+              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              required
+            />
+
+            <input
+              name="email"
+              type="email"
+              placeholder="Email"
+              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              required
+            />
+
+            <select
+              name="status"
+              defaultValue="Active"
+              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+            >
+              <option value="Active">Active</option>
+              <option value="Pending">Pending</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+
+            <button
+              type="submit"
+              className="rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
+            >
+              Create Client
+            </button>
+          </form>
+        </div>
+
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <p className="text-sm text-[var(--muted-foreground)]">
+            Current workspace:{" "}
+            <span className="font-semibold text-[var(--foreground)]">
+              {workspace.name}
+            </span>
+          </p>
+
+          <button
+            type="button"
+            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+          >
+            Export
+          </button>
+        </div>
+
         <form
-          action={createClient}
-          className="mb-6 grid gap-3 rounded-[1.5rem] border border-[var(--border)] bg-[var(--muted)] p-4 md:grid-cols-2 xl:grid-cols-5"
+          method="GET"
+          className="mb-6 grid gap-3 rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-4 md:grid-cols-[1.3fr_220px_auto_auto]"
         >
           <input
-            name="name"
+            name="q"
             type="text"
-            placeholder="Client name"
+            defaultValue={searchQuery}
+            placeholder="Search by client, company or email..."
             className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
-            required
-          />
-
-          <input
-            name="company"
-            type="text"
-            placeholder="Company"
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
-            required
-          />
-
-          <input
-            name="email"
-            type="email"
-            placeholder="Email"
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
-            required
           />
 
           <select
             name="status"
-            defaultValue="Active"
+            defaultValue={selectedStatus || "All"}
             className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
           >
+            <option value="All">All Statuses</option>
             <option value="Active">Active</option>
             <option value="Pending">Pending</option>
             <option value="Inactive">Inactive</option>
@@ -111,67 +206,18 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             type="submit"
             className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
           >
-            Create Client
+            Apply
           </button>
-        </form>
 
-        <div className="mb-4">
-          <p className="text-sm text-[var(--muted-foreground)]">
-            Current workspace:{" "}
-            <span className="font-semibold text-[var(--foreground)]">
-              {workspace.name}
-            </span>
-          </p>
-        </div>
-
-        <form
-          method="GET"
-          className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
-        >
-          <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
-            <input
-              name="q"
-              type="text"
-              defaultValue={searchQuery}
-              placeholder="Search clients..."
-              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] md:max-w-sm"
-            />
-
-            <select
-              name="status"
-              defaultValue={selectedStatus || "All"}
-              className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
-            >
-              <option value="All">All Statuses</option>
-              <option value="Active">Active</option>
-              <option value="Pending">Pending</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-
-            <button
-              type="submit"
-              className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
-            >
-              Apply
-            </button>
-
-            <a
-              href="/dashboard/clients"
-              className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
-            >
-              Reset
-            </a>
-          </div>
-
-          <button
-            type="button"
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--primary-light)]"
+          <a
+            href="/dashboard/clients"
+            className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
           >
-            Export
-          </button>
+            Reset
+          </a>
         </form>
 
-        <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-[var(--border)]">
+        <div className="overflow-hidden rounded-[1.5rem] border border-[var(--border)]">
           <table className="w-full border-collapse">
             <thead className="bg-[var(--muted)]">
               <tr className="text-left">
@@ -250,7 +296,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
 
                           <button
                             type="submit"
-                            className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
+                            className="rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
                           >
                             Save
                           </button>
@@ -280,8 +326,12 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                         : ""
                     }
                   >
-                    <td className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
-                      {client.name}
+                    <td className="px-5 py-4">
+                      <div>
+                        <p className="text-sm font-semibold text-[var(--foreground)]">
+                          {client.name}
+                        </p>
+                      </div>
                     </td>
 
                     <td className="px-5 py-4 text-sm text-[var(--muted-foreground)]">
@@ -293,22 +343,12 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                     </td>
 
                     <td className="px-5 py-4">
-                      <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                          client.status === "Active"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : client.status === "Pending"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {client.status}
-                      </span>
+                      <StatusBadge status={client.status} />
                     </td>
 
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
-                        <button className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]">
+                        <button className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]">
                           View
                         </button>
 
@@ -318,7 +358,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                           )}&status=${encodeURIComponent(
                             selectedStatus || "All"
                           )}`}
-                          className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
+                          className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                         >
                           Edit
                         </a>
