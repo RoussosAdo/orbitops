@@ -17,9 +17,5 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <DashboardShell>{children}</DashboardShell>
-    </div>
-  );
+  return <DashboardShell>{children}</DashboardShell>;
 }

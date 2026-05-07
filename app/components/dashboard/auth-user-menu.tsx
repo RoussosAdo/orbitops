@@ -27,7 +27,7 @@ export default function AuthUserMenu() {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="hidden items-center gap-3 rounded-2xl border border-[var(--border)] bg-white px-3 py-2 shadow-[var(--shadow-xs)] sm:flex">
+      <div className="hidden items-center gap-3 rounded-2xl border border-[var(--border)] bg-white px-3 py-2 shadow-[var(--shadow-sm)] sm:flex">
         {userImage ? (
           <Image
             src={userImage}
@@ -54,7 +54,7 @@ export default function AuthUserMenu() {
 
       <button
         onClick={() => signOut({ callbackUrl: "/login" })}
-        className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:border-[var(--primary-light)] hover:bg-[var(--muted)]"
+        className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:border-[var(--primary-light)] hover:bg-[var(--muted)]"
       >
         <LogOut className="h-4 w-4" />
         <span className="hidden md:inline">Sign out</span>

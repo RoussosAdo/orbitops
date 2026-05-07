@@ -9,7 +9,7 @@ type TopbarProps = {
 
 export default function Topbar({ onOpenMobileMenu }: TopbarProps) {
   return (
-    <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-white/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-white/78 backdrop-blur-xl">
       <div className="flex h-20 items-center justify-between px-4 md:px-6 xl:px-8">
         <div className="flex items-center gap-3">
           <button
@@ -24,7 +24,7 @@ export default function Topbar({ onOpenMobileMenu }: TopbarProps) {
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
               Workspace
             </p>
-            <h1 className="mt-1 text-[1.9rem] font-semibold tracking-[-0.04em] text-[var(--foreground)]">
+            <h1 className="mt-1 text-[2.05rem] font-semibold tracking-[-0.05em] text-[var(--foreground)]">
               Dashboard Overview
             </h1>
           </div>
@@ -39,15 +39,15 @@ export default function Topbar({ onOpenMobileMenu }: TopbarProps) {
             </span>
           </div>
 
-          <button className="hidden h-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:border-[var(--primary-light)] hover:text-[var(--primary)] md:inline-flex">
+          <button className="hidden h-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:border-[var(--primary-light)] hover:text-[var(--primary)] md:inline-flex">
             Invite Team
           </button>
 
-          <button className="hidden h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-white text-[var(--muted-foreground)] shadow-[var(--shadow-xs)] transition hover:border-[var(--primary-light)] hover:text-[var(--primary)] lg:flex">
+          <button className="hidden h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-white text-[var(--muted-foreground)] shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:border-[var(--primary-light)] hover:text-[var(--primary)] lg:flex">
             <Bell className="h-4 w-4" />
           </button>
 
-          <button className="hidden h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-white text-[var(--muted-foreground)] shadow-[var(--shadow-xs)] transition hover:border-[var(--primary-light)] hover:text-[var(--primary)] lg:flex">
+          <button className="hidden h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-white text-[var(--muted-foreground)] shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:border-[var(--primary-light)] hover:text-[var(--primary)] lg:flex">
             <Command className="h-4 w-4" />
           </button>
 

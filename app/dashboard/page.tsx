@@ -32,7 +32,7 @@ function OverviewMetricCard({
   meta: string;
 }) {
   return (
-    <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
+    <div className="group rounded-[1.45rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)] transition duration-200 hover:-translate-y-1 hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-md)]">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-[var(--muted-foreground)]">
@@ -46,7 +46,7 @@ function OverviewMetricCard({
           </p>
         </div>
 
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--muted)] text-[var(--primary)]">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,#ffffff_0%,#f6f7ff_100%)] text-[var(--primary)] transition group-hover:scale-105 group-hover:border-[var(--primary-light)]">
           {icon}
         </div>
       </div>
@@ -59,20 +59,24 @@ function SectionCard({
   title,
   children,
   rightSlot,
+  className = "",
 }: {
   eyebrow: string;
   title: string;
   children: ReactNode;
   rightSlot?: ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="rounded-[1.6rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+    <div
+      className={`rounded-[1.7rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)] ${className}`}
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
             {eyebrow}
           </p>
-          <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
+          <h3 className="mt-2 text-[1.45rem] font-semibold tracking-[-0.03em] text-[var(--foreground)]">
             {title}
           </h3>
         </div>
@@ -95,7 +99,7 @@ function MiniStat({
   accent?: string;
 }) {
   return (
-    <div className="rounded-[1.1rem] border border-[var(--border)] bg-white px-4 py-3">
+    <div className="rounded-[1.2rem] border border-[var(--border)] bg-white px-4 py-3 shadow-[var(--shadow-xs)]">
       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
         {label}
       </p>
@@ -133,9 +137,9 @@ function ProgressRow({
         </p>
       </div>
 
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
+      <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white">
         <div
-          className={`h-full rounded-full ${toneClasses[tone]}`}
+          className={`h-full rounded-full transition-all duration-500 ${toneClasses[tone]}`}
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -272,9 +276,12 @@ export default async function DashboardPage() {
 
   return (
     <section className="space-y-6">
-      <div className="grid gap-6 xl:grid-cols-[1.7fr_1fr]">
-        <div className="overflow-hidden rounded-[1.8rem] border border-[var(--border)] bg-white shadow-[var(--shadow-sm)]">
-          <div className="border-b border-[var(--border)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfbff_100%)] px-6 py-6 md:px-7">
+      <div className="grid gap-6 xl:grid-cols-[1.72fr_0.95fr]">
+        <div className="relative overflow-hidden rounded-[1.9rem] border border-[var(--border)] bg-white shadow-[var(--shadow-md)]">
+          <div className="absolute right-0 top-0 h-48 w-48 rounded-full bg-[rgba(109,94,252,0.08)] blur-3xl" />
+          <div className="absolute left-10 top-16 h-24 w-24 rounded-full bg-[rgba(59,130,246,0.05)] blur-3xl" />
+
+          <div className="relative border-b border-[var(--border)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfbff_100%)] px-6 py-7 md:px-7">
             <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
               <div className="max-w-3xl">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1.5 text-[11px] font-semibold text-[var(--muted-foreground)]">
@@ -282,7 +289,7 @@ export default async function DashboardPage() {
                   Operations center
                 </div>
 
-                <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-[var(--foreground)]">
+                <h1 className="mt-4 text-[2.8rem] font-semibold tracking-[-0.06em] text-[var(--foreground)]">
                   {workspace.name}
                 </h1>
 
@@ -292,30 +299,30 @@ export default async function DashboardPage() {
                 </p>
 
                 <div className="mt-5 flex flex-wrap items-center gap-3">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-2 text-xs font-semibold text-[var(--foreground)]">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)]">
                     <ShieldCheck className="h-4 w-4 text-emerald-500" />
                     Workspace {workspaceHealth}
                   </div>
 
-                  <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-2 text-xs font-semibold text-[var(--foreground)]">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)]">
                     <CircleAlert className="h-4 w-4 text-amber-500" />
                     Workload {workloadHealth}
                   </div>
                 </div>
               </div>
 
-              <div className="min-w-[260px] space-y-3">
+              <div className="min-w-[280px] space-y-3">
                 <WorkspaceSwitcher
                   currentWorkspaceId={workspace.id}
                   workspaces={workspaces}
                 />
 
                 <div className="grid grid-cols-2 gap-3">
-                  <button className="inline-flex items-center justify-center rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black">
+                  <button className="inline-flex items-center justify-center rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:-translate-y-0.5 hover:bg-black">
                     Create Project
                   </button>
 
-                  <button className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]">
+                  <button className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:bg-[var(--muted)]">
                     Invite Team
                   </button>
                 </div>
@@ -323,7 +330,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 px-6 py-6 sm:grid-cols-2 xl:grid-cols-4 md:px-7">
+          <div className="relative grid gap-4 px-6 py-6 sm:grid-cols-2 xl:grid-cols-4 md:px-7">
             <OverviewMetricCard
               icon={<Users className="h-5 w-5" />}
               label="Clients"
@@ -351,70 +358,73 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-[1.8rem] border border-[var(--border)] bg-[var(--gradient-soft)] p-6 shadow-[var(--shadow-md)]">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--primary)]">
-                Highlights
-              </p>
+        <div className="relative overflow-hidden rounded-[1.9rem] border border-[var(--border)] bg-[var(--gradient-soft)] p-6 shadow-[var(--shadow-md)]">
+          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[rgba(109,94,252,0.12)] blur-3xl" />
+          <div className="relative">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--primary)]">
+                  Highlights
+                </p>
 
-              <h2 className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[var(--foreground)]">
-                Workspace Signal
-              </h2>
+                <h2 className="mt-3 text-[2.2rem] font-semibold tracking-[-0.05em] text-[var(--foreground)]">
+                  Workspace Signal
+                </h2>
+              </div>
+
+              <span className="rounded-full border border-[var(--border)] bg-white/80 px-3 py-1 text-xs font-semibold text-[var(--primary)] shadow-[var(--shadow-xs)]">
+                Live
+              </span>
             </div>
 
-            <span className="rounded-full border border-[var(--border)] bg-white/80 px-3 py-1 text-xs font-semibold text-[var(--primary)]">
-              Live
-            </span>
-          </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <MiniStat
+                label="High priority tasks"
+                value={String(highPriorityTasks)}
+                accent="text-red-500"
+              />
+              <MiniStat
+                label="Pending invoices"
+                value={String(pendingInvoices.length)}
+                accent="text-emerald-600"
+              />
+              <MiniStat
+                label="Seats used"
+                value={
+                  billingProfile
+                    ? `${seatsUsed}/${billingProfile.seatsIncluded}`
+                    : "—"
+                }
+                accent="text-amber-500"
+              />
+              <MiniStat
+                label="Projects usage"
+                value={
+                  billingProfile
+                    ? `${totalProjects}/${billingProfile.projectsIncluded}`
+                    : "—"
+                }
+                accent="text-sky-500"
+              />
+            </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <MiniStat
-              label="High priority tasks"
-              value={String(highPriorityTasks)}
-              accent="text-red-500"
-            />
-            <MiniStat
-              label="Pending invoices"
-              value={String(pendingInvoices.length)}
-              accent="text-emerald-600"
-            />
-            <MiniStat
-              label="Seats used"
-              value={
-                billingProfile
-                  ? `${seatsUsed}/${billingProfile.seatsIncluded}`
-                  : "—"
-              }
-              accent="text-amber-500"
-            />
-            <MiniStat
-              label="Projects usage"
-              value={
-                billingProfile
-                  ? `${totalProjects}/${billingProfile.projectsIncluded}`
-                  : "—"
-              }
-              accent="text-sky-500"
-            />
-          </div>
-
-          <div className="mt-5 rounded-[1.2rem] border border-[var(--border)] bg-white/70 p-4">
-            <p className="text-sm leading-6 text-[var(--muted-foreground)]">
-              Operations are stable. Delivery, task load and finance are under
-              control.
-            </p>
+            <div className="mt-5 rounded-[1.25rem] border border-[var(--border)] bg-white/80 p-4 shadow-[var(--shadow-xs)]">
+              <p className="text-sm leading-6 text-[var(--muted-foreground)]">
+                Operations are stable. Delivery, task load and finance are under control.
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.7fr_1fr]">
+      <div className="grid gap-6 xl:grid-cols-[1.72fr_0.95fr]">
         <div className="space-y-6">
           <SectionCard
             eyebrow="Analytics"
             title="Weekly Overview"
+            className="shadow-[var(--shadow-md)]"
             rightSlot={
-              <button className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]">
+              <button className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:bg-[var(--muted)]">
                 Details ↗
               </button>
             }
@@ -456,7 +466,7 @@ export default async function DashboardPage() {
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4"
+                    className="rounded-[1.25rem] border border-[var(--border)] bg-[linear-gradient(180deg,#fbfcff_0%,#f7f9ff_100%)] p-4 transition hover:border-[var(--border-strong)]"
                   >
                     <p className="text-sm text-[var(--muted-foreground)]">
                       {item.label}
@@ -485,7 +495,7 @@ export default async function DashboardPage() {
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3"
+                    className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 transition hover:border-[var(--border-strong)]"
                   >
                     <span className="text-sm font-medium text-[var(--foreground)]">
                       {item.label}
@@ -545,10 +555,10 @@ export default async function DashboardPage() {
                 invoices.slice(0, 3).map((invoice) => (
                   <div
                     key={invoice.id}
-                    className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3"
+                    className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 transition hover:border-[var(--border-strong)]"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[var(--primary)]">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[var(--primary)] shadow-[var(--shadow-xs)]">
                         <CreditCard className="h-4 w-4" />
                       </div>
 
@@ -589,7 +599,7 @@ export default async function DashboardPage() {
           <SectionCard eyebrow="Subscription" title="Plan Usage">
             {billingProfile ? (
               <div className="space-y-4">
-                <div className="rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-5">
+                <div className="rounded-[1.35rem] border border-[var(--border)] bg-[linear-gradient(180deg,#fbfcff_0%,#f7f9ff_100%)] p-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
                     Current Plan
                   </p>
@@ -631,7 +641,7 @@ export default async function DashboardPage() {
             eyebrow="Delivery"
             title="Recent Projects"
             rightSlot={
-              <button className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]">
+              <button className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:bg-[var(--muted)]">
                 View All
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </button>
@@ -642,7 +652,7 @@ export default async function DashboardPage() {
                 recentProjects.map((project) => (
                   <div
                     key={project.id}
-                    className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4"
+                    className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4 transition hover:border-[var(--border-strong)]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -672,7 +682,7 @@ export default async function DashboardPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[var(--primary)]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[var(--primary)] shadow-[var(--shadow-xs)]">
                     <WalletCards className="h-4 w-4" />
                   </div>
                   <div>
@@ -688,7 +698,7 @@ export default async function DashboardPage() {
 
               <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-emerald-500">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-emerald-500 shadow-[var(--shadow-xs)]">
                     <TrendingUp className="h-4 w-4" />
                   </div>
                   <div>
@@ -704,7 +714,7 @@ export default async function DashboardPage() {
 
               <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-amber-500">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-amber-500 shadow-[var(--shadow-xs)]">
                     <Receipt className="h-4 w-4" />
                   </div>
                   <div>
@@ -720,7 +730,7 @@ export default async function DashboardPage() {
 
               <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-sky-500">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-sky-500 shadow-[var(--shadow-xs)]">
                     <CreditCard className="h-4 w-4" />
                   </div>
                   <div>
@@ -740,5 +750,3 @@ export default async function DashboardPage() {
     </section>
   );
 }
-
-
