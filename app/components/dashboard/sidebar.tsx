@@ -37,8 +37,8 @@ export default function Sidebar({
     <aside
       className={`${
         isMobile
-          ? "flex h-full w-[88vw] max-w-80 flex-col bg-[#fcfcfe]"
-          : "hidden w-[288px] shrink-0 border-r border-[var(--border)] bg-[#fcfcfe] xl:flex xl:flex-col"
+          ? "flex h-full w-[88vw] max-w-80 flex-col bg-[#fbfcff]"
+          : "hidden w-[292px] shrink-0 border-r border-[var(--border)] bg-[#fbfcff] xl:flex xl:flex-col"
       }`}
     >
       <div className="px-6 pb-6 pt-7">
@@ -57,12 +57,12 @@ export default function Sidebar({
           </div>
         </div>
 
-        <div className="mt-8 rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+        <div className="mt-8 rounded-[1.65rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-sm)]">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
             Current workspace
           </p>
 
-          <h2 className="mt-3 text-[1.9rem] font-semibold tracking-[-0.04em] text-[var(--foreground)]">
+          <h2 className="mt-3 text-[1.95rem] font-semibold tracking-[-0.05em] text-[var(--foreground)]">
             Workspace
           </h2>
 
@@ -90,15 +90,26 @@ export default function Sidebar({
               onClick={onNavigate}
               className={`group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
                 isActive
-                  ? "bg-[var(--primary)] text-white shadow-[0_10px_30px_rgba(109,94,252,0.18)]"
+                  ? "bg-[var(--primary)] text-white shadow-[0_14px_34px_rgba(109,94,252,0.24)]"
                   : "text-[var(--foreground)] hover:bg-white hover:text-[var(--foreground)] hover:shadow-[var(--shadow-xs)]"
               }`}
             >
-              <Icon
-                className={`h-4 w-4 ${
-                  isActive ? "text-white" : "text-[var(--muted-foreground)] group-hover:text-[var(--primary)]"
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-xl transition ${
+                  isActive
+                    ? "bg-white/14"
+                    : "bg-transparent group-hover:bg-[var(--muted)]"
                 }`}
-              />
+              >
+                <Icon
+                  className={`h-4 w-4 ${
+                    isActive
+                      ? "text-white"
+                      : "text-[var(--muted-foreground)] group-hover:text-[var(--primary)]"
+                  }`}
+                />
+              </div>
+
               <span>{item.label}</span>
             </Link>
           );
@@ -106,13 +117,13 @@ export default function Sidebar({
       </nav>
 
       <div className="p-4 pt-0">
-        <div className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--gradient-soft)] p-4 shadow-[var(--shadow-xs)]">
+        <div className="overflow-hidden rounded-[1.6rem] border border-[var(--border)] bg-[var(--gradient-soft)] p-5 shadow-[var(--shadow-xs)]">
           <p className="text-sm font-semibold text-[var(--foreground)]">
             Need more control?
           </p>
 
           <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
-            Upgrade for advanced analytics, billing controls and workspace permissions.
+            Upgrade for advanced analytics, workspace permissions and better financial visibility.
           </p>
 
           <button className="mt-4 inline-flex h-10 items-center justify-center rounded-xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black">

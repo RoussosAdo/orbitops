@@ -10,7 +10,7 @@ export default function AuthUserMenu() {
   if (status === "loading") {
     return (
       <div className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-white px-4 py-2 shadow-[var(--shadow-xs)]">
-        <div className="h-10 w-10 animate-pulse rounded-full bg-[var(--muted)]" />
+        <div className="h-10 w-10 animate-pulse rounded-2xl bg-[var(--muted)]" />
         <div className="hidden sm:block">
           <div className="h-3 w-24 animate-pulse rounded bg-[var(--muted)]" />
           <div className="mt-2 h-3 w-16 animate-pulse rounded bg-[var(--muted)]" />
