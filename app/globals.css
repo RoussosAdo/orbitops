@@ -34,6 +34,10 @@
   --shadow-sm: 0 10px 24px rgba(15, 23, 42, 0.06);
   --shadow-md: 0 18px 40px rgba(15, 23, 42, 0.08);
   --shadow-lg: 0 28px 60px rgba(15, 23, 42, 0.12);
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
 }
 
 * {
@@ -62,6 +66,10 @@ textarea {
   font: inherit;
 }
 
+button {
+  cursor: pointer;
+}
+
 input:focus,
 select:focus,
 textarea:focus {
@@ -72,4 +80,28 @@ textarea:focus {
 
 ::selection {
   background: rgba(109, 94, 252, 0.18);
+}
+
+.surface-card {
+  border: 1px solid var(--border);
+  background: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.surface-muted {
+  border: 1px solid var(--border);
+  background: var(--muted);
+}
+
+.control-hover {
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.control-hover:hover {
+  transform: translateY(-1px);
 }

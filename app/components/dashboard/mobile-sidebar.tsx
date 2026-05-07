@@ -15,7 +15,7 @@ export default function MobileSidebar({
     <>
       <div
         onClick={onClose}
-        className={`fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition ${
+        className={`fixed inset-0 z-40 bg-black/35 backdrop-blur-sm transition ${
           isOpen
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0"
@@ -27,7 +27,7 @@ export default function MobileSidebar({
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-full">
+        <div className="flex h-full shadow-[var(--shadow-lg)]">
           <Sidebar isMobile onNavigate={onClose} />
         </div>
       </div>

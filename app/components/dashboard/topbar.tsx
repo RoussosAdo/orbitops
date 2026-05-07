@@ -10,7 +10,7 @@ type TopbarProps = {
 export default function Topbar({ onOpenMobileMenu }: TopbarProps) {
   return (
     <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-white/80 backdrop-blur-xl">
-      <div className="flex h-20 items-center justify-between px-4 md:px-6">
+      <div className="flex h-20 items-center justify-between px-4 md:px-6 xl:px-8">
         <div className="flex items-center gap-3">
           <button
             onClick={onOpenMobileMenu}
@@ -24,7 +24,7 @@ export default function Topbar({ onOpenMobileMenu }: TopbarProps) {
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
               Workspace
             </p>
-            <h1 className="mt-1 text-[2rem] font-semibold tracking-[-0.04em] text-[var(--foreground)]">
+            <h1 className="mt-1 text-[1.9rem] font-semibold tracking-[-0.04em] text-[var(--foreground)]">
               Dashboard Overview
             </h1>
           </div>

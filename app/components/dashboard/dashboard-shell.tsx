@@ -22,14 +22,14 @@ export default function DashboardShell({
         onClose={() => setIsMobileSidebarOpen(false)}
       />
 
-      <div className="mx-auto flex min-h-screen max-w-[1720px]">
+      <div className="mx-auto flex min-h-screen max-w-[1760px]">
         <Sidebar />
 
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar onOpenMobileMenu={() => setIsMobileSidebarOpen(true)} />
 
-          <main className="flex-1 px-5 py-5 md:px-6 md:py-6 xl:px-8 xl:py-8">
-            <div className="mx-auto w-full max-w-[1380px]">{children}</div>
+          <main className="flex-1 px-4 py-5 md:px-6 md:py-6 xl:px-8 xl:py-8">
+            <div className="mx-auto w-full max-w-[1400px]">{children}</div>
           </main>
         </div>
       </div>
