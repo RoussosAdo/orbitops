@@ -1,10 +1,16 @@
 "use client";
 
-import {createTask,deleteTask,toggleTaskCompletion,updateTask,} from "@/app/actions/taskActions";
+import {
+  createTask,
+  deleteTask,
+  toggleTaskCompletion,
+  updateTask,
+} from "@/app/actions/taskActions";
 import { useMemo, useState } from "react";
 import PageHeader from "@/app/components/dashboard/PageHeader";
 
 type FilterTab = "all" | "active" | "completed";
+type PriorityFilter = "all" | "High" | "Medium" | "Low";
 
 type TaskItem = {
   id: string;
@@ -38,6 +44,9 @@ export default function TasksClientPage({
   const [tasks, setTasks] = useState(initialTasks);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
+  const [priorityFilter, setPriorityFilter] =
+    useState<PriorityFilter>("all");
+  const [projectFilter, setProjectFilter] = useState<string>("all");
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const toggleTask = async (id: string, completed: boolean) => {
@@ -63,9 +72,19 @@ export default function TasksClientPage({
           ? !task.completed
           : task.completed;
 
-      return matchesSearch && matchesTab;
+      const matchesPriority =
+        priorityFilter === "all" ? true : task.priority === priorityFilter;
+
+      const matchesProject =
+        projectFilter === "all"
+          ? true
+          : projectFilter === "none"
+          ? !task.projectId
+          : task.projectId === projectFilter;
+
+      return matchesSearch && matchesTab && matchesPriority && matchesProject;
     });
-  }, [tasks, search, activeTab]);
+  }, [tasks, search, activeTab, priorityFilter, projectFilter]);
 
   return (
     <section className="space-y-6">
@@ -138,50 +157,94 @@ export default function TasksClientPage({
         </div>
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
-            <input
-              type="text"
-              placeholder="Search tasks..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] md:max-w-sm"
-            />
+          <div className="flex flex-1 flex-col gap-3">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center">
+              <input
+                type="text"
+                placeholder="Search tasks..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] md:max-w-sm"
+              />
 
-            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("all")}
+                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                    activeTab === "all"
+                      ? "bg-[var(--primary)] text-white"
+                      : "border border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]"
+                  }`}
+                >
+                  All
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("active")}
+                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                    activeTab === "active"
+                      ? "bg-[var(--primary)] text-white"
+                      : "border border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]"
+                  }`}
+                >
+                  Active
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("completed")}
+                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                    activeTab === "completed"
+                      ? "bg-[var(--primary)] text-white"
+                      : "border border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]"
+                  }`}
+                >
+                  Completed
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 md:flex-row md:items-center">
+              <select
+                value={priorityFilter}
+                onChange={(e) =>
+                  setPriorityFilter(e.target.value as PriorityFilter)
+                }
+                className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+              >
+                <option value="all">All Priorities</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+
+              <select
+                value={projectFilter}
+                onChange={(e) => setProjectFilter(e.target.value)}
+                className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+              >
+                <option value="all">All Projects</option>
+                <option value="none">No Project Linked</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+
               <button
                 type="button"
-                onClick={() => setActiveTab("all")}
-                className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                  activeTab === "all"
-                    ? "bg-[var(--primary)] text-white"
-                    : "border border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]"
-                }`}
+                onClick={() => {
+                  setSearch("");
+                  setActiveTab("all");
+                  setPriorityFilter("all");
+                  setProjectFilter("all");
+                }}
+                className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
               >
-                All
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab("active")}
-                className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                  activeTab === "active"
-                    ? "bg-[var(--primary)] text-white"
-                    : "border border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]"
-                }`}
-              >
-                Active
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab("completed")}
-                className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                  activeTab === "completed"
-                    ? "bg-[var(--primary)] text-white"
-                    : "border border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]"
-                }`}
-              >
-                Completed
+                Reset Filters
               </button>
             </div>
           </div>

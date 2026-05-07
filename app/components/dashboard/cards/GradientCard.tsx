@@ -14,27 +14,32 @@ export default function GradientCard({
   secondaryAction,
 }: GradientCardProps) {
   return (
-    <div className="rounded-[1.75rem] border border-[#bfe7ea] bg-gradient-to-br from-[#dff8ee] via-[#dff6f4] to-[#dff0fb] p-6 shadow-[0_20px_45px_rgba(17,181,216,0.12)]">
-      <p className="text-sm font-medium text-[var(--muted-foreground)]">
-        {eyebrow}
-      </p>
+    <div className="relative overflow-hidden rounded-[1.5rem] border border-[var(--border)] bg-[var(--gradient-soft)] p-6 shadow-[var(--shadow-md)]">
+      <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[rgba(108,99,255,0.10)] blur-3xl" />
+      <div className="absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-[rgba(34,197,94,0.08)] blur-3xl" />
 
-      <h3 className="mt-2 text-3xl font-bold text-[var(--foreground)]">
-        {title}
-      </h3>
+      <div className="relative">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--primary)]">
+          {eyebrow}
+        </p>
 
-      <p className="mt-3 max-w-sm text-sm leading-6 text-[var(--foreground)]/75">
-        {description}
-      </p>
+        <h3 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
+          {title}
+        </h3>
 
-      <div className="mt-5 flex items-center gap-3">
-        <button className="rounded-2xl bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]">
-          {primaryAction}
-        </button>
+        <p className="mt-3 max-w-sm text-sm leading-7 text-[var(--muted-foreground)]">
+          {description}
+        </p>
 
-        <button className="rounded-2xl border border-[var(--border)] bg-white/80 px-4 py-2 text-sm font-semibold text-[var(--foreground)] transition hover:bg-white">
-          {secondaryAction}
-        </button>
+        <div className="mt-6 flex items-center gap-3">
+          <button className="rounded-2xl bg-[var(--foreground)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-black">
+            {primaryAction}
+          </button>
+
+          <button className="rounded-2xl border border-[var(--border)] bg-white/90 px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] transition hover:bg-white">
+            {secondaryAction}
+          </button>
+        </div>
       </div>
     </div>
   );

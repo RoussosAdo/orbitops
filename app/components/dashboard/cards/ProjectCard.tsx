@@ -10,14 +10,18 @@ export default function ProjectCard({
   progress,
 }: ProjectCardProps) {
   return (
-    <div className="rounded-2xl bg-[var(--muted)] p-4">
+    <div className="rounded-[1.2rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-xs)] transition hover:shadow-[var(--shadow-sm)]">
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <h4 className="font-semibold text-[var(--foreground)]">{name}</h4>
-          <p className="text-sm text-[var(--muted-foreground)]">{status}</p>
+        <div className="min-w-0">
+          <h4 className="truncate text-sm font-semibold text-[var(--foreground)]">
+            {name}
+          </h4>
+          <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+            {status}
+          </p>
         </div>
 
-        <span className="text-sm font-bold text-[var(--primary-dark)]">
+        <span className="rounded-full bg-[var(--muted)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
           {progress}
         </span>
       </div>

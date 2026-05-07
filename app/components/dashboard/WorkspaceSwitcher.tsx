@@ -1,5 +1,7 @@
 "use client";
 
+import { ChevronDown, Layers3 } from "lucide-react";
+
 type WorkspaceOption = {
   workspaceId: string;
   workspaceName: string;
@@ -20,12 +22,20 @@ export default function WorkspaceSwitcher({
   }
 
   return (
-    <form action="/api/workspaces/switch" method="POST">
+    <form action="/api/workspaces/switch" method="POST" className="relative">
+      <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-[var(--muted-foreground)]">
+        <Layers3 className="h-4 w-4" />
+      </div>
+
+      <div className="pointer-events-none absolute right-4 top-1/2 z-10 -translate-y-1/2 text-[var(--muted-foreground)]">
+        <ChevronDown className="h-4 w-4" />
+      </div>
+
       <select
         name="workspaceId"
         defaultValue={currentWorkspaceId}
         onChange={(e) => e.currentTarget.form?.requestSubmit()}
-        className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] shadow-sm outline-none transition hover:border-[var(--primary-light)]"
+        className="w-full appearance-none rounded-2xl border border-[var(--border)] bg-white py-3 pl-11 pr-11 text-sm font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:border-[var(--primary-light)]"
       >
         {workspaces.map((workspace) => (
           <option key={workspace.workspaceId} value={workspace.workspaceId}>

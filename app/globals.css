@@ -1,27 +1,43 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4fbf7;
-  --foreground: #0f2e28;
+  --background: #f3f5fb;
+  --background-elevated: #eef2ff;
+  --foreground: #0f172a;
 
-  --primary: #12b981;
-  --primary-light: #38d39f;
-  --primary-dark: #0f9f6e;
-  --secondary: #11b5d8;
-  --secondary-light: #67d4ea;
+  --primary: #6d5efc;
+  --primary-light: #8b80ff;
+  --primary-dark: #5546f0;
+
+  --secondary: #22c55e;
+  --secondary-light: #86efac;
 
   --card: #ffffff;
-  --card-foreground: #0f2e28;
-  --border: #d6f3e7;
-  --muted: #ecf8f2;
-  --muted-foreground: #6b8f86;
+  --card-foreground: #0f172a;
 
-  --success: #12b981;
+  --border: #e7eaf3;
+  --border-strong: #d7dceb;
+
+  --muted: #f8faff;
+  --muted-foreground: #667085;
+
+  --success: #16a34a;
   --warning: #f59e0b;
   --danger: #ef4444;
+  --info: #3b82f6;
 
-  --gradient-primary: linear-gradient(135deg, #0ea5a4 0%, #2563eb 100%);
-  --gradient-soft: linear-gradient(135deg, #dff8ee 0%, #e0f7fb 100%);
+  --gradient-soft: linear-gradient(135deg, #fbfbff 0%, #f4f3ff 45%, #edf5ff 100%);
+  --gradient-primary: linear-gradient(135deg, #6d5efc 0%, #4f46e5 100%);
+  --gradient-dark: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 10px 24px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 20px 40px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 28px 60px rgba(15, 23, 42, 0.12);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 html {
@@ -29,7 +45,31 @@ html {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
   min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(109, 94, 252, 0.06), transparent 28%),
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.05), transparent 24%),
+    linear-gradient(180deg, #f8faff 0%, #f3f5fb 100%);
+  color: var(--foreground);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(109, 94, 252, 0.12);
+}
+
+::selection {
+  background: rgba(109, 94, 252, 0.18);
 }
