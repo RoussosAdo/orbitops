@@ -5,7 +5,7 @@ import {
   initialTeamActionState,
   updateMemberRole,
 } from "@/app/actions/teamActions";
-import TeamActionFeedback from "./team-actions-feedback";
+import TeamActionFeedback from "./team-action-feedback";
 
 type TeamRoleFormProps = {
   membershipId: string;

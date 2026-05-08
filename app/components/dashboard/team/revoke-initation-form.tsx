@@ -5,7 +5,7 @@ import {
   initialTeamActionState,
   revokeInvitation,
 } from "@/app/actions/teamActions";
-import TeamActionFeedback from "./team-actions-feedback";
+import TeamActionFeedback from "./team-action-feedback";
 
 type RevokeInvitationFormProps = {
   invitationId: string;
