@@ -4,7 +4,7 @@ import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import TeamRoleForm from "@/app/components/dashboard/team/team-role-form";
-import RemoveMemberForm from "@/app/components/dashboard/team/revoke-initation-form";
+import RemoveMemberForm from "@/app/components/dashboard/team/team-member-form";
 import RevokeInvitationForm from "@/app/components/dashboard/team/revoke-initation-form";
 
 function TeamStatCard({
