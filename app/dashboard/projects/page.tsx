@@ -26,9 +26,34 @@ function ProjectStatusBadge({ status }: { status: string }) {
       : "bg-violet-100 text-violet-700";
 
   return (
-    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}>
+    <span
+      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
+    >
       {status}
     </span>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: string;
+}) {
+  return (
+    <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
+      <p className="text-sm font-medium text-[var(--muted-foreground)]">{label}</p>
+      <p
+        className={`mt-3 text-3xl font-semibold tracking-[-0.04em] ${
+          accent || "text-[var(--foreground)]"
+        }`}
+      >
+        {value}
+      </p>
+    </div>
   );
 }
 
@@ -141,43 +166,39 @@ export default async function ProjectsPage({
       />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">Total Projects</p>
-          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
-            {projects.length}
-          </p>
-        </div>
-
-        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">In Progress</p>
-          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--primary)]">
-            {inProgressProjects}
-          </p>
-        </div>
-
-        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">Planning / Completed</p>
-          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-emerald-600">
-            {planningProjects + completedProjects}
-          </p>
-        </div>
+        <SummaryCard label="Total Projects" value={String(projects.length)} />
+        <SummaryCard
+          label="In Progress"
+          value={String(inProgressProjects)}
+          accent="text-[var(--primary)]"
+        />
+        <SummaryCard
+          label="Planning / Completed"
+          value={String(planningProjects + completedProjects)}
+          accent="text-emerald-600"
+        />
       </div>
 
       <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
-        <div className="mb-6 rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-            Create project
-          </p>
+        <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--muted)] p-5">
+          <div className="mb-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+              Create Project
+            </p>
+            <h2 className="mt-2 text-lg font-semibold text-[var(--foreground)]">
+              Add a new delivery stream
+            </h2>
+          </div>
 
           <form
             action={createProject}
-            className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4"
+            className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
           >
             <input
               name="name"
               type="text"
               placeholder="Project name"
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
@@ -185,7 +206,7 @@ export default async function ProjectsPage({
               name="budget"
               type="text"
               placeholder="Budget (e.g. $5,000)"
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
@@ -193,7 +214,7 @@ export default async function ProjectsPage({
               name="dueDate"
               type="text"
               placeholder="Due date"
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
@@ -201,7 +222,7 @@ export default async function ProjectsPage({
               name="team"
               type="text"
               placeholder="Team (e.g. 3 members)"
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
@@ -215,7 +236,7 @@ export default async function ProjectsPage({
             <select
               name="status"
               defaultValue="Planning"
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+              className="h-[120px] rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
               <option value="Planning">Planning</option>
               <option value="In Progress">In Progress</option>
@@ -230,13 +251,13 @@ export default async function ProjectsPage({
               max="100"
               defaultValue="0"
               placeholder="Progress %"
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+              className="h-[120px] rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             />
 
             <select
               name="clientId"
               defaultValue=""
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
               <option value="">No client selected</option>
               {clients.map((client) => (
@@ -248,14 +269,14 @@ export default async function ProjectsPage({
 
             <button
               type="submit"
-              className="rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
+              className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
             >
               Create Project
             </button>
           </form>
         </div>
 
-        <div className="mb-5 flex items-center justify-between gap-4">
+        <div className="mt-6 mb-5 flex items-center justify-between gap-4">
           <p className="text-sm text-[var(--muted-foreground)]">
             Current workspace:{" "}
             <span className="font-semibold text-[var(--foreground)]">
@@ -280,13 +301,13 @@ export default async function ProjectsPage({
             type="text"
             defaultValue={searchQuery}
             placeholder="Search by project, client, budget or team..."
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
           />
 
           <select
             name="status"
             defaultValue={selectedStatus || "All"}
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+            className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
           >
             <option value="All">All Statuses</option>
             <option value="Planning">Planning</option>
@@ -297,14 +318,14 @@ export default async function ProjectsPage({
 
           <button
             type="submit"
-            className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
+            className="h-12 rounded-2xl bg-[var(--primary)] px-4 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
           >
             Apply
           </button>
 
           <a
             href="/dashboard/projects"
-            className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+            className="inline-flex h-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
           >
             Reset
           </a>
@@ -330,7 +351,7 @@ export default async function ProjectsPage({
                       name="name"
                       type="text"
                       defaultValue={project.name}
-                      className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                       required
                     />
 
@@ -338,7 +359,7 @@ export default async function ProjectsPage({
                       name="budget"
                       type="text"
                       defaultValue={project.budget}
-                      className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                       required
                     />
 
@@ -346,7 +367,7 @@ export default async function ProjectsPage({
                       name="dueDate"
                       type="text"
                       defaultValue={project.dueDate}
-                      className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                       required
                     />
 
@@ -354,7 +375,7 @@ export default async function ProjectsPage({
                       name="team"
                       type="text"
                       defaultValue={project.team}
-                      className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                       required
                     />
 
@@ -368,7 +389,7 @@ export default async function ProjectsPage({
                     <select
                       name="status"
                       defaultValue={project.status}
-                      className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                     >
                       <option value="Planning">Planning</option>
                       <option value="In Progress">In Progress</option>
@@ -382,13 +403,13 @@ export default async function ProjectsPage({
                       min="0"
                       max="100"
                       defaultValue={project.progress}
-                      className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                     />
 
                     <select
                       name="clientId"
                       defaultValue={project.clientId ?? ""}
-                      className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                     >
                       <option value="">No client selected</option>
                       {clients.map((client) => (
@@ -400,7 +421,7 @@ export default async function ProjectsPage({
 
                     <button
                       type="submit"
-                      className="rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
+                      className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
                     >
                       Save Project
                     </button>
@@ -411,7 +432,7 @@ export default async function ProjectsPage({
                       )}&status=${encodeURIComponent(
                         selectedStatus || "All"
                       )}`}
-                      className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                      className="inline-flex h-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                     >
                       Cancel
                     </a>
@@ -423,7 +444,7 @@ export default async function ProjectsPage({
             return (
               <article
                 key={project.id}
-                className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]"
+                className="card-hover fade-in-up rounded-[1.55rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
@@ -448,7 +469,7 @@ export default async function ProjectsPage({
                   <ProjectStatusBadge status={project.status} />
                 </div>
 
-                <div className="mt-5">
+                <div className="mt-5 rounded-[1.2rem] border border-[var(--border)] bg-[var(--muted)] p-4">
                   <div className="mb-2 flex items-center justify-between text-sm">
                     <span className="font-medium text-[var(--muted-foreground)]">
                       Progress
@@ -458,9 +479,9 @@ export default async function ProjectsPage({
                     </span>
                   </div>
 
-                  <div className="h-3 overflow-hidden rounded-full bg-[var(--muted)]">
+                  <div className="h-3 overflow-hidden rounded-full bg-white">
                     <div
-                      className="h-full rounded-full bg-[var(--primary)]"
+                      className="h-full rounded-full bg-[linear-gradient(90deg,#8b80ff_0%,#6d5efc_55%,#5546f0_100%)] transition-all"
                       style={{ width: `${project.progress}%` }}
                     />
                   </div>
@@ -496,7 +517,7 @@ export default async function ProjectsPage({
                 </div>
 
                 <div className="mt-5 flex items-center gap-2">
-                  <button className="rounded-xl bg-[var(--foreground)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-black">
+                  <button className="control-hover rounded-xl bg-[var(--foreground)] px-4 py-2 text-sm font-semibold text-white hover:bg-black">
                     View Project
                   </button>
 
@@ -506,7 +527,7 @@ export default async function ProjectsPage({
                     )}&status=${encodeURIComponent(
                       selectedStatus || "All"
                     )}`}
-                    className="rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                    className="control-hover rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
                   >
                     Edit
                   </a>
@@ -515,7 +536,7 @@ export default async function ProjectsPage({
                     <input type="hidden" name="projectId" value={project.id} />
                     <button
                       type="submit"
-                      className="rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                      className="control-hover rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
                     >
                       Delete
                     </button>
@@ -526,9 +547,14 @@ export default async function ProjectsPage({
           })}
 
           {projects.length === 0 && (
-            <div className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--card)] p-8 text-center text-sm text-[var(--muted-foreground)] xl:col-span-2">
-              No projects found for the current filters.
-            </div>
+            <div className="rounded-[1.5rem] border border-dashed border-[var(--border)] bg-[var(--muted)] p-10 text-center text-sm text-[var(--muted-foreground)] xl:col-span-2">
+  <p className="text-base font-semibold text-[var(--foreground)]">
+    No projects found
+  </p>
+  <p className="mt-2">
+    Change your filters or create a new project to populate this space.
+  </p>
+</div>
           )}
         </div>
       </div>

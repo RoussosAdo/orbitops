@@ -15,7 +15,7 @@ function PreferenceRow({
   name: string;
 }) {
   return (
-    <label className="flex items-center justify-between gap-4 rounded-[1.25rem] border border-[var(--border)] bg-white px-4 py-4">
+    <label className="card-hover flex items-center justify-between gap-4 rounded-[1.25rem] border border-[var(--border)] bg-white px-4 py-4">
       <div>
         <p className="text-sm font-semibold text-[var(--foreground)]">{label}</p>
         <p className="mt-1 text-xs leading-6 text-[var(--muted-foreground)]">
@@ -41,7 +41,7 @@ function SummaryCard({
   value: string;
 }) {
   return (
-    <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4">
+    <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
         {label}
       </p>
@@ -60,7 +60,7 @@ function StatusRow({
   enabled: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3">
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 transition hover:bg-white">
       <span className="text-sm font-medium text-[var(--foreground)]">{label}</span>
       <span
         className={`text-sm font-semibold ${
@@ -92,7 +92,7 @@ export default async function SettingsPage() {
           actionLabel="Settings"
         />
 
-        <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-10 text-center shadow-[var(--shadow-sm)]">
+        <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4">
           <p className="text-lg font-semibold text-[var(--foreground)]">
             No settings found
           </p>
@@ -130,7 +130,7 @@ export default async function SettingsPage() {
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.25fr_0.9fr]">
-          <div className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5">
+          <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
               Workspace Preferences
             </p>
@@ -147,7 +147,7 @@ export default async function SettingsPage() {
                   <input
                     name="workspaceName"
                     defaultValue={settings.workspaceName}
-                    className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                    className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 text-sm text-[var(--foreground)] outline-none"
                   />
                 </div>
 
@@ -159,7 +159,7 @@ export default async function SettingsPage() {
                     name="companyEmail"
                     type="email"
                     defaultValue={settings.companyEmail}
-                    className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                    className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 text-sm text-[var(--foreground)] outline-none"
                   />
                 </div>
 
@@ -170,7 +170,7 @@ export default async function SettingsPage() {
                   <select
                     name="timezone"
                     defaultValue={settings.timezone}
-                    className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                    className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 text-sm text-[var(--foreground)] outline-none"
                   >
                     <option value="Europe/Athens">Europe/Athens</option>
                     <option value="Europe/London">Europe/London</option>
@@ -186,7 +186,7 @@ export default async function SettingsPage() {
                   <select
                     name="brandColor"
                     defaultValue={settings.brandColor}
-                    className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                    className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 text-sm text-[var(--foreground)] outline-none"
                   >
                     <option value="Neo Mint">Neo Mint</option>
                     <option value="Ocean Blue">Ocean Blue</option>
@@ -196,7 +196,7 @@ export default async function SettingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-5">
+              <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
                   Notifications
                 </p>
@@ -238,7 +238,7 @@ export default async function SettingsPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+            <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
                 Workspace Summary
               </p>
@@ -253,7 +253,7 @@ export default async function SettingsPage() {
               </div>
             </div>
 
-            <div className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+            <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
                 Status
               </p>

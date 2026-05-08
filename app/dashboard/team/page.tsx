@@ -19,7 +19,7 @@ function TeamStatCard({
   accent?: string;
 }) {
   return (
-    <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+    <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
       <p className="text-sm font-medium text-[var(--muted-foreground)]">
         {label}
       </p>
@@ -136,7 +136,11 @@ export default async function TeamPage() {
               Invite New Member
             </h2>
             <p className="mt-3 text-sm leading-7 text-[var(--muted-foreground)]">
-              Add teammates to <span className="font-semibold text-[var(--foreground)]">{workspace.name}</span> and assign the right role before they join.
+              Add teammates to{" "}
+              <span className="font-semibold text-[var(--foreground)]">
+                {workspace.name}
+              </span>{" "}
+              and assign the right role before they join.
             </p>
           </div>
 
@@ -157,14 +161,14 @@ export default async function TeamPage() {
             name="email"
             type="email"
             placeholder="Invite by email"
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
             required
           />
 
           <select
             name="role"
             defaultValue="MEMBER"
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-medium text-[var(--foreground)] outline-none"
+            className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-medium text-[var(--foreground)] outline-none"
           >
             <option value="OWNER">Owner</option>
             <option value="ADMIN">Admin</option>
@@ -173,7 +177,7 @@ export default async function TeamPage() {
 
           <button
             type="submit"
-            className="rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
+            className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
           >
             Send Invite
           </button>
@@ -229,11 +233,11 @@ export default async function TeamPage() {
                   return (
                     <tr
                       key={member.id}
-                      className={
+                      className={`data-row ${
                         index !== members.length - 1
                           ? "border-t border-[var(--border)]"
                           : ""
-                      }
+                      }`}
                     >
                       <td className="px-5 py-4">
                         <div>
@@ -339,7 +343,7 @@ export default async function TeamPage() {
                 pendingInvites.map((invite) => (
                   <div
                     key={invite.id}
-                    className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4"
+                    className="card-hover rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
@@ -374,9 +378,14 @@ export default async function TeamPage() {
                   </div>
                 ))
               ) : (
-                <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] px-4 py-10 text-center text-sm text-[var(--muted-foreground)]">
-                  No pending invitations for this workspace.
-                </div>
+                <div className="rounded-[1.25rem] border border-dashed border-[var(--border)] bg-[var(--muted)] px-4 py-12 text-center text-sm text-[var(--muted-foreground)]">
+  <p className="text-base font-semibold text-[var(--foreground)]">
+    No pending invitations
+  </p>
+  <p className="mt-2">
+    New team invites will appear here until they are accepted.
+  </p>
+</div>
               )}
             </div>
           </div>

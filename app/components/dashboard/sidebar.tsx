@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -44,8 +45,14 @@ export default function Sidebar({
       <div className="px-5 pb-5 pt-6">
         <div className="rounded-[1.6rem] border border-[var(--border)] bg-white px-4 py-4 shadow-[var(--shadow-xs)]">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--gradient-primary)] text-base font-bold text-white shadow-[var(--shadow-sm)]">
-              O
+            <div className="relative h-12 w-12 overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-[var(--shadow-sm)]">
+              <Image
+                src="/orbitops-logo.png"
+                alt="OrbitOps logo"
+                fill
+                className="object-contain p-1.5"
+                priority
+              />
             </div>
 
             <div className="min-w-0">

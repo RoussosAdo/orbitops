@@ -38,93 +38,164 @@ export async function sendInviteEmail({
   }
 
   const from = process.env.EMAIL_FROM || "OrbitOps <onboarding@resend.dev>";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const logoUrl = `${appUrl}/orbitops-logo.png`;
 
-  const subject = `You're invited to join ${workspaceName}`;
+  const subject = `You're invited to join ${workspaceName} on OrbitOps`;
 
-  const invitedByText = invitedByName
-    ? `<p><strong>${invitedByName}</strong> invited you to join <strong>${workspaceName}</strong>.</p>`
-    : `<p>You were invited to join <strong>${workspaceName}</strong>.</p>`;
+  const inviterLine = invitedByName
+    ? `${invitedByName} invited you to join ${workspaceName}.`
+    : `You were invited to join ${workspaceName}.`;
 
   const html = `
-  <div style="background:#f6f9fc;padding:40px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-    <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:16px;padding:32px 28px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
+  <div style="margin:0;padding:32px 16px;background:#f4f6fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#0f172a;">
+    <div style="max-width:640px;margin:0 auto;">
 
-      <!-- Logo / Brand -->
-      <div style="text-align:center;margin-bottom:24px;">
-        <h1 style="margin:0;font-size:14px;letter-spacing:4px;color:#10b981;font-weight:700;">
-          ORBITOPS
-        </h1>
+      <div style="background:#ffffff;border:1px solid #e7eaf3;border-radius:28px;overflow:hidden;box-shadow:0 18px 40px rgba(15,23,42,0.08);">
+        
+        <div style="padding:32px;background:linear-gradient(180deg,#ffffff 0%,#fbfbff 100%);border-bottom:1px solid #e7eaf3;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+            <tr>
+              <td style="vertical-align:middle;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td style="vertical-align:middle;">
+                      <div style="width:56px;height:56px;border-radius:18px;overflow:hidden;border:1px solid #e7eaf3;background:#ffffff;box-shadow:0 1px 2px rgba(15,23,42,0.04);">
+                        <img
+                          src="${logoUrl}"
+                          alt="OrbitOps"
+                          width="56"
+                          height="56"
+                          style="display:block;width:56px;height:56px;object-fit:contain;"
+                        />
+                      </div>
+                    </td>
+                    <td style="width:14px;"></td>
+                    <td style="vertical-align:middle;">
+                      <div style="font-size:20px;line-height:1.2;font-weight:700;color:#0f172a;">
+                        OrbitOps
+                      </div>
+                      <div style="margin-top:4px;font-size:13px;line-height:1.5;color:#667085;">
+                        Workspace platform
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+              <td style="text-align:right;vertical-align:top;">
+                <span style="display:inline-block;padding:8px 12px;border:1px solid #e7eaf3;background:#f8faff;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#667085;">
+                  Invitation
+                </span>
+              </td>
+            </tr>
+          </table>
+
+          <div style="margin-top:28px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:#6d5efc;">
+              Workspace Invitation
+            </div>
+
+            <h1 style="margin:14px 0 0;font-size:42px;line-height:1.02;font-weight:700;letter-spacing:-0.05em;color:#0f172a;">
+              Join your team on OrbitOps
+            </h1>
+
+            <p style="margin:18px 0 0;font-size:15px;line-height:1.8;color:#667085;">
+              ${inviterLine}
+            </p>
+          </div>
+        </div>
+
+        <div style="padding:32px;">
+          <div style="border:1px solid #e7eaf3;background:#f8faff;border-radius:22px;padding:20px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#667085;">
+              Workspace
+            </div>
+            <div style="margin-top:10px;font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-0.04em;color:#0f172a;">
+              ${workspaceName}
+            </div>
+            <div style="margin-top:8px;font-size:14px;line-height:1.7;color:#667085;">
+              Shared projects, tasks, billing and team collaboration in one place.
+            </div>
+          </div>
+
+          <p style="margin:24px 0 0;font-size:15px;line-height:1.85;color:#667085;">
+            Accept this invitation to access your workspace and start collaborating securely with your team inside OrbitOps.
+          </p>
+
+          <div style="margin-top:28px;">
+            <a
+              href="${inviteLink}"
+              style="display:inline-flex;align-items:center;justify-content:center;height:50px;padding:0 24px;border-radius:16px;background:#0f172a;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;box-shadow:0 1px 2px rgba(15,23,42,0.04);"
+            >
+              Accept invitation
+            </a>
+          </div>
+
+          <div style="margin-top:28px;border:1px solid #e7eaf3;background:#ffffff;border-radius:20px;padding:18px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#667085;">
+              Access details
+            </div>
+
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:12px;">
+              <tr>
+                <td style="padding:6px 0;font-size:14px;line-height:1.6;color:#667085;">
+                  Invited email
+                </td>
+                <td style="padding:6px 0;font-size:14px;line-height:1.6;font-weight:600;color:#0f172a;text-align:right;">
+                  ${to}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:6px 0;font-size:14px;line-height:1.6;color:#667085;">
+                  Access
+                </td>
+                <td style="padding:6px 0;font-size:14px;line-height:1.6;font-weight:600;color:#0f172a;text-align:right;">
+                  Workspace invitation
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-top:24px;border:1px solid #e7eaf3;background:#f8faff;border-radius:20px;padding:18px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#667085;">
+              Fallback link
+            </div>
+            <p style="margin:10px 0 0;font-size:13px;line-height:1.8;color:#667085;">
+              If the button does not work, copy and paste this link into your browser:
+            </p>
+            <p style="margin:10px 0 0;word-break:break-all;font-size:13px;line-height:1.8;color:#5546f0;">
+              ${inviteLink}
+            </p>
+          </div>
+
+          <p style="margin:24px 0 0;font-size:12px;line-height:1.7;color:#98a2b3;">
+            This invitation can only be accepted by the email address it was sent to. If you didn’t expect this invite, you can safely ignore this email.
+          </p>
+        </div>
       </div>
 
-      <!-- Title -->
-      <h2 style="margin:0 0 16px 0;font-size:22px;color:#0f172a;text-align:center;">
-        You're invited 🚀
-      </h2>
-
-      <!-- Message -->
-      <p style="margin:0 0 16px 0;color:#475569;font-size:15px;text-align:center;">
-        ${
-          invitedByName
-            ? `<strong style="color:#0f172a;">${invitedByName}</strong> invited you to join`
-            : `You've been invited to join`
-        }
+      <p style="margin:16px 0 0;text-align:center;font-size:12px;line-height:1.6;color:#98a2b3;">
+        © ${new Date().getFullYear()} OrbitOps. All rights reserved.
       </p>
-
-      <p style="margin:0 0 24px 0;color:#0f172a;font-size:18px;font-weight:600;text-align:center;">
-        ${workspaceName}
-      </p>
-
-      <!-- Button -->
-      <div style="text-align:center;margin:30px 0;">
-        <a 
-          href="${inviteLink}"
-          style="
-            display:inline-block;
-            padding:14px 26px;
-            background:#10b981;
-            color:#ffffff;
-            text-decoration:none;
-            border-radius:10px;
-            font-weight:600;
-            font-size:14px;
-            box-shadow:0 6px 14px rgba(16,185,129,0.25);
-          "
-        >
-          Accept Invitation
-        </a>
-      </div>
-
-      <!-- Divider -->
-      <div style="height:1px;background:#e2e8f0;margin:24px 0;"></div>
-
-      <!-- Fallback link -->
-      <p style="margin:0 0 8px 0;font-size:13px;color:#64748b;text-align:center;">
-        Or copy and paste this link:
-      </p>
-
-      <p style="margin:0;font-size:12px;color:#94a3b8;text-align:center;word-break:break-all;">
-        ${inviteLink}
-      </p>
-
-      <!-- Footer -->
-      <p style="margin-top:24px;font-size:12px;color:#94a3b8;text-align:center;">
-        If you didn’t expect this invite, you can safely ignore this email.
-      </p>
-
     </div>
-
-    <!-- Bottom -->
-    <p style="text-align:center;margin-top:16px;font-size:11px;color:#94a3b8;">
-      © ${new Date().getFullYear()} OrbitOps. All rights reserved.
-    </p>
   </div>
-`;
+  `;
+
+  const text = `${inviterLine}
+
+Workspace: ${workspaceName}
+
+Accept invitation:
+${inviteLink}
+
+This invitation can only be accepted by the email address it was sent to. If you didn’t expect this invite, you can safely ignore this email.`;
 
   const { data, error } = await resend.emails.send({
     from,
     to: [to],
     subject,
     html,
+    text,
   });
 
   if (error) {

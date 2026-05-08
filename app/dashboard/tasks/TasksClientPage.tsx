@@ -51,6 +51,29 @@ function PriorityBadge({ priority }: { priority: string }) {
   );
 }
 
+function SummaryCard({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: string;
+}) {
+  return (
+    <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
+      <p className="text-sm font-medium text-[var(--muted-foreground)]">{label}</p>
+      <p
+        className={`mt-3 text-3xl font-semibold tracking-[-0.04em] ${
+          accent || "text-[var(--foreground)]"
+        }`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
 export default function TasksClientPage({
   tasks: initialTasks,
   projects,
@@ -114,43 +137,39 @@ export default function TasksClientPage({
       />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">Total Tasks</p>
-          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
-            {tasks.length}
-          </p>
-        </div>
-
-        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">Completed</p>
-          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-emerald-600">
-            {completedCount}
-          </p>
-        </div>
-
-        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">High Priority</p>
-          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-red-500">
-            {highPriorityCount}
-          </p>
-        </div>
+        <SummaryCard label="Total Tasks" value={String(tasks.length)} />
+        <SummaryCard
+          label="Completed"
+          value={String(completedCount)}
+          accent="text-emerald-600"
+        />
+        <SummaryCard
+          label="High Priority"
+          value={String(highPriorityCount)}
+          accent="text-red-500"
+        />
       </div>
 
       <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
-        <div className="mb-6 rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-            Create task
-          </p>
+        <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--muted)] p-5">
+          <div className="mb-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+              Create Task
+            </p>
+            <h2 className="mt-2 text-lg font-semibold text-[var(--foreground)]">
+              Add a new task item
+            </h2>
+          </div>
 
           <form
             action={createTask}
-            className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5"
+            className="grid gap-3 md:grid-cols-2 xl:grid-cols-5"
           >
             <input
               name="title"
               type="text"
               placeholder="Task title"
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
@@ -158,14 +177,14 @@ export default function TasksClientPage({
               name="dueDate"
               type="text"
               placeholder="Due date"
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
             <select
               name="priority"
               defaultValue="Medium"
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
               <option value="High">High</option>
               <option value="Medium">Medium</option>
@@ -175,7 +194,7 @@ export default function TasksClientPage({
             <select
               name="projectId"
               defaultValue=""
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
               <option value="">No project selected</option>
               {projects.map((project) => (
@@ -187,14 +206,14 @@ export default function TasksClientPage({
 
             <button
               type="submit"
-              className="rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
+              className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
             >
               Create Task
             </button>
           </form>
         </div>
 
-        <div className="mb-5">
+        <div className="mt-6 mb-5">
           <p className="text-sm text-[var(--muted-foreground)]">
             Current workspace:{" "}
             <span className="font-semibold text-[var(--foreground)]">
@@ -204,22 +223,22 @@ export default function TasksClientPage({
         </div>
 
         <div className="mb-6 rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-4">
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[1.2fr_auto_auto_auto_auto_auto]">
+          <div className="grid gap-3 xl:grid-cols-[1.2fr_auto_auto_auto_auto_auto]">
             <input
               type="text"
               placeholder="Search tasks..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
             />
 
             <button
               type="button"
               onClick={() => setActiveTab("all")}
-              className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+              className={`h-12 rounded-2xl px-4 text-sm font-semibold transition ${
                 activeTab === "all"
                   ? "bg-[var(--primary)] text-white"
-                  : "border border-[var(--border)] bg-white text-[var(--foreground)]"
+                  : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:bg-[var(--muted)]"
               }`}
             >
               All
@@ -228,10 +247,10 @@ export default function TasksClientPage({
             <button
               type="button"
               onClick={() => setActiveTab("active")}
-              className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+              className={`h-12 rounded-2xl px-4 text-sm font-semibold transition ${
                 activeTab === "active"
                   ? "bg-[var(--primary)] text-white"
-                  : "border border-[var(--border)] bg-white text-[var(--foreground)]"
+                  : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:bg-[var(--muted)]"
               }`}
             >
               Active
@@ -240,10 +259,10 @@ export default function TasksClientPage({
             <button
               type="button"
               onClick={() => setActiveTab("completed")}
-              className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+              className={`h-12 rounded-2xl px-4 text-sm font-semibold transition ${
                 activeTab === "completed"
                   ? "bg-[var(--primary)] text-white"
-                  : "border border-[var(--border)] bg-white text-[var(--foreground)]"
+                  : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:bg-[var(--muted)]"
               }`}
             >
               Completed
@@ -254,7 +273,7 @@ export default function TasksClientPage({
               onChange={(e) =>
                 setPriorityFilter(e.target.value as PriorityFilter)
               }
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
               <option value="all">All Priorities</option>
               <option value="High">High</option>
@@ -265,7 +284,7 @@ export default function TasksClientPage({
             <select
               value={projectFilter}
               onChange={(e) => setProjectFilter(e.target.value)}
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
               <option value="all">All Projects</option>
               <option value="none">No Project Linked</option>
@@ -314,7 +333,7 @@ export default function TasksClientPage({
                         name="title"
                         type="text"
                         defaultValue={task.title}
-                        className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                        className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                         required
                       />
 
@@ -322,14 +341,14 @@ export default function TasksClientPage({
                         name="dueDate"
                         type="text"
                         defaultValue={task.dueDate}
-                        className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                        className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                         required
                       />
 
                       <select
                         name="priority"
                         defaultValue={task.priority}
-                        className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                        className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                       >
                         <option value="High">High</option>
                         <option value="Medium">Medium</option>
@@ -339,7 +358,7 @@ export default function TasksClientPage({
                       <select
                         name="projectId"
                         defaultValue={task.projectId ?? ""}
-                        className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                        className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                       >
                         <option value="">No project selected</option>
                         {projects.map((project) => (
@@ -352,7 +371,7 @@ export default function TasksClientPage({
                       <div className="flex items-center gap-2">
                         <button
                           type="submit"
-                          className="rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
+                          className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
                         >
                           Save
                         </button>
@@ -360,7 +379,7 @@ export default function TasksClientPage({
                         <button
                           type="button"
                           onClick={() => setEditingId(null)}
-                          className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                          className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                         >
                           Cancel
                         </button>
@@ -373,17 +392,17 @@ export default function TasksClientPage({
               return (
                 <div
                   key={task.id}
-                  className={`flex items-center justify-between rounded-2xl border border-[var(--border)] p-4 transition ${
+                  className={`fade-in-up flex items-center justify-between rounded-2xl border border-[var(--border)] p-4 ${
                     task.completed
                       ? "bg-[var(--muted)] opacity-80"
-                      : "bg-white hover:shadow-[var(--shadow-xs)]"
+                      :"bg-white hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]"
                   }`}
                 >
                   <div className="flex items-center gap-4">
                     <button
                       type="button"
                       onClick={() => toggleTask(task.id, task.completed)}
-                      className={`flex h-6 w-6 items-center justify-center rounded-md border transition ${
+                      className={`flex h-6 w-6 items-center justify-center rounded-lg border text-xs font-bold transition ${
                         task.completed
                           ? "border-[var(--primary)] bg-[var(--primary)] text-white"
                           : "border-[var(--border)] bg-white"
@@ -422,7 +441,7 @@ export default function TasksClientPage({
                     <button
                       type="button"
                       onClick={() => setEditingId(task.id)}
-                      className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                      className="control-hover rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
                     >
                       Edit
                     </button>
@@ -431,7 +450,7 @@ export default function TasksClientPage({
                       <input type="hidden" name="taskId" value={task.id} />
                       <button
                         type="submit"
-                        className="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                        className="control-hover rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
                       >
                         Delete
                       </button>
@@ -441,14 +460,14 @@ export default function TasksClientPage({
               );
             })
           ) : (
-            <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--muted)] px-6 py-10 text-center">
-              <p className="text-base font-semibold text-[var(--foreground)]">
-                No tasks found
-              </p>
-              <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-                Try changing your search or filter selection.
-              </p>
-            </div>
+            <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--muted)] px-6 py-12 text-center">
+  <p className="text-base font-semibold text-[var(--foreground)]">
+    No tasks found
+  </p>
+  <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+    Try changing your search, project filter or priority selection.
+  </p>
+</div>
           )}
         </div>
       </div>

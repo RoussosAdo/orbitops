@@ -10,7 +10,9 @@ function InvoiceStatusBadge({ status }: { status: string }) {
       : "bg-amber-100 text-amber-700";
 
   return (
-    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}>
+    <span
+      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
+    >
       {status}
     </span>
   );
@@ -26,7 +28,7 @@ function UsageCard({
   sublabel?: string;
 }) {
   return (
-    <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+    <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
       <p className="text-sm font-medium text-[var(--muted-foreground)]">{label}</p>
       <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
         {value}
@@ -178,7 +180,7 @@ export default async function BillingPage() {
           <div className="space-y-6">
             <div className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--muted)] p-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-                Current plan
+                Current Plan
               </p>
 
               <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -279,11 +281,11 @@ export default async function BillingPage() {
                     {invoices.map((invoice, index) => (
                       <tr
                         key={invoice.id}
-                        className={
+                        className={`data-row ${
                           index !== invoices.length - 1
                             ? "border-t border-[var(--border)]"
                             : ""
-                        }
+                        }`}
                       >
                         <td className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
                           {invoice.invoiceNo}
@@ -305,13 +307,20 @@ export default async function BillingPage() {
 
                     {invoices.length === 0 && (
                       <tr>
-                        <td
-                          colSpan={4}
-                          className="px-5 py-10 text-center text-sm text-[var(--muted-foreground)]"
-                        >
-                          No invoices found in this workspace.
-                        </td>
-                      </tr>
+  <td
+    colSpan={4}
+    className="px-5 py-12 text-center"
+  >
+    <div className="mx-auto max-w-sm">
+      <p className="text-base font-semibold text-[var(--foreground)]">
+        No invoices yet
+      </p>
+      <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+        Once billing activity starts, your invoice history will appear here.
+      </p>
+    </div>
+  </td>
+</tr>
                     )}
                   </tbody>
                 </table>
@@ -348,7 +357,7 @@ export default async function BillingPage() {
                 <select
                   name="planName"
                   defaultValue={profile.planName}
-                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                  className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 text-sm text-[var(--foreground)] outline-none"
                 >
                   <option value="Free">Free</option>
                   <option value="Starter">Starter</option>
@@ -359,7 +368,7 @@ export default async function BillingPage() {
                 <select
                   name="billingCycle"
                   defaultValue={profile.billingCycle}
-                  className="w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                  className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 text-sm text-[var(--foreground)] outline-none"
                 >
                   <option value="Monthly">Monthly</option>
                   <option value="Yearly">Yearly</option>
@@ -367,7 +376,7 @@ export default async function BillingPage() {
 
                 <button
                   type="submit"
-                  className="w-full rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
+                  className="h-12 w-full rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
                 >
                   Save Billing Changes
                 </button>

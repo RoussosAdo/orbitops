@@ -74,6 +74,20 @@ button {
   cursor: pointer;
 }
 
+input,
+select,
+textarea,
+button,
+a {
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    opacity 180ms ease;
+}
+
 input:focus,
 select:focus,
 textarea:focus {
@@ -97,15 +111,53 @@ textarea:focus {
   background: var(--muted);
 }
 
-.control-hover {
-  transition:
-    border-color 180ms ease,
-    background-color 180ms ease,
-    color 180ms ease,
-    transform 180ms ease,
-    box-shadow 180ms ease;
-}
-
 .control-hover:hover {
   transform: translateY(-1px);
+}
+
+.card-hover {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease,
+    background-color 220ms ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+
+.soft-ring {
+  box-shadow: 0 0 0 0 rgba(109, 94, 252, 0);
+}
+
+.soft-ring:hover {
+  box-shadow: 0 0 0 4px rgba(109, 94, 252, 0.08);
+}
+
+.data-row {
+  transition:
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.data-row:hover {
+  background-color: rgba(248, 250, 255, 0.9);
+}
+
+.fade-in-up {
+  animation: fadeInUp 380ms ease both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

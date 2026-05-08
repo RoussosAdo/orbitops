@@ -24,9 +24,34 @@ function StatusBadge({ status }: { status: string }) {
       : "bg-slate-100 text-slate-600";
 
   return (
-    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}>
+    <span
+      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
+    >
       {status}
     </span>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: string;
+}) {
+  return (
+    <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
+      <p className="text-sm font-medium text-[var(--muted-foreground)]">{label}</p>
+      <p
+        className={`mt-3 text-3xl font-semibold tracking-[-0.04em] ${
+          accent || "text-[var(--foreground)]"
+        }`}
+      >
+        {value}
+      </p>
+    </div>
   );
 }
 
@@ -88,43 +113,39 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
       />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">Total Clients</p>
-          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
-            {clients.length}
-          </p>
-        </div>
-
-        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">Active Accounts</p>
-          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-emerald-600">
-            {activeCount}
-          </p>
-        </div>
-
-        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
-          <p className="text-sm font-medium text-[var(--muted-foreground)]">Pending / Inactive</p>
-          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--primary)]">
-            {pendingCount + inactiveCount}
-          </p>
-        </div>
+        <SummaryCard label="Total Clients" value={String(clients.length)} />
+        <SummaryCard
+          label="Active Accounts"
+          value={String(activeCount)}
+          accent="text-emerald-600"
+        />
+        <SummaryCard
+          label="Pending / Inactive"
+          value={String(pendingCount + inactiveCount)}
+          accent="text-[var(--primary)]"
+        />
       </div>
 
       <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
-        <div className="mb-6 rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-            Create client
-          </p>
+        <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--muted)] p-5">
+          <div className="mb-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+              Create Client
+            </p>
+            <h2 className="mt-2 text-lg font-semibold text-[var(--foreground)]">
+              Add a new client account
+            </h2>
+          </div>
 
           <form
             action={createClient}
-            className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5"
+            className="grid gap-3 md:grid-cols-2 xl:grid-cols-5"
           >
             <input
               name="name"
               type="text"
               placeholder="Client name"
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
@@ -132,7 +153,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
               name="company"
               type="text"
               placeholder="Company"
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
@@ -140,14 +161,14 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
               name="email"
               type="email"
               placeholder="Email"
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
             <select
               name="status"
               defaultValue="Active"
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
               <option value="Active">Active</option>
               <option value="Pending">Pending</option>
@@ -156,14 +177,14 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
 
             <button
               type="submit"
-              className="rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
+              className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
             >
               Create Client
             </button>
           </form>
         </div>
 
-        <div className="mb-5 flex items-center justify-between gap-4">
+        <div className="mt-6 mb-5 flex items-center justify-between gap-4">
           <p className="text-sm text-[var(--muted-foreground)]">
             Current workspace:{" "}
             <span className="font-semibold text-[var(--foreground)]">
@@ -188,13 +209,13 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             type="text"
             defaultValue={searchQuery}
             placeholder="Search by client, company or email..."
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
           />
 
           <select
             name="status"
             defaultValue={selectedStatus || "All"}
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+            className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
           >
             <option value="All">All Statuses</option>
             <option value="Active">Active</option>
@@ -204,14 +225,14 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
 
           <button
             type="submit"
-            className="rounded-2xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
+            className="h-12 rounded-2xl bg-[var(--primary)] px-4 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
           >
             Apply
           </button>
 
           <a
             href="/dashboard/clients"
-            className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+            className="inline-flex h-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
           >
             Reset
           </a>
@@ -264,7 +285,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                             name="name"
                             type="text"
                             defaultValue={client.name}
-                            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                            className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                             required
                           />
 
@@ -272,7 +293,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                             name="company"
                             type="text"
                             defaultValue={client.company}
-                            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                            className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                             required
                           />
 
@@ -280,14 +301,14 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                             name="email"
                             type="email"
                             defaultValue={client.email}
-                            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                            className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                             required
                           />
 
                           <select
                             name="status"
                             defaultValue={client.status}
-                            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none"
+                            className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                           >
                             <option value="Active">Active</option>
                             <option value="Pending">Pending</option>
@@ -296,7 +317,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
 
                           <button
                             type="submit"
-                            className="rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-black"
+                            className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
                           >
                             Save
                           </button>
@@ -307,7 +328,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                             )}&status=${encodeURIComponent(
                               selectedStatus || "All"
                             )}`}
-                            className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                            className="inline-flex h-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                           >
                             Cancel
                           </a>
@@ -320,18 +341,16 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                 return (
                   <tr
                     key={client.id}
-                    className={
+                    className={`data-row ${
                       index !== clients.length - 1
                         ? "border-t border-[var(--border)]"
                         : ""
-                    }
+                    }`}
                   >
                     <td className="px-5 py-4">
-                      <div>
-                        <p className="text-sm font-semibold text-[var(--foreground)]">
-                          {client.name}
-                        </p>
-                      </div>
+                      <p className="text-sm font-semibold text-[var(--foreground)]">
+                        {client.name}
+                      </p>
                     </td>
 
                     <td className="px-5 py-4 text-sm text-[var(--muted-foreground)]">
@@ -348,7 +367,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
 
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
-                        <button className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]">
+                        <button className="control-hover rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]">
                           View
                         </button>
 
@@ -358,7 +377,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                           )}&status=${encodeURIComponent(
                             selectedStatus || "All"
                           )}`}
-                          className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                          className="control-hover rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
                         >
                           Edit
                         </a>
@@ -367,7 +386,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                           <input type="hidden" name="clientId" value={client.id} />
                           <button
                             type="submit"
-                            className="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                            className="control-hover rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
                           >
                             Delete
                           </button>
@@ -380,13 +399,20 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
 
               {clients.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="px-5 py-10 text-center text-sm text-[var(--muted-foreground)]"
-                  >
-                    No clients found for the current filters.
-                  </td>
-                </tr>
+  <td
+    colSpan={5}
+    className="px-5 py-12 text-center"
+  >
+    <div className="mx-auto max-w-sm">
+      <p className="text-base font-semibold text-[var(--foreground)]">
+        No clients found
+      </p>
+      <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+        Try adjusting your search or status filters to see more results.
+      </p>
+    </div>
+  </td>
+</tr>
               )}
             </tbody>
           </table>
