@@ -1,11 +1,11 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
-import {
-  removeMember,
-  revokeInvitation,
-  updateMemberRole,
-} from "@/app/actions/teamActions";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
+import TeamRoleForm from "@/app/components/dashboard/team/team-role-form";
+import RemoveMemberForm from "@/app/components/dashboard/team/revoke-initation-form";
+import RevokeInvitationForm from "@/app/components/dashboard/team/revoke-initation-form";
 
 function TeamStatCard({
   label,
@@ -61,8 +61,9 @@ function StatusBadge({ status }: { status: string }) {
 
 export default async function TeamPage() {
   const workspace = await requireCurrentWorkspace();
+  const session = await getServerSession(authOptions);
 
-  const [members, invitations] = await Promise.all([
+  const [members, invitations, actorMembership] = await Promise.all([
     prisma.membership.findMany({
       where: {
         workspaceId: workspace.id,
@@ -78,7 +79,22 @@ export default async function TeamPage() {
       },
       orderBy: { createdAt: "desc" },
     }),
+    session?.user?.email
+      ? prisma.membership.findFirst({
+          where: {
+            workspaceId: workspace.id,
+            status: "ACTIVE",
+            user: {
+              email: session.user.email.toLowerCase(),
+            },
+          },
+        })
+      : null,
   ]);
+
+  const actorRole = actorMembership?.role ?? "MEMBER";
+  const canManageTeam = actorRole === "OWNER" || actorRole === "ADMIN";
+  const isOwner = actorRole === "OWNER";
 
   const activeMembers = members.filter((member) => member.status === "ACTIVE");
   const pendingInvites = invitations.filter(
@@ -152,36 +168,42 @@ export default async function TeamPage() {
           </div>
         </div>
 
-        <form
-          action="/api/team/invite"
-          method="POST"
-          className="mt-6 grid gap-3 rounded-[1.5rem] border border-[var(--border)] bg-[var(--muted)] p-4 md:grid-cols-[1.4fr_220px_180px]"
-        >
-          <input
-            name="email"
-            type="email"
-            placeholder="Invite by email"
-            className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
-            required
-          />
-
-          <select
-            name="role"
-            defaultValue="MEMBER"
-            className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-medium text-[var(--foreground)] outline-none"
+        {canManageTeam ? (
+          <form
+            action="/api/team/invite"
+            method="POST"
+            className="mt-6 grid gap-3 rounded-[1.5rem] border border-[var(--border)] bg-[var(--muted)] p-4 md:grid-cols-[1.4fr_220px_180px]"
           >
-            <option value="OWNER">Owner</option>
-            <option value="ADMIN">Admin</option>
-            <option value="MEMBER">Member</option>
-          </select>
+            <input
+              name="email"
+              type="email"
+              placeholder="Invite by email"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              required
+            />
 
-          <button
-            type="submit"
-            className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
-          >
-            Send Invite
-          </button>
-        </form>
+            <select
+              name="role"
+              defaultValue="MEMBER"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-medium text-[var(--foreground)] outline-none"
+            >
+              {isOwner && <option value="OWNER">Owner</option>}
+              <option value="ADMIN">Admin</option>
+              <option value="MEMBER">Member</option>
+            </select>
+
+            <button
+              type="submit"
+              className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
+            >
+              Send Invite
+            </button>
+          </form>
+        ) : (
+          <div className="mt-6 rounded-[1.5rem] border border-dashed border-[var(--border)] bg-[var(--muted)] px-5 py-4 text-sm text-[var(--muted-foreground)]">
+            You have view access only. Only owners and admins can invite members or manage team permissions.
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.95fr]">
@@ -230,6 +252,21 @@ export default async function TeamPage() {
                     member.status === "ACTIVE" &&
                     ownersCount <= 1;
 
+                  const isSelf = actorMembership?.id === member.id;
+                  const targetIsOwner = member.role === "OWNER";
+
+                  const canEditRole =
+                    canManageTeam &&
+                    !isLastOwner &&
+                    !isSelf &&
+                    !(actorRole === "ADMIN" && targetIsOwner);
+
+                  const canRemoveMember =
+                    canManageTeam &&
+                    !isLastOwner &&
+                    !isSelf &&
+                    !(actorRole === "ADMIN" && targetIsOwner);
+
                   return (
                     <tr
                       key={member.id}
@@ -251,31 +288,15 @@ export default async function TeamPage() {
                       </td>
 
                       <td className="px-5 py-4">
-                        <form action={updateMemberRole} className="flex items-center gap-2">
-                          <input
-                            type="hidden"
-                            name="membershipId"
-                            value={member.id}
+                        {canManageTeam ? (
+                          <TeamRoleForm
+                            membershipId={member.id}
+                            defaultRole={member.role}
+                            disabled={!canEditRole}
                           />
-                          <select
-                            name="role"
-                            defaultValue={member.role}
-                            disabled={isLastOwner}
-                            className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] outline-none disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            <option value="OWNER">OWNER</option>
-                            <option value="ADMIN">ADMIN</option>
-                            <option value="MEMBER">MEMBER</option>
-                          </select>
-
-                          <button
-                            type="submit"
-                            disabled={isLastOwner}
-                            className="rounded-xl border border-[var(--border)] bg-[var(--muted)] px-3 py-2 text-xs font-semibold text-[var(--foreground)] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            Save
-                          </button>
-                        </form>
+                        ) : (
+                          <RoleBadge role={member.role} />
+                        )}
                       </td>
 
                       <td className="px-5 py-4">
@@ -287,20 +308,16 @@ export default async function TeamPage() {
                       </td>
 
                       <td className="px-5 py-4">
-                        <form action={removeMember}>
-                          <input
-                            type="hidden"
-                            name="membershipId"
-                            value={member.id}
+                        {canManageTeam ? (
+                          <RemoveMemberForm
+                            membershipId={member.id}
+                            disabled={!canRemoveMember}
                           />
-                          <button
-                            type="submit"
-                            disabled={isLastOwner}
-                            className="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            Remove
-                          </button>
-                        </form>
+                        ) : (
+                          <span className="text-xs font-medium text-[var(--muted-foreground)]">
+                            No access
+                          </span>
+                        )}
                       </td>
                     </tr>
                   );
@@ -340,52 +357,52 @@ export default async function TeamPage() {
 
             <div className="mt-5 space-y-4">
               {pendingInvites.length > 0 ? (
-                pendingInvites.map((invite) => (
-                  <div
-                    key={invite.id}
-                    className="card-hover rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-[var(--foreground)]">
-                          {invite.email}
-                        </p>
-                        <p className="mt-2 text-xs text-[var(--muted-foreground)]">
-                          Expires: {new Date(invite.expiresAt).toLocaleDateString()}
-                        </p>
+                pendingInvites.map((invite) => {
+                  const canRevoke =
+                    canManageTeam &&
+                    !(actorRole === "ADMIN" && invite.role === "OWNER");
+
+                  return (
+                    <div
+                      key={invite.id}
+                      className="card-hover rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-[var(--foreground)]">
+                            {invite.email}
+                          </p>
+                          <p className="mt-2 text-xs text-[var(--muted-foreground)]">
+                            Expires: {new Date(invite.expiresAt).toLocaleDateString()}
+                          </p>
+                        </div>
+
+                        <StatusBadge status={invite.status} />
                       </div>
 
-                      <StatusBadge status={invite.status} />
-                    </div>
+                      <div className="mt-4 flex items-center justify-between gap-3">
+                        <RoleBadge role={invite.role} />
 
-                    <div className="mt-4 flex items-center justify-between gap-3">
-                      <RoleBadge role={invite.role} />
-
-                      <form action={revokeInvitation}>
-                        <input
-                          type="hidden"
-                          name="invitationId"
-                          value={invite.id}
-                        />
-                        <button
-                          type="submit"
-                          className="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
-                        >
-                          Revoke
-                        </button>
-                      </form>
+                        {canManageTeam ? (
+                          <RevokeInvitationForm invitationId={invite.id} />
+                        ) : canRevoke ? null : (
+                          <span className="text-xs font-medium text-[var(--muted-foreground)]">
+                            No access
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="rounded-[1.25rem] border border-dashed border-[var(--border)] bg-[var(--muted)] px-4 py-12 text-center text-sm text-[var(--muted-foreground)]">
-  <p className="text-base font-semibold text-[var(--foreground)]">
-    No pending invitations
-  </p>
-  <p className="mt-2">
-    New team invites will appear here until they are accepted.
-  </p>
-</div>
+                  <p className="text-base font-semibold text-[var(--foreground)]">
+                    No pending invitations
+                  </p>
+                  <p className="mt-2">
+                    New team invites will appear here until they are accepted.
+                  </p>
+                </div>
               )}
             </div>
           </div>
@@ -428,6 +445,15 @@ export default async function TeamPage() {
                         member.role === "MEMBER" && member.status === "ACTIVE"
                     ).length
                   }
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3">
+                <span className="text-sm font-medium text-[var(--foreground)]">
+                  Your access
+                </span>
+                <span className="text-sm font-semibold text-[var(--foreground)]">
+                  {actorRole}
                 </span>
               </div>
             </div>

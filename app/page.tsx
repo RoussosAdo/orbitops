@@ -1,37 +1,290 @@
+import Image from "next/image";
 import Link from "next/link";
+
+const featurePills = [
+  "Multi-workspace control",
+  "Role-based access",
+  "Project and task flow",
+  "Billing visibility",
+];
+
+const liveFeed = [
+  "Workspace switched successfully",
+  "2 team invites accepted",
+  "Billing synced",
+  "Project health updated",
+  "Live operational signal active",
+];
 
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[var(--background)] p-8">
-      <div className="max-w-3xl text-center">
-        <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[var(--primary)]">
-          OrbitOps
-        </p>
+    <main className="relative isolate min-h-screen overflow-hidden bg-[#f5f7fb] text-[var(--foreground)]">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-[-8rem] top-[-5rem] h-72 w-72 rounded-full bg-[rgba(109,94,252,0.10)] blur-3xl animate-float-slow" />
+        <div className="absolute bottom-[-8rem] right-[-6rem] h-80 w-80 rounded-full bg-[rgba(56,189,248,0.10)] blur-3xl animate-float-soft" />
+        <div className="absolute left-[35%] top-[65%] h-48 w-48 rounded-full bg-[rgba(16,185,129,0.08)] blur-3xl animate-float-delayed" />
+      </div>
 
-        <h1 className="mt-4 text-5xl font-bold text-[var(--foreground)] md:text-6xl">
-          Multi-Tenant SaaS Dashboard
-        </h1>
+      <div className="relative mx-auto grid min-h-screen max-w-7xl items-center gap-14 px-6 py-12 lg:grid-cols-[1.02fr_0.98fr] lg:px-10 xl:gap-20">
+        {/* Left Side */}
+        <div className="max-w-2xl">
+          <div className="animate-fade-up inline-flex items-center gap-3 rounded-full border border-[var(--border)] bg-white/90 px-4 py-2 shadow-[var(--shadow-xs)] backdrop-blur">
+            <div className="relative h-6 w-6 overflow-hidden rounded-full border border-[var(--border)] bg-white">
+              <Image
+                src="/orbitops-logo.png"
+                alt="OrbitOps logo"
+                fill
+                priority
+                sizes="24px"
+                className="object-contain p-1"
+              />
+            </div>
 
-        <p className="mt-5 text-base leading-7 text-[var(--muted-foreground)] md:text-lg">
-          A modern SaaS admin platform concept focused on responsive dashboard
-          architecture, reusable components, interactive task flows, and clean
-          product UI.
-        </p>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--primary)]">
+              OrbitOps
+            </span>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/dashboard"
-            className="rounded-2xl bg-[var(--primary)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
-          >
-            Open Dashboard
-          </Link>
+            <span className="rounded-full bg-[rgba(109,94,252,0.10)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--primary)]">
+              Live Product
+            </span>
+          </div>
 
-          <Link
-            href="/dashboard/projects"
-            className="rounded-2xl border border-[var(--border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
-          >
-            View Projects
-          </Link>
+          <h1 className="animate-fade-up-delay-1 mt-8 max-w-4xl text-5xl font-semibold leading-[0.95] tracking-[-0.07em] text-[var(--foreground)] sm:text-6xl xl:text-7xl">
+            Run your workspace like a real{" "}
+            <span className="bg-[linear-gradient(135deg,#5b5cf0_0%,#4f7cff_55%,#23b6d2_100%)] bg-clip-text text-transparent">
+              operations system
+            </span>
+            .
+          </h1>
+
+          <p className="animate-fade-up-delay-2 mt-6 max-w-xl text-base leading-8 text-[var(--muted-foreground)] sm:text-lg">
+            OrbitOps is the control layer for modern teams — manage clients,
+            projects, tasks, billing, permissions and workspace switching from
+            one clean command center.
+          </p>
+
+          <div className="animate-fade-up-delay-2 mt-7 flex flex-wrap gap-3">
+            {featurePills.map((pill) => (
+              <div
+                key={pill}
+                className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-medium text-[var(--foreground)] shadow-[var(--shadow-xs)]"
+              >
+                <span className="h-2 w-2 rounded-full bg-[var(--primary)] animate-live-pulse" />
+                {pill}
+              </div>
+            ))}
+          </div>
+
+          <div className="animate-fade-up-delay-3 mt-9">
+            <Link
+              href="/dashboard"
+              className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-[var(--foreground)] px-6 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] transition duration-300 hover:-translate-y-0.5 hover:bg-black"
+            >
+              Open Dashboard
+              <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+
+          <div className="animate-fade-up-delay-3 mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  <div className="rounded-[1.4rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-sm)]">
+    <p className="text-xs font-medium leading-5 text-[var(--muted-foreground)]">
+      Active workspaces
+    </p>
+    <p className="mt-3 text-[2rem] font-semibold tracking-[-0.04em] text-[var(--foreground)]">
+      12+
+    </p>
+  </div>
+
+  <div className="rounded-[1.4rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-sm)]">
+    <p className="text-xs font-medium leading-5 text-[var(--muted-foreground)]">
+      Operational clarity
+    </p>
+    <p className="mt-2 text-[1.6rem] font-semibold tracking-[-0.04em] text-[var(--foreground)]">
+      Realtime
+    </p>
+  </div>
+
+  <div className="rounded-[1.4rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-sm)]">
+    <p className="text-xs font-medium leading-5 text-[var(--muted-foreground)]">
+      Project tracking
+    </p>
+    <p className="mt-3 text-[1.9rem] font-semibold tracking-[-0.04em] text-[var(--foreground)]">
+      Smart
+    </p>
+  </div>
+
+  <div className="rounded-[1.4rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-sm)]">
+    <p className="text-xs font-medium leading-5 text-[var(--muted-foreground)]">
+      Billing oversight
+    </p>
+    <p className="mt-0.5 text-[1.9rem] font-semibold tracking-[-0.04em] text-[var(--foreground)]">
+      Secure
+    </p>
+  </div>
+</div>
+        </div>
+
+        {/* Right Side Preview */}
+        <div className="animate-fade-up-delay-2">
+          <div className="relative mx-auto max-w-[520px] rounded-[2rem] border border-[var(--border)] bg-white p-4 shadow-[0_30px_80px_rgba(17,24,39,0.10)]">
+            <div className="rounded-[1.6rem] border border-[var(--border)] bg-[linear-gradient(180deg,#ffffff_0%,#f9fbff_100%)] p-4">
+              <div className="flex items-center justify-between gap-4 rounded-[1.2rem] border border-[var(--border)] bg-white px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-[var(--border)] bg-white">
+                    <Image
+                      src="/orbitops-logo.png"
+                      alt="OrbitOps logo"
+                      fill
+                      sizes="40px"
+                      className="object-contain p-1.5"
+                    />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--foreground)]">
+                      OrbitOps Control
+                    </p>
+                    <p className="text-xs text-[var(--muted-foreground)]">
+                      Multi-tenant workspace flow
+                    </p>
+                  </div>
+                </div>
+
+                <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1.5 text-xs font-semibold text-[var(--primary)]">
+                  <span className="h-2 w-2 rounded-full bg-[var(--primary)] animate-live-pulse" />
+                  Live
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-[1.4rem] border border-[var(--border)] bg-[var(--muted)] p-4 animate-float-soft">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+                      Workspace Signal
+                    </p>
+                    <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
+                      Premium operational visibility
+                    </h3>
+                  </div>
+
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[var(--primary)] shadow-[var(--shadow-xs)]">
+                    Stable
+                  </span>
+                </div>
+
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-[1.2rem] border border-[var(--border)] bg-white p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                      Team Access
+                    </p>
+                    <p className="mt-3 text-xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
+                      Owner • Admin • Member
+                    </p>
+                  </div>
+
+                  <div className="rounded-[1.2rem] border border-[var(--border)] bg-white p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                      Workspace Switch
+                    </p>
+                    <p className="mt-3 text-xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
+                      Seamless
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {[
+                  {
+                    label: "Workspace Signal",
+                    title: "Healthy",
+                    meta: "Delivery, finance and team flow aligned",
+                    dot: "bg-[rgba(109,94,252,0.16)]",
+                  },
+                  {
+                    label: "Open Tasks",
+                    title: "24",
+                    meta: "Live task pressure monitored across teams",
+                    dot: "bg-[rgba(56,189,248,0.18)]",
+                  },
+                  {
+                    label: "Team Access",
+                    title: "Role-based",
+                    meta: "Owners, admins and members managed cleanly",
+                    dot: "bg-[rgba(16,185,129,0.16)]",
+                  },
+                ].map((item, index) => (
+                  <div
+                    key={item.label}
+                    className={`rounded-[1.25rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-xs)] ${
+                      index === 1 ? "animate-float-delayed" : "animate-float-soft"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                          {item.label}
+                        </p>
+                        <p className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
+                          {item.title}
+                        </p>
+                        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                          {item.meta}
+                        </p>
+                      </div>
+
+                      <div
+                        className={`h-14 w-14 rounded-2xl ${item.dot} animate-gentle-bob`}
+                      />
+                    </div>
+
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--muted)]">
+                      <div className="h-full w-1/2 rounded-full bg-[linear-gradient(90deg,#6d5efc_0%,#56a5ff_100%)] animate-live-bar" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 overflow-hidden rounded-[1.25rem] border border-[var(--border)] bg-[#0f172a] px-4 py-4 text-white shadow-[var(--shadow-sm)]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+                      Why OrbitOps
+                    </p>
+                    <h4 className="mt-2 text-3xl font-semibold tracking-[-0.05em]">
+                      Less clutter. More control.
+                    </h4>
+                  </div>
+
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
+                    <span className="text-lg">✦</span>
+                  </div>
+                </div>
+
+                <p className="mt-3 max-w-md text-sm leading-7 text-white/75">
+                  Designed like a real product, not just another admin mockup.
+                  Clean, scalable and ready to showcase.
+                </p>
+
+                <div className="mt-4 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                  <div className="animate-marquee flex min-w-max items-center gap-3 px-4 py-3">
+                    {[...liveFeed, ...liveFeed].map((item, index) => (
+                      <div
+                        key={`${item}-${index}`}
+                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white/85"
+                      >
+                        <span className="h-2 w-2 rounded-full bg-emerald-400 animate-live-pulse" />
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pointer-events-none absolute -right-4 top-10 hidden h-20 w-20 rounded-full border border-[rgba(109,94,252,0.18)] bg-white/80 shadow-[var(--shadow-md)] backdrop-blur md:block animate-float-slow" />
+            <div className="pointer-events-none absolute -left-4 bottom-16 hidden h-16 w-16 rounded-3xl border border-[rgba(56,189,248,0.18)] bg-white/80 shadow-[var(--shadow-md)] backdrop-blur md:block animate-float-delayed" />
+          </div>
         </div>
       </div>
     </main>

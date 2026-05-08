@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { prisma } from "@/app/lib/prisma";
 import { cookies } from "next/headers";
+import { ensureUserWorkspace } from "@/app/lib/ensure-user-workspace";
 
 export async function getCurrentWorkspace() {
   const session = await getServerSession(authOptions);
@@ -11,6 +12,12 @@ export async function getCurrentWorkspace() {
     return null;
   }
 
+  await ensureUserWorkspace({
+    email: session.user.email,
+    name: session.user.name,
+  });
+
+  const normalizedEmail = session.user.email.toLowerCase();
   const cookieStore = await cookies();
   const activeWorkspaceId = cookieStore.get("activeWorkspaceId")?.value;
 
@@ -20,7 +27,7 @@ export async function getCurrentWorkspace() {
         workspaceId: activeWorkspaceId,
         status: "ACTIVE",
         user: {
-          email: session.user.email.toLowerCase(),
+          email: normalizedEmail,
         },
       },
       include: {
@@ -37,7 +44,7 @@ export async function getCurrentWorkspace() {
     where: {
       status: "ACTIVE",
       user: {
-        email: session.user.email.toLowerCase(),
+        email: normalizedEmail,
       },
     },
     include: {
@@ -71,6 +78,11 @@ export async function getUserWorkspaces() {
   if (!session?.user?.email) {
     return [];
   }
+
+  await ensureUserWorkspace({
+    email: session.user.email,
+    name: session.user.name,
+  });
 
   const memberships = await prisma.membership.findMany({
     where: {

@@ -2,8 +2,11 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
 
 export async function updateWorkspaceSettings(formData: FormData) {
+  const workspace = await requireCurrentWorkspace();
+
   const workspaceName = String(formData.get("workspaceName") ?? "").trim();
   const companyEmail = String(formData.get("companyEmail") ?? "").trim();
   const timezone = String(formData.get("timezone") ?? "").trim();
@@ -13,14 +16,22 @@ export async function updateWorkspaceSettings(formData: FormData) {
   const productUpdates = formData.get("productUpdates") === "on";
   const weeklyReports = formData.get("weeklyReports") === "on";
 
-  const settings = await prisma.workspaceSettings.findFirst();
+  if (!workspaceName || !companyEmail || !timezone || !brandColor) {
+    throw new Error("All settings fields are required.");
+  }
 
-  if (!settings || !workspaceName || !companyEmail || !timezone || !brandColor) {
-    return;
+  const settings = await prisma.workspaceSettings.findUnique({
+    where: {
+      workspaceId: workspace.id,
+    },
+  });
+
+  if (!settings) {
+    throw new Error("Workspace settings not found.");
   }
 
   await prisma.workspaceSettings.update({
-    where: { id: settings.id },
+    where: { workspaceId: workspace.id },
     data: {
       workspaceName,
       companyEmail,
@@ -33,4 +44,5 @@ export async function updateWorkspaceSettings(formData: FormData) {
   });
 
   revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard");
 }
