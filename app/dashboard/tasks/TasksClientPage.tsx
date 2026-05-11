@@ -39,7 +39,9 @@ type TasksPageProps = {
   language: AppLanguage;
 };
 
-function getPriorityLabel(priority: string, copy: typeof dashboardCopy.en.tasksPage) {
+type TasksCopy = (typeof dashboardCopy)[AppLanguage]["tasksPage"];
+
+function getPriorityLabel(priority: string, copy: TasksCopy) {
   if (priority === "High") return copy.high;
   if (priority === "Medium") return copy.medium;
   if (priority === "Low") return copy.low;
@@ -51,7 +53,7 @@ function PriorityBadge({
   copy,
 }: {
   priority: string;
-  copy: typeof dashboardCopy.en.tasksPage;
+  copy: TasksCopy;
 }) {
   const styles =
     priority === "High"
