@@ -3,13 +3,14 @@ import { prisma } from "@/app/lib/prisma";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
 import { getCurrentLanguage } from "@/app/lib/get-current-language";
 import { dashboardCopy } from "@/app/lib/i18n";
+import type { AppLanguage } from "@/app/lib/i18n";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import TeamRoleForm from "@/app/components/dashboard/team/team-role-form";
 import RemoveMemberForm from "@/app/components/dashboard/team/team-member-form";
 import RevokeInvitationForm from "@/app/components/dashboard/team/revoke-initation-form";
 
-type TeamCopy = typeof dashboardCopy.en.teamPage;
+type TeamCopy = (typeof dashboardCopy)[AppLanguage]["teamPage"];
 
 function TeamStatCard({
   label,
@@ -27,10 +28,14 @@ function TeamStatCard({
       <p className="text-sm font-medium text-[var(--muted-foreground)]">
         {label}
       </p>
+
       <h3 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
         {value}
       </h3>
-      {meta ? <p className={`mt-2 text-sm font-medium ${accent}`}>{meta}</p> : null}
+
+      {meta ? (
+        <p className={`mt-2 text-sm font-medium ${accent}`}>{meta}</p>
+      ) : null}
     </div>
   );
 }
@@ -57,7 +62,9 @@ function RoleBadge({ role, copy }: { role: string; copy: TeamCopy }) {
       : "bg-slate-100 text-slate-700";
 
   return (
-    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}>
+    <span
+      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
+    >
       {getRoleLabel(role, copy)}
     </span>
   );
@@ -70,7 +77,9 @@ function StatusBadge({ status, copy }: { status: string; copy: TeamCopy }) {
       : "bg-amber-100 text-amber-700";
 
   return (
-    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}>
+    <span
+      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
+    >
       {getStatusLabel(status, copy)}
     </span>
   );
@@ -119,12 +128,15 @@ export default async function TeamPage() {
   const pendingInvites = invitations.filter(
     (invite) => invite.status === "PENDING"
   );
+
   const ownersCount = members.filter(
     (member) => member.role === "OWNER" && member.status === "ACTIVE"
   ).length;
+
   const adminsCount = members.filter(
     (member) => member.role === "ADMIN" && member.status === "ACTIVE"
   ).length;
+
   const membersCount = members.filter(
     (member) => member.role === "MEMBER" && member.status === "ACTIVE"
   ).length;
@@ -144,18 +156,21 @@ export default async function TeamPage() {
           value={String(activeMembers.length)}
           meta={copy.currentlyActive}
         />
+
         <TeamStatCard
           label={copy.pendingInvites}
           value={String(pendingInvites.length)}
           meta={copy.awaitingAcceptance}
           accent="text-amber-600"
         />
+
         <TeamStatCard
           label={copy.owners}
           value={String(ownersCount)}
           meta={copy.workspaceControl}
           accent="text-purple-600"
         />
+
         <TeamStatCard
           label={copy.admins}
           value={String(adminsCount)}
@@ -170,9 +185,11 @@ export default async function TeamPage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
               {copy.teamAccess}
             </p>
+
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
               {copy.inviteNewMember}
             </h2>
+
             <p className="mt-3 text-sm leading-7 text-[var(--muted-foreground)]">
               {copy.inviteDescriptionStart}{" "}
               <span className="font-semibold text-[var(--foreground)]">
@@ -209,7 +226,7 @@ export default async function TeamPage() {
               defaultValue="MEMBER"
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-medium text-[var(--foreground)] outline-none"
             >
-              {isOwner && <option value="OWNER">{copy.owner}</option>}
+              {isOwner ? <option value="OWNER">{copy.owner}</option> : null}
               <option value="ADMIN">{copy.admin}</option>
               <option value="MEMBER">{copy.memberRole}</option>
             </select>
@@ -235,6 +252,7 @@ export default async function TeamPage() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
                 {copy.members}
               </p>
+
               <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
                 {copy.workspaceMembers}
               </h3>
@@ -345,7 +363,7 @@ export default async function TeamPage() {
                   );
                 })}
 
-                {members.length === 0 && (
+                {members.length === 0 ? (
                   <tr>
                     <td
                       colSpan={5}
@@ -354,7 +372,7 @@ export default async function TeamPage() {
                       {copy.noTeamMembers}
                     </td>
                   </tr>
-                )}
+                ) : null}
               </tbody>
             </table>
           </div>
@@ -367,6 +385,7 @@ export default async function TeamPage() {
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
                   {copy.invitations}
                 </p>
+
                 <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
                   {copy.pendingInvitations}
                 </h3>
@@ -394,6 +413,7 @@ export default async function TeamPage() {
                           <p className="truncate text-sm font-semibold text-[var(--foreground)]">
                             {invite.email}
                           </p>
+
                           <p className="mt-2 text-xs text-[var(--muted-foreground)]">
                             {copy.expires}:{" "}
                             {new Date(invite.expiresAt).toLocaleDateString()}
@@ -432,6 +452,7 @@ export default async function TeamPage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
               {copy.accessSummary}
             </p>
+
             <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
               {copy.teamRolesOverview}
             </h3>
