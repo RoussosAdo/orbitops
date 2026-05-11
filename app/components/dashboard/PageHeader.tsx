@@ -34,7 +34,10 @@ export default function PageHeader({
           </div>
 
           {actionLabel ? (
-            <button className="control-hover soft-ring inline-flex h-12 items-center justify-center rounded-2xl bg-[var(--foreground)] px-6 text-sm font-semibold text-white shadow-[var(--shadow-xs)] hover:bg-black">
+            <button
+              type="button"
+              className="control-hover soft-ring inline-flex h-12 items-center justify-center rounded-2xl bg-[var(--foreground)] px-6 text-sm font-semibold text-white shadow-[var(--shadow-xs)] hover:bg-black"
+            >
               {actionLabel}
             </button>
           ) : null}

@@ -12,27 +12,32 @@ import {
   Users,
   WalletCards,
 } from "lucide-react";
+import type { AppLanguage } from "@/app/lib/i18n";
+import { dashboardCopy } from "@/app/lib/i18n";
 
 type SidebarProps = {
   isMobile?: boolean;
   onNavigate?: () => void;
+  language: AppLanguage;
 };
 
 const navItems = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Clients", href: "/dashboard/clients", icon: Briefcase },
-  { label: "Projects", href: "/dashboard/projects", icon: FolderKanban },
-  { label: "Tasks", href: "/dashboard/tasks", icon: SquareCheckBig },
-  { label: "Team", href: "/dashboard/team", icon: Users },
-  { label: "Billing", href: "/dashboard/billing", icon: WalletCards },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
-];
+  { labelKey: "overview", href: "/dashboard", icon: LayoutDashboard },
+  { labelKey: "clients", href: "/dashboard/clients", icon: Briefcase },
+  { labelKey: "projects", href: "/dashboard/projects", icon: FolderKanban },
+  { labelKey: "tasks", href: "/dashboard/tasks", icon: SquareCheckBig },
+  { labelKey: "team", href: "/dashboard/team", icon: Users },
+  { labelKey: "billing", href: "/dashboard/billing", icon: WalletCards },
+  { labelKey: "settings", href: "/dashboard/settings", icon: Settings },
+] as const;
 
 export default function Sidebar({
   isMobile = false,
   onNavigate,
+  language,
 }: SidebarProps) {
   const pathname = usePathname();
+  const copy = dashboardCopy[language];
 
   return (
     <aside
@@ -60,7 +65,7 @@ export default function Sidebar({
                 OrbitOps
               </p>
               <p className="text-xs text-[var(--muted-foreground)]">
-                Workspace platform
+                {copy.brandSubtitle}
               </p>
             </div>
           </div>
@@ -68,22 +73,22 @@ export default function Sidebar({
 
         <div className="mt-5 rounded-[1.6rem] border border-[var(--border)] bg-[linear-gradient(180deg,#ffffff_0%,#f8faff_100%)] p-5 shadow-[var(--shadow-xs)]">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-            Current workspace
+            {copy.currentWorkspace}
           </p>
 
           <h2 className="mt-3 text-[2rem] font-semibold tracking-[-0.04em] text-[var(--foreground)]">
-            Workspace
+            {copy.workspaceTitle}
           </h2>
 
           <p className="mt-2 text-sm leading-7 text-[var(--muted-foreground)]">
-            Manage clients, projects, tasks and billing in one place.
+            {copy.workspaceDescription}
           </p>
         </div>
       </div>
 
       <div className="px-5">
         <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-          Main Menu
+          {copy.mainMenu}
         </p>
       </div>
 
@@ -91,10 +96,11 @@ export default function Sidebar({
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
+          const label = copy.nav[item.labelKey];
 
           return (
             <Link
-              key={item.label}
+              key={item.href}
               href={item.href}
               prefetch={true}
               onClick={onNavigate}
@@ -115,7 +121,7 @@ export default function Sidebar({
                   <Icon className="h-4 w-4" />
                 </div>
 
-                <span className="text-sm font-semibold">{item.label}</span>
+                <span className="text-sm font-semibold">{label}</span>
               </div>
 
               <span
@@ -134,16 +140,16 @@ export default function Sidebar({
         <div className="overflow-hidden rounded-[1.6rem] border border-[var(--border)] bg-white shadow-[var(--shadow-sm)]">
           <div className="bg-[linear-gradient(135deg,rgba(109,94,252,0.10)_0%,rgba(79,70,229,0.06)_100%)] p-4">
             <p className="text-sm font-semibold text-[var(--foreground)]">
-              Need more control?
+              {copy.upgradeTitle}
             </p>
             <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
-              Upgrade for deeper analytics, permissions and advanced billing visibility.
+              {copy.upgradeDescription}
             </p>
           </div>
 
           <div className="p-4 pt-0">
             <button className="mt-2 inline-flex h-11 w-full items-center justify-center rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black">
-              Upgrade Plan
+              {copy.upgradeButton}
             </button>
           </div>
         </div>

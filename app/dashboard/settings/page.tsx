@@ -2,6 +2,8 @@ import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
 import { updateWorkspaceSettings } from "@/app/actions/settingsActions";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
+import { getCurrentLanguage } from "@/app/lib/get-current-language";
+import { dashboardCopy } from "@/app/lib/i18n";
 
 function PreferenceRow({
   label,
@@ -55,19 +57,25 @@ function SummaryCard({
 function StatusRow({
   label,
   enabled,
+  enabledLabel,
+  disabledLabel,
 }: {
   label: string;
   enabled: boolean;
+  enabledLabel: string;
+  disabledLabel: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 transition hover:bg-white">
-      <span className="text-sm font-medium text-[var(--foreground)]">{label}</span>
+    <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 transition hover:bg-white">
+      <span className="text-sm font-medium text-[var(--foreground)]">
+        {label}
+      </span>
       <span
         className={`text-sm font-semibold ${
           enabled ? "text-emerald-600" : "text-[var(--muted-foreground)]"
         }`}
       >
-        {enabled ? "Enabled" : "Disabled"}
+        {enabled ? enabledLabel : disabledLabel}
       </span>
     </div>
   );
@@ -75,6 +83,9 @@ function StatusRow({
 
 export default async function SettingsPage() {
   const workspace = await requireCurrentWorkspace();
+  const language = await getCurrentLanguage();
+  const copy = dashboardCopy[language];
+  const settingsCopy = copy.settingsPage;
 
   const settings = await prisma.workspaceSettings.findUnique({
     where: {
@@ -86,18 +97,18 @@ export default async function SettingsPage() {
     return (
       <section className="space-y-6">
         <PageHeader
-          eyebrow="Workspace"
-          title="Settings"
-          description="Manage your workspace details, brand preferences and notifications."
-          actionLabel="Settings"
+          eyebrow={settingsCopy.eyebrow}
+          title={settingsCopy.title}
+          description={settingsCopy.emptyDescription}
+          actionLabel={settingsCopy.settings}
         />
 
         <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4">
           <p className="text-lg font-semibold text-[var(--foreground)]">
-            No settings found
+            {settingsCopy.noSettingsFound}
           </p>
           <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-            This workspace does not have settings yet.
+            {settingsCopy.noSettingsDescription}
           </p>
         </div>
       </section>
@@ -107,22 +118,22 @@ export default async function SettingsPage() {
   return (
     <section className="space-y-6">
       <PageHeader
-        eyebrow="Workspace"
-        title="Settings"
-        description="Manage workspace identity, brand preferences and communication settings."
-        actionLabel="Save Settings"
+        eyebrow={settingsCopy.eyebrow}
+        title={settingsCopy.title}
+        description={settingsCopy.description}
+        actionLabel={settingsCopy.saveSettings}
       />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <SummaryCard label="Workspace" value={settings.workspaceName} />
-        <SummaryCard label="Brand" value={settings.brandColor} />
-        <SummaryCard label="Timezone" value={settings.timezone} />
+        <SummaryCard label={settingsCopy.workspace} value={settings.workspaceName} />
+        <SummaryCard label={settingsCopy.brand} value={settings.brandColor} />
+        <SummaryCard label={settingsCopy.timezone} value={settings.timezone} />
       </div>
 
       <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
         <div className="mb-5">
           <p className="text-sm text-[var(--muted-foreground)]">
-            Current workspace:{" "}
+            {settingsCopy.currentWorkspace}:{" "}
             <span className="font-semibold text-[var(--foreground)]">
               {workspace.name}
             </span>
@@ -132,17 +143,17 @@ export default async function SettingsPage() {
         <div className="grid gap-6 xl:grid-cols-[1.25fr_0.9fr]">
           <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-              Workspace Preferences
+              {settingsCopy.workspacePreferences}
             </p>
             <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
-              General Settings
+              {settingsCopy.generalSettings}
             </h3>
 
             <form action={updateWorkspaceSettings} className="mt-6 space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-[var(--foreground)]">
-                    Workspace Name
+                    {settingsCopy.workspaceName}
                   </label>
                   <input
                     name="workspaceName"
@@ -153,7 +164,7 @@ export default async function SettingsPage() {
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-[var(--foreground)]">
-                    Company Email
+                    {settingsCopy.companyEmail}
                   </label>
                   <input
                     name="companyEmail"
@@ -165,7 +176,7 @@ export default async function SettingsPage() {
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-[var(--foreground)]">
-                    Timezone
+                    {settingsCopy.timezone}
                   </label>
                   <select
                     name="timezone"
@@ -181,7 +192,7 @@ export default async function SettingsPage() {
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-[var(--foreground)]">
-                    Brand Color
+                    {settingsCopy.brandColor}
                   </label>
                   <select
                     name="brandColor"
@@ -198,30 +209,30 @@ export default async function SettingsPage() {
 
               <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-                  Notifications
+                  {settingsCopy.notifications}
                 </p>
                 <h4 className="mt-2 text-lg font-semibold text-[var(--foreground)]">
-                  Communication Preferences
+                  {settingsCopy.communicationPreferences}
                 </h4>
 
                 <div className="mt-5 space-y-4">
                   <PreferenceRow
-                    label="Email Notifications"
-                    description="Receive account and workspace email alerts."
+                    label={settingsCopy.emailNotifications}
+                    description={settingsCopy.emailNotificationsDescription}
                     checked={settings.emailNotifications}
                     name="emailNotifications"
                   />
 
                   <PreferenceRow
-                    label="Product Updates"
-                    description="Receive updates about new features and improvements."
+                    label={settingsCopy.productUpdates}
+                    description={settingsCopy.productUpdatesDescription}
                     checked={settings.productUpdates}
                     name="productUpdates"
                   />
 
                   <PreferenceRow
-                    label="Weekly Reports"
-                    description="Get a weekly summary of workspace activity."
+                    label={settingsCopy.weeklyReports}
+                    description={settingsCopy.weeklyReportsDescription}
                     checked={settings.weeklyReports}
                     name="weeklyReports"
                   />
@@ -232,7 +243,7 @@ export default async function SettingsPage() {
                 type="submit"
                 className="rounded-2xl bg-[var(--foreground)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-black"
               >
-                Save Changes
+                {settingsCopy.saveChanges}
               </button>
             </form>
           </div>
@@ -240,39 +251,45 @@ export default async function SettingsPage() {
           <div className="space-y-6">
             <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-                Workspace Summary
+                {settingsCopy.workspaceSummary}
               </p>
               <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
-                Current Configuration
+                {settingsCopy.currentConfiguration}
               </h3>
 
               <div className="mt-5 space-y-4">
-                <SummaryCard label="Workspace" value={settings.workspaceName} />
-                <SummaryCard label="Brand" value={settings.brandColor} />
-                <SummaryCard label="Timezone" value={settings.timezone} />
+                <SummaryCard label={settingsCopy.workspace} value={settings.workspaceName} />
+                <SummaryCard label={settingsCopy.brand} value={settings.brandColor} />
+                <SummaryCard label={settingsCopy.timezone} value={settings.timezone} />
               </div>
             </div>
 
             <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-                Status
+                {settingsCopy.status}
               </p>
               <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
-                Preferences Status
+                {settingsCopy.preferencesStatus}
               </h3>
 
               <div className="mt-5 space-y-3">
                 <StatusRow
-                  label="Email Notifications"
+                  label={settingsCopy.emailNotifications}
                   enabled={settings.emailNotifications}
+                  enabledLabel={settingsCopy.enabled}
+                  disabledLabel={settingsCopy.disabled}
                 />
                 <StatusRow
-                  label="Product Updates"
+                  label={settingsCopy.productUpdates}
                   enabled={settings.productUpdates}
+                  enabledLabel={settingsCopy.enabled}
+                  disabledLabel={settingsCopy.disabled}
                 />
                 <StatusRow
-                  label="Weekly Reports"
+                  label={settingsCopy.weeklyReports}
                   enabled={settings.weeklyReports}
+                  enabledLabel={settingsCopy.enabled}
+                  disabledLabel={settingsCopy.disabled}
                 />
               </div>
             </div>

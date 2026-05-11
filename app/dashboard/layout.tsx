@@ -3,6 +3,7 @@ import DashboardShell from "@/app/components/dashboard/dashboard-shell";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/auth";
+import { getCurrentLanguage } from "@/app/lib/language";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -17,5 +18,11 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  return <DashboardShell>{children}</DashboardShell>;
+  const language = await getCurrentLanguage();
+
+  return (
+    <div className="min-h-screen bg-[var(--background)]">
+      <DashboardShell language={language}>{children}</DashboardShell>
+    </div>
+  );
 }

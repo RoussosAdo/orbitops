@@ -6,6 +6,8 @@ import {
   deleteClient,
 } from "@/app/actions/clientActions";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
+import { getCurrentLanguage } from "@/app/lib/get-current-language";
+import { dashboardCopy } from "@/app/lib/i18n";
 
 type ClientsPageProps = {
   searchParams?: Promise<{
@@ -15,7 +17,30 @@ type ClientsPageProps = {
   }>;
 };
 
-function StatusBadge({ status }: { status: string }) {
+function getStatusLabel(status: string, language: "en" | "el") {
+  const labels = {
+    en: {
+      Active: "Active",
+      Pending: "Pending",
+      Inactive: "Inactive",
+    },
+    el: {
+      Active: "Ενεργός",
+      Pending: "Εκκρεμεί",
+      Inactive: "Ανενεργός",
+    },
+  };
+
+  return labels[language][status as "Active" | "Pending" | "Inactive"] ?? status;
+}
+
+function StatusBadge({
+  status,
+  language,
+}: {
+  status: string;
+  language: "en" | "el";
+}) {
   const styles =
     status === "Active"
       ? "bg-emerald-100 text-emerald-700"
@@ -27,7 +52,7 @@ function StatusBadge({ status }: { status: string }) {
     <span
       className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
     >
-      {status}
+      {getStatusLabel(status, language)}
     </span>
   );
 }
@@ -43,7 +68,10 @@ function SummaryCard({
 }) {
   return (
     <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
-      <p className="text-sm font-medium text-[var(--muted-foreground)]">{label}</p>
+      <p className="text-sm font-medium text-[var(--muted-foreground)]">
+        {label}
+      </p>
+
       <p
         className={`mt-3 text-3xl font-semibold tracking-[-0.04em] ${
           accent || "text-[var(--foreground)]"
@@ -57,6 +85,10 @@ function SummaryCard({
 
 export default async function ClientsPage({ searchParams }: ClientsPageProps) {
   const workspace = await requireCurrentWorkspace();
+  const language = await getCurrentLanguage();
+  const copy = dashboardCopy[language];
+  const clientsCopy = copy.clients;
+
   const params = searchParams ? await searchParams : undefined;
 
   const editingId = params?.edit ?? null;
@@ -99,28 +131,41 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
     orderBy: { createdAt: "desc" },
   });
 
-  const activeCount = clients.filter((client) => client.status === "Active").length;
-  const pendingCount = clients.filter((client) => client.status === "Pending").length;
-  const inactiveCount = clients.filter((client) => client.status === "Inactive").length;
+  const activeCount = clients.filter(
+    (client) => client.status === "Active"
+  ).length;
+
+  const pendingCount = clients.filter(
+    (client) => client.status === "Pending"
+  ).length;
+
+  const inactiveCount = clients.filter(
+    (client) => client.status === "Inactive"
+  ).length;
 
   return (
     <section className="space-y-6">
       <PageHeader
-        eyebrow="Workspace"
-        title="Clients"
-        description="Manage relationships, filter account status and keep your customer pipeline organized."
-        actionLabel="Add Client"
+        eyebrow={clientsCopy.eyebrow}
+        title={clientsCopy.title}
+        description={clientsCopy.description}
+        actionLabel={clientsCopy.addClient}
       />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <SummaryCard label="Total Clients" value={String(clients.length)} />
         <SummaryCard
-          label="Active Accounts"
+          label={clientsCopy.totalClients}
+          value={String(clients.length)}
+        />
+
+        <SummaryCard
+          label={clientsCopy.activeAccounts}
           value={String(activeCount)}
           accent="text-emerald-600"
         />
+
         <SummaryCard
-          label="Pending / Inactive"
+          label={clientsCopy.pendingInactive}
           value={String(pendingCount + inactiveCount)}
           accent="text-[var(--primary)]"
         />
@@ -130,10 +175,11 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
         <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--muted)] p-5">
           <div className="mb-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-              Create Client
+              {clientsCopy.createClient}
             </p>
+
             <h2 className="mt-2 text-lg font-semibold text-[var(--foreground)]">
-              Add a new client account
+              {clientsCopy.addNewClientAccount}
             </h2>
           </div>
 
@@ -144,7 +190,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             <input
               name="name"
               type="text"
-              placeholder="Client name"
+              placeholder={clientsCopy.clientName}
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
@@ -152,7 +198,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             <input
               name="company"
               type="text"
-              placeholder="Company"
+              placeholder={clientsCopy.company}
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
@@ -160,7 +206,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             <input
               name="email"
               type="email"
-              placeholder="Email"
+              placeholder={clientsCopy.email}
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
@@ -170,23 +216,23 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
               defaultValue="Active"
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
-              <option value="Active">Active</option>
-              <option value="Pending">Pending</option>
-              <option value="Inactive">Inactive</option>
+              <option value="Active">{clientsCopy.active}</option>
+              <option value="Pending">{clientsCopy.pending}</option>
+              <option value="Inactive">{clientsCopy.inactive}</option>
             </select>
 
             <button
               type="submit"
               className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
             >
-              Create Client
+              {clientsCopy.createClient}
             </button>
           </form>
         </div>
 
-        <div className="mt-6 mb-5 flex items-center justify-between gap-4">
+        <div className="mb-5 mt-6 flex items-center justify-between gap-4">
           <p className="text-sm text-[var(--muted-foreground)]">
-            Current workspace:{" "}
+            {clientsCopy.currentWorkspace}:{" "}
             <span className="font-semibold text-[var(--foreground)]">
               {workspace.name}
             </span>
@@ -196,7 +242,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             type="button"
             className="rounded-2xl border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
           >
-            Export
+            {clientsCopy.export}
           </button>
         </div>
 
@@ -208,7 +254,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             name="q"
             type="text"
             defaultValue={searchQuery}
-            placeholder="Search by client, company or email..."
+            placeholder={clientsCopy.searchPlaceholder}
             className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
           />
 
@@ -217,24 +263,24 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             defaultValue={selectedStatus || "All"}
             className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
           >
-            <option value="All">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="Pending">Pending</option>
-            <option value="Inactive">Inactive</option>
+            <option value="All">{clientsCopy.allStatuses}</option>
+            <option value="Active">{clientsCopy.active}</option>
+            <option value="Pending">{clientsCopy.pending}</option>
+            <option value="Inactive">{clientsCopy.inactive}</option>
           </select>
 
           <button
             type="submit"
             className="h-12 rounded-2xl bg-[var(--primary)] px-4 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
           >
-            Apply
+            {clientsCopy.apply}
           </button>
 
           <a
             href="/dashboard/clients"
             className="inline-flex h-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
           >
-            Reset
+            {clientsCopy.reset}
           </a>
         </form>
 
@@ -243,19 +289,23 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             <thead className="bg-[var(--muted)]">
               <tr className="text-left">
                 <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
-                  Client
+                  {clientsCopy.client}
                 </th>
+
                 <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
-                  Company
+                  {clientsCopy.company}
                 </th>
+
                 <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
-                  Email
+                  {clientsCopy.email}
                 </th>
+
                 <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
-                  Status
+                  {clientsCopy.status}
                 </th>
+
                 <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
-                  Actions
+                  {clientsCopy.actions}
                 </th>
               </tr>
             </thead>
@@ -279,7 +329,11 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                           action={updateClient}
                           className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--muted)] p-4 md:grid-cols-2 xl:grid-cols-6"
                         >
-                          <input type="hidden" name="clientId" value={client.id} />
+                          <input
+                            type="hidden"
+                            name="clientId"
+                            value={client.id}
+                          />
 
                           <input
                             name="name"
@@ -310,16 +364,16 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                             defaultValue={client.status}
                             className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                           >
-                            <option value="Active">Active</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Inactive">Inactive</option>
+                            <option value="Active">{clientsCopy.active}</option>
+                            <option value="Pending">{clientsCopy.pending}</option>
+                            <option value="Inactive">{clientsCopy.inactive}</option>
                           </select>
 
                           <button
                             type="submit"
                             className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
                           >
-                            Save
+                            {clientsCopy.save}
                           </button>
 
                           <a
@@ -330,7 +384,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                             )}`}
                             className="inline-flex h-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                           >
-                            Cancel
+                            {clientsCopy.cancel}
                           </a>
                         </form>
                       </td>
@@ -362,13 +416,13 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                     </td>
 
                     <td className="px-5 py-4">
-                      <StatusBadge status={client.status} />
+                      <StatusBadge status={client.status} language={language} />
                     </td>
 
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
                         <button className="control-hover rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]">
-                          View
+                          {clientsCopy.view}
                         </button>
 
                         <a
@@ -379,16 +433,21 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                           )}`}
                           className="control-hover rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
                         >
-                          Edit
+                          {clientsCopy.edit}
                         </a>
 
                         <form action={deleteClient}>
-                          <input type="hidden" name="clientId" value={client.id} />
+                          <input
+                            type="hidden"
+                            name="clientId"
+                            value={client.id}
+                          />
+
                           <button
                             type="submit"
                             className="control-hover rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
                           >
-                            Delete
+                            {clientsCopy.delete}
                           </button>
                         </form>
                       </div>
@@ -399,20 +458,18 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
 
               {clients.length === 0 && (
                 <tr>
-  <td
-    colSpan={5}
-    className="px-5 py-12 text-center"
-  >
-    <div className="mx-auto max-w-sm">
-      <p className="text-base font-semibold text-[var(--foreground)]">
-        No clients found
-      </p>
-      <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-        Try adjusting your search or status filters to see more results.
-      </p>
-    </div>
-  </td>
-</tr>
+                  <td colSpan={5} className="px-5 py-12 text-center">
+                    <div className="mx-auto max-w-sm">
+                      <p className="text-base font-semibold text-[var(--foreground)]">
+                        {clientsCopy.noClientsFound}
+                      </p>
+
+                      <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                        {clientsCopy.noClientsDescription}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

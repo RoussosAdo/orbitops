@@ -3,11 +3,64 @@
 import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { Languages } from "lucide-react";
+import type { AppLanguage } from "@/app/lib/i18n";
+import { dashboardCopy, DEFAULT_LANGUAGE } from "@/app/lib/i18n";
+
+const LANGUAGE_COOKIE_NAME = "orbitops-language";
+
+function getCookieLanguage(): AppLanguage | null {
+  if (typeof document === "undefined") return null;
+
+  const match = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(`${LANGUAGE_COOKIE_NAME}=`));
+
+  const value = match?.split("=")[1];
+
+  if (value === "en" || value === "el") {
+    return value;
+  }
+
+  return null;
+}
+
+function setLanguageCookie(language: AppLanguage) {
+  document.cookie = `${LANGUAGE_COOKIE_NAME}=${language}; path=/; max-age=${
+    60 * 60 * 24 * 365
+  }; SameSite=Lax`;
+}
 
 function LoginContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+
+  const [language, setLanguage] = useState<AppLanguage>(DEFAULT_LANGUAGE);
+
+  useEffect(() => {
+    const savedLanguage =
+      getCookieLanguage() || window.localStorage.getItem("orbitops-language");
+
+    if (savedLanguage === "en" || savedLanguage === "el") {
+      setLanguage(savedLanguage);
+    }
+  }, []);
+
+  const toggleLanguage = () => {
+    setLanguage((currentLanguage) => {
+      const nextLanguage = currentLanguage === "en" ? "el" : "en";
+
+      window.localStorage.setItem("orbitops-language", nextLanguage);
+      setLanguageCookie(nextLanguage);
+
+      return nextLanguage;
+    });
+  };
+
+  const copy = dashboardCopy[language];
+  const loginCopy = copy.loginPage;
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--background)] px-6 py-10">
@@ -35,49 +88,47 @@ function LoginContent() {
                   OrbitOps
                 </p>
                 <p className="text-sm text-[var(--muted-foreground)]">
-                  Workspace platform
+                  {loginCopy.brandSubtitle}
                 </p>
               </div>
             </div>
 
             <div className="mt-12">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
-                Modern SaaS Operations
+                {loginCopy.eyebrow}
               </p>
 
               <h1 className="mt-4 max-w-md text-5xl font-semibold tracking-[-0.05em] text-[var(--foreground)]">
-                Run clients, projects and billing in one place.
+                {loginCopy.heroTitle}
               </h1>
 
               <p className="mt-5 max-w-lg text-sm leading-7 text-[var(--muted-foreground)]">
-                OrbitOps helps teams manage delivery, workspace operations,
-                subscriptions and team access with a clean product-first
-                experience.
+                {loginCopy.heroDescription}
               </p>
             </div>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
               <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
-                  Delivery
+                  {loginCopy.deliveryLabel}
                 </p>
                 <p className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
-                  Projects
+                  {loginCopy.deliveryTitle}
                 </p>
                 <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-                  Track progress and linked clients.
+                  {loginCopy.deliveryDescription}
                 </p>
               </div>
 
               <div className="rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
-                  Control
+                  {loginCopy.controlLabel}
                 </p>
                 <p className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
-                  Billing
+                  {loginCopy.controlTitle}
                 </p>
                 <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-                  Plans, invoices and usage visibility.
+                  {loginCopy.controlDescription}
                 </p>
               </div>
             </div>
@@ -85,75 +136,96 @@ function LoginContent() {
 
           <div className="rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
-              Product Access
+              {loginCopy.productAccess}
             </p>
             <p className="mt-3 text-sm leading-7 text-[var(--muted-foreground)]">
-              Sign in with your GitHub account to access your OrbitOps workspace
-              securely.
+              {loginCopy.productAccessDescription}
             </p>
           </div>
         </div>
 
         <div className="flex items-center justify-center p-6 sm:p-8 lg:p-10">
           <div className="w-full max-w-md">
-            <div className="mb-8 flex items-center gap-3 lg:hidden">
-              <div className="relative h-12 w-12 overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-[var(--shadow-xs)]">
-                <Image
-                  src="/orbitops-logo.png"
-                  alt="OrbitOps logo"
-                  fill
-                  priority
-                  className="object-contain p-1.5"
-                />
+            <div className="mb-8 flex items-center justify-between gap-3 lg:hidden">
+              <div className="flex items-center gap-3">
+                <div className="relative h-12 w-12 overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-[var(--shadow-xs)]">
+                  <Image
+                    src="/orbitops-logo.png"
+                    alt="OrbitOps logo"
+                    fill
+                    priority
+                    className="object-contain p-1.5"
+                  />
+                </div>
+
+                <div>
+                  <p className="text-base font-semibold text-[var(--foreground)]">
+                    OrbitOps
+                  </p>
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    {loginCopy.brandSubtitle}
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <p className="text-base font-semibold text-[var(--foreground)]">
-                  OrbitOps
-                </p>
-                <p className="text-xs text-[var(--muted-foreground)]">
-                  Workspace platform
-                </p>
-              </div>
+              <button
+                type="button"
+                onClick={toggleLanguage}
+                aria-label={loginCopy.languageLabel}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-white px-3 text-sm font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:border-[var(--primary-light)] hover:text-[var(--primary)]"
+              >
+                <Languages className="h-4 w-4" />
+                {copy.languageShort}
+              </button>
+            </div>
+
+            <div className="mb-5 hidden justify-end lg:flex">
+              <button
+                type="button"
+                onClick={toggleLanguage}
+                aria-label={loginCopy.languageLabel}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-white px-3 text-sm font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:border-[var(--primary-light)] hover:text-[var(--primary)]"
+              >
+                <Languages className="h-4 w-4" />
+                {copy.languageShort}
+              </button>
             </div>
 
             <div className="rounded-[1.6rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
-                Welcome back
+                {loginCopy.welcomeBack}
               </p>
 
               <h2 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[var(--foreground)]">
-                Sign in
+                {loginCopy.signIn}
               </h2>
 
               <p className="mt-3 text-sm leading-7 text-[var(--muted-foreground)]">
-                Access your workspace dashboard securely and continue managing
-                operations from one place.
+                {loginCopy.signInDescription}
               </p>
 
               {error && (
                 <div className="mt-5 rounded-[1.2rem] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
-                  Sign-in failed:{" "}
+                  {loginCopy.signInFailed}{" "}
                   {error === "OAuthAccountNotLinked"
-                    ? "Email already in use with another provider."
-                    : "Something went wrong with GitHub."}
+                    ? loginCopy.accountNotLinked
+                    : loginCopy.githubError}
                 </div>
               )}
 
               <button
-                onClick={() => signIn("github", { callbackUrl: "/" })}
+                onClick={() => signIn("github", { callbackUrl })}
                 className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--foreground)] px-5 text-sm font-semibold text-white shadow-[var(--shadow-xs)] transition hover:bg-black"
               >
-                Continue with GitHub
+                {loginCopy.continueWithGithub}
               </button>
 
               <div className="mt-6 rounded-[1.2rem] border border-[var(--border)] bg-[var(--muted)] px-4 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
-                  Secure access
+                  {loginCopy.secureAccess}
                 </p>
                 <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
-                  Authentication is handled through your GitHub account for a
-                  faster and safer sign-in flow.
+                  {loginCopy.secureAccessDescription}
                 </p>
               </div>
             </div>

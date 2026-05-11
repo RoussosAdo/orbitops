@@ -19,6 +19,8 @@ import {
   getUserWorkspaces,
   requireCurrentWorkspace,
 } from "@/app/lib/get-current-workspace";
+import { getCurrentLanguage } from "@/app/lib/language";
+import { dashboardCopy } from "@/app/lib/i18n";
 
 function OverviewMetricCard({
   icon,
@@ -149,6 +151,8 @@ function ProgressRow({
 
 export default async function DashboardPage() {
   const workspace = await requireCurrentWorkspace();
+  const language = await getCurrentLanguage();
+  const copy = dashboardCopy[language].overview;
 
   const [
     clients,
@@ -248,21 +252,21 @@ export default async function DashboardPage() {
     totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   const workloadHealth =
-    openTasks >= 8 ? "Heavy" : openTasks >= 4 ? "Moderate" : "Stable";
+    openTasks >= 8 ? copy.heavy : openTasks >= 4 ? copy.moderate : copy.stable;
 
   const workspaceHealth =
     highPriorityTasks >= 3 || pendingInvoices.length > 0
-      ? "Needs Attention"
-      : "Healthy";
+      ? copy.needsAttention
+      : copy.healthy;
 
   const weeklyChartData = [
-    { name: "Mon", value: 2 },
-    { name: "Tue", value: 6 },
-    { name: "Wed", value: 6 },
-    { name: "Thu", value: 4 },
-    { name: "Fri", value: 8 },
-    { name: "Sat", value: 3 },
-    { name: "Sun", value: 2 },
+    { name: copy.weekdays.mon, value: 2 },
+    { name: copy.weekdays.tue, value: 6 },
+    { name: copy.weekdays.wed, value: 6 },
+    { name: copy.weekdays.thu, value: 4 },
+    { name: copy.weekdays.fri, value: 8 },
+    { name: copy.weekdays.sat, value: 3 },
+    { name: copy.weekdays.sun, value: 2 },
   ];
 
   const momentumChartData = [
@@ -286,7 +290,7 @@ export default async function DashboardPage() {
               <div className="max-w-3xl">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1.5 text-[11px] font-semibold text-[var(--muted-foreground)]">
                   <div className="h-2 w-2 rounded-full bg-[var(--primary)]" />
-                  Operations center
+                  {copy.operationsCenter}
                 </div>
 
                 <h1 className="mt-4 text-[2.8rem] font-semibold tracking-[-0.06em] text-[var(--foreground)]">
@@ -294,19 +298,18 @@ export default async function DashboardPage() {
                 </h1>
 
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--muted-foreground)] md:text-[15px]">
-                  Centralize delivery, client relationships, billing oversight
-                  and day-to-day execution across your active workspace.
+                  {copy.heroDescription}
                 </p>
 
                 <div className="mt-5 flex flex-wrap items-center gap-3">
                   <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)]">
                     <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                    Workspace {workspaceHealth}
+                    {copy.workspace} {workspaceHealth}
                   </div>
 
                   <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)]">
                     <CircleAlert className="h-4 w-4 text-amber-500" />
-                    Workload {workloadHealth}
+                    {copy.workload} {workloadHealth}
                   </div>
                 </div>
               </div>
@@ -319,11 +322,11 @@ export default async function DashboardPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <button className="inline-flex items-center justify-center rounded-2xl bg-[var(--foreground)] px-4 py-3 text-sm font-semibold text-white shadow-[var(--shadow-sm)] transition hover:-translate-y-0.5 hover:bg-black">
-                    Create Project
+                    {copy.createProject}
                   </button>
 
                   <button className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:bg-[var(--muted)]">
-                    Invite Team
+                    {copy.inviteTeam}
                   </button>
                 </div>
               </div>
@@ -333,27 +336,27 @@ export default async function DashboardPage() {
           <div className="relative grid gap-4 px-6 py-6 sm:grid-cols-2 xl:grid-cols-4 md:px-7">
             <OverviewMetricCard
               icon={<Users className="h-5 w-5" />}
-              label="Clients"
+              label={copy.clients}
               value={String(totalClients)}
-              meta={`${activeClients} active`}
+              meta={`${activeClients} ${copy.active}`}
             />
             <OverviewMetricCard
               icon={<FolderKanban className="h-5 w-5" />}
-              label="Projects"
+              label={copy.projects}
               value={String(totalProjects)}
-              meta={`${completedProjects} completed`}
+              meta={`${completedProjects} ${copy.completed}`}
             />
             <OverviewMetricCard
               icon={<BriefcaseBusiness className="h-5 w-5" />}
-              label="Open Tasks"
+              label={copy.openTasks}
               value={String(openTasks)}
-              meta={`${completedTasks} completed`}
+              meta={`${completedTasks} ${copy.completed}`}
             />
             <OverviewMetricCard
               icon={<Receipt className="h-5 w-5" />}
-              label="Invoices"
+              label={copy.invoices}
               value={String(invoices.length)}
-              meta={`€${totalBilledAmount} billed`}
+              meta={`€${totalBilledAmount} ${copy.billed}`}
             />
           </div>
         </div>
@@ -364,32 +367,32 @@ export default async function DashboardPage() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--primary)]">
-                  Highlights
+                  {copy.highlights}
                 </p>
 
                 <h2 className="mt-3 text-[2.2rem] font-semibold tracking-[-0.05em] text-[var(--foreground)]">
-                  Workspace Signal
+                  {copy.workspaceSignal}
                 </h2>
               </div>
 
               <span className="rounded-full border border-[var(--border)] bg-white/80 px-3 py-1 text-xs font-semibold text-[var(--primary)] shadow-[var(--shadow-xs)]">
-                Live
+                {copy.live}
               </span>
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <MiniStat
-                label="High priority tasks"
+                label={copy.highPriorityTasks}
                 value={String(highPriorityTasks)}
                 accent="text-red-500"
               />
               <MiniStat
-                label="Pending invoices"
+                label={copy.pendingInvoices}
                 value={String(pendingInvoices.length)}
                 accent="text-emerald-600"
               />
               <MiniStat
-                label="Seats used"
+                label={copy.seatsUsed}
                 value={
                   billingProfile
                     ? `${seatsUsed}/${billingProfile.seatsIncluded}`
@@ -398,7 +401,7 @@ export default async function DashboardPage() {
                 accent="text-amber-500"
               />
               <MiniStat
-                label="Projects usage"
+                label={copy.projectsUsage}
                 value={
                   billingProfile
                     ? `${totalProjects}/${billingProfile.projectsIncluded}`
@@ -410,7 +413,7 @@ export default async function DashboardPage() {
 
             <div className="mt-5 rounded-[1.25rem] border border-[var(--border)] bg-white/80 p-4 shadow-[var(--shadow-xs)]">
               <p className="text-sm leading-6 text-[var(--muted-foreground)]">
-                Operations are stable. Delivery, task load and finance are under control.
+                {copy.stableMessage}
               </p>
             </div>
           </div>
@@ -420,12 +423,12 @@ export default async function DashboardPage() {
       <div className="grid gap-6 xl:grid-cols-[1.72fr_0.95fr]">
         <div className="space-y-6">
           <SectionCard
-            eyebrow="Analytics"
-            title="Weekly Overview"
+            eyebrow={copy.analytics}
+            title={copy.weeklyOverview}
             className="shadow-[var(--shadow-md)]"
             rightSlot={
               <button className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:bg-[var(--muted)]">
-                Details ↗
+                {copy.details}
               </button>
             }
           >
@@ -433,36 +436,36 @@ export default async function DashboardPage() {
 
             <div className="mt-4 grid gap-3 md:grid-cols-3">
               <MiniStat
-                label="Clients activity"
-                value={`${activeClients} live accounts`}
+                label={copy.clientsActivity}
+                value={`${activeClients} ${copy.liveAccounts}`}
               />
               <MiniStat
-                label="Task pressure"
-                value={`${openTasks} active tasks`}
+                label={copy.taskPressure}
+                value={`${openTasks} ${copy.activeTasks}`}
               />
               <MiniStat
-                label="Billing exposure"
-                value={`€${totalBilledAmount} total`}
+                label={copy.billingExposure}
+                value={`€${totalBilledAmount} ${copy.total}`}
               />
             </div>
           </SectionCard>
 
           <div className="grid gap-6 lg:grid-cols-2">
             <SectionCard
-              eyebrow="Performance"
-              title="Execution Snapshot"
+              eyebrow={copy.performance}
+              title={copy.executionSnapshot}
               rightSlot={
                 <span className="rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
-                  Live data
+                  {copy.liveData}
                 </span>
               }
             >
               <div className="space-y-3">
                 {[
-                  { label: "Active Clients", value: activeClients },
-                  { label: "Completed Projects", value: completedProjects },
-                  { label: "Open Tasks", value: openTasks },
-                  { label: "Completed Tasks", value: completedTasks },
+                  { label: copy.activeClients, value: activeClients },
+                  { label: copy.completedProjects, value: completedProjects },
+                  { label: copy.openTasks, value: openTasks },
+                  { label: copy.completedTasks, value: completedTasks },
                 ].map((item) => (
                   <div
                     key={item.label}
@@ -479,19 +482,22 @@ export default async function DashboardPage() {
               </div>
             </SectionCard>
 
-            <SectionCard eyebrow="Trend" title="Execution Momentum">
+            <SectionCard eyebrow={copy.trend} title={copy.executionMomentum}>
               <OverviewLineChart data={momentumChartData} />
             </SectionCard>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
-            <SectionCard eyebrow="Projects" title="Status Distribution">
+            <SectionCard
+              eyebrow={copy.projects}
+              title={copy.projectStatusDistribution}
+            >
               <div className="space-y-3">
                 {[
-                  { label: "Planning", value: planningProjects },
-                  { label: "In Progress", value: inProgressProjects },
-                  { label: "In Review", value: inReviewProjects },
-                  { label: "Completed", value: completedProjects },
+                  { label: copy.planning, value: planningProjects },
+                  { label: copy.inProgress, value: inProgressProjects },
+                  { label: copy.inReview, value: inReviewProjects },
+                  { label: copy.completed, value: completedProjects },
                 ].map((item) => (
                   <div
                     key={item.label}
@@ -508,11 +514,11 @@ export default async function DashboardPage() {
               </div>
             </SectionCard>
 
-            <SectionCard eyebrow="Tasks" title="Priority Load">
+            <SectionCard eyebrow={copy.tasks} title={copy.priorityLoad}>
               <div className="space-y-3">
                 <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3">
                   <span className="text-sm font-medium text-[var(--foreground)]">
-                    High Priority
+                    {copy.highPriority}
                   </span>
                   <span className="text-sm font-semibold text-red-500">
                     {highPriorityTasks}
@@ -521,7 +527,7 @@ export default async function DashboardPage() {
 
                 <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3">
                   <span className="text-sm font-medium text-[var(--foreground)]">
-                    Medium Priority
+                    {copy.mediumPriority}
                   </span>
                   <span className="text-sm font-semibold text-amber-500">
                     {mediumPriorityTasks}
@@ -530,7 +536,7 @@ export default async function DashboardPage() {
 
                 <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3">
                   <span className="text-sm font-medium text-[var(--foreground)]">
-                    Low Priority
+                    {copy.lowPriority}
                   </span>
                   <span className="text-sm font-semibold text-emerald-500">
                     {lowPriorityTasks}
@@ -539,7 +545,7 @@ export default async function DashboardPage() {
 
                 <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3">
                   <span className="text-sm font-medium text-[var(--foreground)]">
-                    Total Tasks
+                    {copy.totalTasks}
                   </span>
                   <span className="text-sm font-semibold text-[var(--primary)]">
                     {totalTasks}
@@ -549,7 +555,7 @@ export default async function DashboardPage() {
             </SectionCard>
           </div>
 
-          <SectionCard eyebrow="Finance" title="Billing Activity">
+          <SectionCard eyebrow={copy.finance} title={copy.billingActivity}>
             <div className="space-y-3">
               {invoices.length > 0 ? (
                 invoices.slice(0, 3).map((invoice) => (
@@ -584,7 +590,7 @@ export default async function DashboardPage() {
                 ))
               ) : (
                 <div className="rounded-[1.2rem] border border-[var(--border)] bg-[var(--muted)] px-4 py-4 text-sm text-[var(--muted-foreground)]">
-                  No recent invoice activity.
+                  {copy.noRecentInvoiceActivity}
                 </div>
               )}
             </div>
@@ -592,16 +598,19 @@ export default async function DashboardPage() {
         </div>
 
         <div className="space-y-6">
-          <SectionCard eyebrow="Performance" title="Execution Momentum">
+          <SectionCard
+            eyebrow={copy.performance}
+            title={copy.executionMomentum}
+          >
             <OverviewLineChart data={momentumChartData} />
           </SectionCard>
 
-          <SectionCard eyebrow="Subscription" title="Plan Usage">
+          <SectionCard eyebrow={copy.subscription} title={copy.planUsage}>
             {billingProfile ? (
               <div className="space-y-4">
                 <div className="rounded-[1.35rem] border border-[var(--border)] bg-[linear-gradient(180deg,#fbfcff_0%,#f7f9ff_100%)] p-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
-                    Current Plan
+                    {copy.currentPlan}
                   </p>
                   <p className="mt-3 text-xl font-semibold text-[var(--foreground)]">
                     {billingProfile.planName}
@@ -612,19 +621,19 @@ export default async function DashboardPage() {
                 </div>
 
                 <ProgressRow
-                  label="Seats Usage"
+                  label={copy.seatsUsage}
                   value={seatsUsed}
                   max={billingProfile.seatsIncluded}
                   tone="purple"
                 />
                 <ProgressRow
-                  label="Projects Usage"
+                  label={copy.projectsUsage}
                   value={totalProjects}
                   max={billingProfile.projectsIncluded}
                   tone="blue"
                 />
                 <ProgressRow
-                  label="Paid Invoices"
+                  label={copy.paidInvoices}
                   value={paidInvoices.length}
                   max={Math.max(invoices.length, 1)}
                   tone="amber"
@@ -632,17 +641,17 @@ export default async function DashboardPage() {
               </div>
             ) : (
               <div className="rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-5 text-sm text-[var(--muted-foreground)]">
-                No billing profile found for this workspace.
+                {copy.noBillingProfile}
               </div>
             )}
           </SectionCard>
 
           <SectionCard
-            eyebrow="Delivery"
-            title="Recent Projects"
+            eyebrow={copy.delivery}
+            title={copy.recentProjects}
             rightSlot={
               <button className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:bg-[var(--muted)]">
-                View All
+                {copy.viewAll}
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </button>
             }
@@ -672,13 +681,13 @@ export default async function DashboardPage() {
                 ))
               ) : (
                 <div className="rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-5 text-sm text-[var(--muted-foreground)]">
-                  No recent projects yet.
+                  {copy.noRecentProjects}
                 </div>
               )}
             </div>
           </SectionCard>
 
-          <SectionCard eyebrow="Summary" title="Revenue Snapshot">
+          <SectionCard eyebrow={copy.summary} title={copy.revenueSnapshot}>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4">
                 <div className="flex items-center gap-3">
@@ -687,7 +696,7 @@ export default async function DashboardPage() {
                   </div>
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
-                      Total billed
+                      {copy.totalBilled}
                     </p>
                     <p className="mt-1 text-2xl font-semibold text-[var(--foreground)]">
                       €{totalBilledAmount}
@@ -703,7 +712,7 @@ export default async function DashboardPage() {
                   </div>
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
-                      Completion rate
+                      {copy.completionRate}
                     </p>
                     <p className="mt-1 text-2xl font-semibold text-[var(--foreground)]">
                       {taskClosureRate}%
@@ -719,7 +728,7 @@ export default async function DashboardPage() {
                   </div>
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
-                      Task closure
+                      {copy.taskClosure}
                     </p>
                     <p className="mt-1 text-2xl font-semibold text-[var(--foreground)]">
                       {taskClosureRate}%
@@ -735,7 +744,7 @@ export default async function DashboardPage() {
                   </div>
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
-                      Paid invoice rate
+                      {copy.paidInvoiceRate}
                     </p>
                     <p className="mt-1 text-2xl font-semibold text-[var(--foreground)]">
                       {invoiceCollectionRate}%

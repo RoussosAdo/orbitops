@@ -1,15 +1,18 @@
 "use client";
 
 import Sidebar from "@/app/components/dashboard/sidebar";
+import type { AppLanguage } from "@/app/lib/i18n";
 
 type MobileSidebarProps = {
   isOpen: boolean;
   onClose: () => void;
+  language: AppLanguage;
 };
 
 export default function MobileSidebar({
   isOpen,
   onClose,
+  language,
 }: MobileSidebarProps) {
   return (
     <>
@@ -28,7 +31,7 @@ export default function MobileSidebar({
         }`}
       >
         <div className="flex h-full shadow-[var(--shadow-lg)]">
-          <Sidebar isMobile onNavigate={onClose} />
+          <Sidebar isMobile onNavigate={onClose} language={language} />
         </div>
       </div>
     </>

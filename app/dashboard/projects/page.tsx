@@ -1,6 +1,8 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
+import { getCurrentLanguage } from "@/app/lib/get-current-language";
+import { dashboardCopy } from "@/app/lib/i18n";
 import {
   createProject,
   updateProject,
@@ -15,7 +17,36 @@ type ProjectsPageProps = {
   }>;
 };
 
-function ProjectStatusBadge({ status }: { status: string }) {
+function getProjectStatusLabel(status: string, language: "en" | "el") {
+  const labels = {
+    en: {
+      Planning: "Planning",
+      "In Progress": "In Progress",
+      "In Review": "In Review",
+      Completed: "Completed",
+    },
+    el: {
+      Planning: "Σχεδιασμός",
+      "In Progress": "Σε εξέλιξη",
+      "In Review": "Σε έλεγχο",
+      Completed: "Ολοκληρωμένο",
+    },
+  };
+
+  return (
+    labels[language][
+      status as "Planning" | "In Progress" | "In Review" | "Completed"
+    ] ?? status
+  );
+}
+
+function ProjectStatusBadge({
+  status,
+  language,
+}: {
+  status: string;
+  language: "en" | "el";
+}) {
   const styles =
     status === "Completed"
       ? "bg-emerald-100 text-emerald-700"
@@ -29,7 +60,7 @@ function ProjectStatusBadge({ status }: { status: string }) {
     <span
       className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
     >
-      {status}
+      {getProjectStatusLabel(status, language)}
     </span>
   );
 }
@@ -45,7 +76,10 @@ function SummaryCard({
 }) {
   return (
     <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
-      <p className="text-sm font-medium text-[var(--muted-foreground)]">{label}</p>
+      <p className="text-sm font-medium text-[var(--muted-foreground)]">
+        {label}
+      </p>
+
       <p
         className={`mt-3 text-3xl font-semibold tracking-[-0.04em] ${
           accent || "text-[var(--foreground)]"
@@ -61,6 +95,10 @@ export default async function ProjectsPage({
   searchParams,
 }: ProjectsPageProps) {
   const workspace = await requireCurrentWorkspace();
+  const language = await getCurrentLanguage();
+  const copy = dashboardCopy[language];
+  const projectsCopy = copy.projects;
+
   const params = searchParams ? await searchParams : undefined;
 
   const editingId = params?.edit ?? null;
@@ -149,9 +187,11 @@ export default async function ProjectsPage({
   const completedProjects = projects.filter(
     (project) => project.status === "Completed"
   ).length;
+
   const inProgressProjects = projects.filter(
     (project) => project.status === "In Progress"
   ).length;
+
   const planningProjects = projects.filter(
     (project) => project.status === "Planning"
   ).length;
@@ -159,21 +199,26 @@ export default async function ProjectsPage({
   return (
     <section className="space-y-6">
       <PageHeader
-        eyebrow="Workspace"
-        title="Projects"
-        description="Track delivery, monitor progress and manage active work across all linked clients."
-        actionLabel="New Project"
+        eyebrow={projectsCopy.eyebrow}
+        title={projectsCopy.title}
+        description={projectsCopy.description}
+        actionLabel={projectsCopy.newProject}
       />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <SummaryCard label="Total Projects" value={String(projects.length)} />
         <SummaryCard
-          label="In Progress"
+          label={projectsCopy.totalProjects}
+          value={String(projects.length)}
+        />
+
+        <SummaryCard
+          label={projectsCopy.inProgress}
           value={String(inProgressProjects)}
           accent="text-[var(--primary)]"
         />
+
         <SummaryCard
-          label="Planning / Completed"
+          label={projectsCopy.planningCompleted}
           value={String(planningProjects + completedProjects)}
           accent="text-emerald-600"
         />
@@ -183,10 +228,11 @@ export default async function ProjectsPage({
         <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--muted)] p-5">
           <div className="mb-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-              Create Project
+              {projectsCopy.createProject}
             </p>
+
             <h2 className="mt-2 text-lg font-semibold text-[var(--foreground)]">
-              Add a new delivery stream
+              {projectsCopy.addNewDeliveryStream}
             </h2>
           </div>
 
@@ -197,7 +243,7 @@ export default async function ProjectsPage({
             <input
               name="name"
               type="text"
-              placeholder="Project name"
+              placeholder={projectsCopy.projectName}
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
@@ -205,7 +251,7 @@ export default async function ProjectsPage({
             <input
               name="budget"
               type="text"
-              placeholder="Budget (e.g. $5,000)"
+              placeholder={projectsCopy.budgetPlaceholder}
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
@@ -213,7 +259,7 @@ export default async function ProjectsPage({
             <input
               name="dueDate"
               type="text"
-              placeholder="Due date"
+              placeholder={projectsCopy.dueDate}
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
@@ -221,14 +267,14 @@ export default async function ProjectsPage({
             <input
               name="team"
               type="text"
-              placeholder="Team (e.g. 3 members)"
+              placeholder={projectsCopy.teamPlaceholder}
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
             <textarea
               name="description"
-              placeholder="Project description"
+              placeholder={projectsCopy.projectDescription}
               className="min-h-[120px] rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] md:col-span-2 xl:col-span-2"
               required
             />
@@ -238,10 +284,10 @@ export default async function ProjectsPage({
               defaultValue="Planning"
               className="h-[120px] rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
-              <option value="Planning">Planning</option>
-              <option value="In Progress">In Progress</option>
-              <option value="In Review">In Review</option>
-              <option value="Completed">Completed</option>
+              <option value="Planning">{projectsCopy.planning}</option>
+              <option value="In Progress">{projectsCopy.inProgress}</option>
+              <option value="In Review">{projectsCopy.inReview}</option>
+              <option value="Completed">{projectsCopy.completed}</option>
             </select>
 
             <input
@@ -250,7 +296,7 @@ export default async function ProjectsPage({
               min="0"
               max="100"
               defaultValue="0"
-              placeholder="Progress %"
+              placeholder={projectsCopy.progressPlaceholder}
               className="h-[120px] rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             />
 
@@ -259,7 +305,7 @@ export default async function ProjectsPage({
               defaultValue=""
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
-              <option value="">No client selected</option>
+              <option value="">{projectsCopy.noClientSelected}</option>
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
                   {client.name} — {client.company}
@@ -271,14 +317,14 @@ export default async function ProjectsPage({
               type="submit"
               className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
             >
-              Create Project
+              {projectsCopy.createProject}
             </button>
           </form>
         </div>
 
-        <div className="mt-6 mb-5 flex items-center justify-between gap-4">
+        <div className="mb-5 mt-6 flex items-center justify-between gap-4">
           <p className="text-sm text-[var(--muted-foreground)]">
-            Current workspace:{" "}
+            {projectsCopy.currentWorkspace}:{" "}
             <span className="font-semibold text-[var(--foreground)]">
               {workspace.name}
             </span>
@@ -288,7 +334,7 @@ export default async function ProjectsPage({
             type="button"
             className="rounded-2xl border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
           >
-            Export
+            {projectsCopy.export}
           </button>
         </div>
 
@@ -300,7 +346,7 @@ export default async function ProjectsPage({
             name="q"
             type="text"
             defaultValue={searchQuery}
-            placeholder="Search by project, client, budget or team..."
+            placeholder={projectsCopy.searchPlaceholder}
             className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
           />
 
@@ -309,25 +355,25 @@ export default async function ProjectsPage({
             defaultValue={selectedStatus || "All"}
             className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
           >
-            <option value="All">All Statuses</option>
-            <option value="Planning">Planning</option>
-            <option value="In Progress">In Progress</option>
-            <option value="In Review">In Review</option>
-            <option value="Completed">Completed</option>
+            <option value="All">{projectsCopy.allStatuses}</option>
+            <option value="Planning">{projectsCopy.planning}</option>
+            <option value="In Progress">{projectsCopy.inProgress}</option>
+            <option value="In Review">{projectsCopy.inReview}</option>
+            <option value="Completed">{projectsCopy.completed}</option>
           </select>
 
           <button
             type="submit"
             className="h-12 rounded-2xl bg-[var(--primary)] px-4 text-sm font-semibold text-white transition hover:bg-[var(--primary-dark)]"
           >
-            Apply
+            {projectsCopy.apply}
           </button>
 
           <a
             href="/dashboard/projects"
             className="inline-flex h-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
           >
-            Reset
+            {projectsCopy.reset}
           </a>
         </form>
 
@@ -391,10 +437,10 @@ export default async function ProjectsPage({
                       defaultValue={project.status}
                       className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                     >
-                      <option value="Planning">Planning</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="In Review">In Review</option>
-                      <option value="Completed">Completed</option>
+                      <option value="Planning">{projectsCopy.planning}</option>
+                      <option value="In Progress">{projectsCopy.inProgress}</option>
+                      <option value="In Review">{projectsCopy.inReview}</option>
+                      <option value="Completed">{projectsCopy.completed}</option>
                     </select>
 
                     <input
@@ -411,7 +457,7 @@ export default async function ProjectsPage({
                       defaultValue={project.clientId ?? ""}
                       className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                     >
-                      <option value="">No client selected</option>
+                      <option value="">{projectsCopy.noClientSelected}</option>
                       {clients.map((client) => (
                         <option key={client.id} value={client.id}>
                           {client.name} — {client.company}
@@ -423,7 +469,7 @@ export default async function ProjectsPage({
                       type="submit"
                       className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
                     >
-                      Save Project
+                      {projectsCopy.saveProject}
                     </button>
 
                     <a
@@ -434,7 +480,7 @@ export default async function ProjectsPage({
                       )}`}
                       className="inline-flex h-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                     >
-                      Cancel
+                      {projectsCopy.cancel}
                     </a>
                   </form>
                 </article>
@@ -457,23 +503,27 @@ export default async function ProjectsPage({
                     </p>
 
                     <p className="mt-3 text-xs font-medium text-[var(--muted-foreground)]">
-                      Client:{" "}
+                      {projectsCopy.client}:{" "}
                       <span className="font-semibold text-[var(--foreground)]">
                         {project.client
                           ? `${project.client.name} — ${project.client.company}`
-                          : "No client linked"}
+                          : projectsCopy.noClientLinked}
                       </span>
                     </p>
                   </div>
 
-                  <ProjectStatusBadge status={project.status} />
+                  <ProjectStatusBadge
+                    status={project.status}
+                    language={language}
+                  />
                 </div>
 
                 <div className="mt-5 rounded-[1.2rem] border border-[var(--border)] bg-[var(--muted)] p-4">
                   <div className="mb-2 flex items-center justify-between text-sm">
                     <span className="font-medium text-[var(--muted-foreground)]">
-                      Progress
+                      {projectsCopy.progress}
                     </span>
+
                     <span className="font-bold text-[var(--primary-dark)]">
                       {project.progress}%
                     </span>
@@ -490,8 +540,9 @@ export default async function ProjectsPage({
                 <div className="mt-5 grid grid-cols-3 gap-4 rounded-2xl border border-[var(--border)] bg-[var(--muted)] p-4">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
-                      Budget
+                      {projectsCopy.budget}
                     </p>
+
                     <p className="mt-2 text-sm font-semibold text-[var(--foreground)]">
                       {project.budget}
                     </p>
@@ -499,8 +550,9 @@ export default async function ProjectsPage({
 
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
-                      Due Date
+                      {projectsCopy.dueDate}
                     </p>
+
                     <p className="mt-2 text-sm font-semibold text-[var(--foreground)]">
                       {project.dueDate}
                     </p>
@@ -508,8 +560,9 @@ export default async function ProjectsPage({
 
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
-                      Team
+                      {projectsCopy.team}
                     </p>
+
                     <p className="mt-2 text-sm font-semibold text-[var(--foreground)]">
                       {project.team}
                     </p>
@@ -518,7 +571,7 @@ export default async function ProjectsPage({
 
                 <div className="mt-5 flex items-center gap-2">
                   <button className="control-hover rounded-xl bg-[var(--foreground)] px-4 py-2 text-sm font-semibold text-white hover:bg-black">
-                    View Project
+                    {projectsCopy.viewProject}
                   </button>
 
                   <a
@@ -529,16 +582,17 @@ export default async function ProjectsPage({
                     )}`}
                     className="control-hover rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
                   >
-                    Edit
+                    {projectsCopy.edit}
                   </a>
 
                   <form action={deleteProject}>
                     <input type="hidden" name="projectId" value={project.id} />
+
                     <button
                       type="submit"
                       className="control-hover rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
                     >
-                      Delete
+                      {projectsCopy.delete}
                     </button>
                   </form>
                 </div>
@@ -548,13 +602,12 @@ export default async function ProjectsPage({
 
           {projects.length === 0 && (
             <div className="rounded-[1.5rem] border border-dashed border-[var(--border)] bg-[var(--muted)] p-10 text-center text-sm text-[var(--muted-foreground)] xl:col-span-2">
-  <p className="text-base font-semibold text-[var(--foreground)]">
-    No projects found
-  </p>
-  <p className="mt-2">
-    Change your filters or create a new project to populate this space.
-  </p>
-</div>
+              <p className="text-base font-semibold text-[var(--foreground)]">
+                {projectsCopy.noProjectsFound}
+              </p>
+
+              <p className="mt-2">{projectsCopy.noProjectsDescription}</p>
+            </div>
           )}
         </div>
       </div>

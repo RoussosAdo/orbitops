@@ -1,11 +1,15 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
+import { getCurrentLanguage } from "@/app/lib/get-current-language";
+import { dashboardCopy } from "@/app/lib/i18n";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import TeamRoleForm from "@/app/components/dashboard/team/team-role-form";
 import RemoveMemberForm from "@/app/components/dashboard/team/team-member-form";
 import RevokeInvitationForm from "@/app/components/dashboard/team/revoke-initation-form";
+
+type TeamCopy = typeof dashboardCopy.en.teamPage;
 
 function TeamStatCard({
   label,
@@ -31,7 +35,20 @@ function TeamStatCard({
   );
 }
 
-function RoleBadge({ role }: { role: string }) {
+function getRoleLabel(role: string, copy: TeamCopy) {
+  if (role === "OWNER") return copy.owner;
+  if (role === "ADMIN") return copy.admin;
+  if (role === "MEMBER") return copy.memberRole;
+  return role;
+}
+
+function getStatusLabel(status: string, copy: TeamCopy) {
+  if (status === "ACTIVE") return copy.activeStatus;
+  if (status === "PENDING") return copy.pendingStatus;
+  return status;
+}
+
+function RoleBadge({ role, copy }: { role: string; copy: TeamCopy }) {
   const styles =
     role === "OWNER"
       ? "bg-purple-100 text-purple-700"
@@ -41,12 +58,12 @@ function RoleBadge({ role }: { role: string }) {
 
   return (
     <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}>
-      {role}
+      {getRoleLabel(role, copy)}
     </span>
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, copy }: { status: string; copy: TeamCopy }) {
   const styles =
     status === "ACTIVE"
       ? "bg-emerald-100 text-emerald-700"
@@ -54,13 +71,15 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}>
-      {status}
+      {getStatusLabel(status, copy)}
     </span>
   );
 }
 
 export default async function TeamPage() {
   const workspace = await requireCurrentWorkspace();
+  const language = await getCurrentLanguage();
+  const copy = dashboardCopy[language].teamPage;
   const session = await getServerSession(authOptions);
 
   const [members, invitations, actorMembership] = await Promise.all([
@@ -106,38 +125,41 @@ export default async function TeamPage() {
   const adminsCount = members.filter(
     (member) => member.role === "ADMIN" && member.status === "ACTIVE"
   ).length;
+  const membersCount = members.filter(
+    (member) => member.role === "MEMBER" && member.status === "ACTIVE"
+  ).length;
 
   return (
     <section className="space-y-6">
       <PageHeader
-        eyebrow="Workspace"
-        title="Team"
-        description="Manage workspace access, member roles, pending invites and collaboration permissions."
-        actionLabel="Invite Member"
+        eyebrow={copy.eyebrow}
+        title={copy.title}
+        description={copy.description}
+        actionLabel={copy.inviteMember}
       />
 
       <div className="grid gap-4 md:grid-cols-4">
         <TeamStatCard
-          label="Active Members"
+          label={copy.activeMembers}
           value={String(activeMembers.length)}
-          meta="Currently active"
+          meta={copy.currentlyActive}
         />
         <TeamStatCard
-          label="Pending Invites"
+          label={copy.pendingInvites}
           value={String(pendingInvites.length)}
-          meta="Awaiting acceptance"
+          meta={copy.awaitingAcceptance}
           accent="text-amber-600"
         />
         <TeamStatCard
-          label="Owners"
+          label={copy.owners}
           value={String(ownersCount)}
-          meta="Workspace control"
+          meta={copy.workspaceControl}
           accent="text-purple-600"
         />
         <TeamStatCard
-          label="Admins"
+          label={copy.admins}
           value={String(adminsCount)}
-          meta="Operational access"
+          meta={copy.operationalAccess}
           accent="text-sky-600"
         />
       </div>
@@ -146,22 +168,22 @@ export default async function TeamPage() {
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="max-w-2xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-              Team Access
+              {copy.teamAccess}
             </p>
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
-              Invite New Member
+              {copy.inviteNewMember}
             </h2>
             <p className="mt-3 text-sm leading-7 text-[var(--muted-foreground)]">
-              Add teammates to{" "}
+              {copy.inviteDescriptionStart}{" "}
               <span className="font-semibold text-[var(--foreground)]">
                 {workspace.name}
               </span>{" "}
-              and assign the right role before they join.
+              {copy.inviteDescriptionEnd}
             </p>
           </div>
 
           <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--muted-foreground)]">
-            Current workspace:{" "}
+            {copy.currentWorkspace}:{" "}
             <span className="font-semibold text-[var(--foreground)]">
               {workspace.name}
             </span>
@@ -177,7 +199,7 @@ export default async function TeamPage() {
             <input
               name="email"
               type="email"
-              placeholder="Invite by email"
+              placeholder={copy.inviteByEmail}
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
@@ -187,21 +209,21 @@ export default async function TeamPage() {
               defaultValue="MEMBER"
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-medium text-[var(--foreground)] outline-none"
             >
-              {isOwner && <option value="OWNER">Owner</option>}
-              <option value="ADMIN">Admin</option>
-              <option value="MEMBER">Member</option>
+              {isOwner && <option value="OWNER">{copy.owner}</option>}
+              <option value="ADMIN">{copy.admin}</option>
+              <option value="MEMBER">{copy.memberRole}</option>
             </select>
 
             <button
               type="submit"
               className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
             >
-              Send Invite
+              {copy.sendInvite}
             </button>
           </form>
         ) : (
           <div className="mt-6 rounded-[1.5rem] border border-dashed border-[var(--border)] bg-[var(--muted)] px-5 py-4 text-sm text-[var(--muted-foreground)]">
-            You have view access only. Only owners and admins can invite members or manage team permissions.
+            {copy.viewOnlyMessage}
           </div>
         )}
       </div>
@@ -211,15 +233,15 @@ export default async function TeamPage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-                Members
+                {copy.members}
               </p>
               <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
-                Workspace Members
+                {copy.workspaceMembers}
               </h3>
             </div>
 
             <span className="rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
-              {members.length} total
+              {members.length} {copy.total}
             </span>
           </div>
 
@@ -228,19 +250,19 @@ export default async function TeamPage() {
               <thead className="bg-[var(--muted)]">
                 <tr className="text-left">
                   <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
-                    Member
+                    {copy.member}
                   </th>
                   <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
-                    Role
+                    {copy.role}
                   </th>
                   <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
-                    Status
+                    {copy.status}
                   </th>
                   <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
-                    Joined
+                    {copy.joined}
                   </th>
                   <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
-                    Actions
+                    {copy.actions}
                   </th>
                 </tr>
               </thead>
@@ -279,10 +301,10 @@ export default async function TeamPage() {
                       <td className="px-5 py-4">
                         <div>
                           <p className="text-sm font-semibold text-[var(--foreground)]">
-                            {member.user.name || "Unnamed User"}
+                            {member.user.name || copy.unnamedUser}
                           </p>
                           <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-                            {member.user.email || "No email"}
+                            {member.user.email || copy.noEmail}
                           </p>
                         </div>
                       </td>
@@ -295,12 +317,12 @@ export default async function TeamPage() {
                             disabled={!canEditRole}
                           />
                         ) : (
-                          <RoleBadge role={member.role} />
+                          <RoleBadge role={member.role} copy={copy} />
                         )}
                       </td>
 
                       <td className="px-5 py-4">
-                        <StatusBadge status={member.status} />
+                        <StatusBadge status={member.status} copy={copy} />
                       </td>
 
                       <td className="px-5 py-4 text-sm text-[var(--muted-foreground)]">
@@ -315,7 +337,7 @@ export default async function TeamPage() {
                           />
                         ) : (
                           <span className="text-xs font-medium text-[var(--muted-foreground)]">
-                            No access
+                            {copy.noAccess}
                           </span>
                         )}
                       </td>
@@ -329,7 +351,7 @@ export default async function TeamPage() {
                       colSpan={5}
                       className="px-5 py-10 text-center text-sm text-[var(--muted-foreground)]"
                     >
-                      No team members found in this workspace.
+                      {copy.noTeamMembers}
                     </td>
                   </tr>
                 )}
@@ -343,15 +365,15 @@ export default async function TeamPage() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-                  Invitations
+                  {copy.invitations}
                 </p>
                 <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
-                  Pending Invitations
+                  {copy.pendingInvitations}
                 </h3>
               </div>
 
               <span className="rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
-                {pendingInvites.length} pending
+                {pendingInvites.length} {copy.pending}
               </span>
             </div>
 
@@ -373,21 +395,22 @@ export default async function TeamPage() {
                             {invite.email}
                           </p>
                           <p className="mt-2 text-xs text-[var(--muted-foreground)]">
-                            Expires: {new Date(invite.expiresAt).toLocaleDateString()}
+                            {copy.expires}:{" "}
+                            {new Date(invite.expiresAt).toLocaleDateString()}
                           </p>
                         </div>
 
-                        <StatusBadge status={invite.status} />
+                        <StatusBadge status={invite.status} copy={copy} />
                       </div>
 
                       <div className="mt-4 flex items-center justify-between gap-3">
-                        <RoleBadge role={invite.role} />
+                        <RoleBadge role={invite.role} copy={copy} />
 
-                        {canManageTeam ? (
+                        {canRevoke ? (
                           <RevokeInvitationForm invitationId={invite.id} />
-                        ) : canRevoke ? null : (
+                        ) : (
                           <span className="text-xs font-medium text-[var(--muted-foreground)]">
-                            No access
+                            {copy.noAccess}
                           </span>
                         )}
                       </div>
@@ -397,11 +420,9 @@ export default async function TeamPage() {
               ) : (
                 <div className="rounded-[1.25rem] border border-dashed border-[var(--border)] bg-[var(--muted)] px-4 py-12 text-center text-sm text-[var(--muted-foreground)]">
                   <p className="text-base font-semibold text-[var(--foreground)]">
-                    No pending invitations
+                    {copy.noPendingInvitations}
                   </p>
-                  <p className="mt-2">
-                    New team invites will appear here until they are accepted.
-                  </p>
+                  <p className="mt-2">{copy.noPendingInvitationsDescription}</p>
                 </div>
               )}
             </div>
@@ -409,16 +430,16 @@ export default async function TeamPage() {
 
           <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-              Access Summary
+              {copy.accessSummary}
             </p>
             <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
-              Team Roles Overview
+              {copy.teamRolesOverview}
             </h3>
 
             <div className="mt-5 space-y-3">
               <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3">
                 <span className="text-sm font-medium text-[var(--foreground)]">
-                  Owners
+                  {copy.owners}
                 </span>
                 <span className="text-sm font-semibold text-purple-600">
                   {ownersCount}
@@ -427,7 +448,7 @@ export default async function TeamPage() {
 
               <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3">
                 <span className="text-sm font-medium text-[var(--foreground)]">
-                  Admins
+                  {copy.admins}
                 </span>
                 <span className="text-sm font-semibold text-sky-600">
                   {adminsCount}
@@ -436,24 +457,19 @@ export default async function TeamPage() {
 
               <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3">
                 <span className="text-sm font-medium text-[var(--foreground)]">
-                  Members
+                  {copy.members}
                 </span>
                 <span className="text-sm font-semibold text-[var(--primary)]">
-                  {
-                    members.filter(
-                      (member) =>
-                        member.role === "MEMBER" && member.status === "ACTIVE"
-                    ).length
-                  }
+                  {membersCount}
                 </span>
               </div>
 
               <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3">
                 <span className="text-sm font-medium text-[var(--foreground)]">
-                  Your access
+                  {copy.yourAccess}
                 </span>
                 <span className="text-sm font-semibold text-[var(--foreground)]">
-                  {actorRole}
+                  {getRoleLabel(actorRole, copy)}
                 </span>
               </div>
             </div>

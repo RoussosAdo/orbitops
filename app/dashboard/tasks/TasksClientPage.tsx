@@ -8,6 +8,8 @@ import {
 } from "@/app/actions/taskActions";
 import { useMemo, useState } from "react";
 import PageHeader from "@/app/components/dashboard/PageHeader";
+import type { AppLanguage } from "@/app/lib/i18n";
+import { dashboardCopy } from "@/app/lib/i18n";
 
 type FilterTab = "all" | "active" | "completed";
 type PriorityFilter = "all" | "High" | "Medium" | "Low";
@@ -34,9 +36,23 @@ type TasksPageProps = {
   tasks: TaskItem[];
   projects: ProjectItem[];
   workspaceName: string;
+  language: AppLanguage;
 };
 
-function PriorityBadge({ priority }: { priority: string }) {
+function getPriorityLabel(priority: string, copy: typeof dashboardCopy.en.tasksPage) {
+  if (priority === "High") return copy.high;
+  if (priority === "Medium") return copy.medium;
+  if (priority === "Low") return copy.low;
+  return priority;
+}
+
+function PriorityBadge({
+  priority,
+  copy,
+}: {
+  priority: string;
+  copy: typeof dashboardCopy.en.tasksPage;
+}) {
   const styles =
     priority === "High"
       ? "bg-red-100 text-red-600"
@@ -46,7 +62,7 @@ function PriorityBadge({ priority }: { priority: string }) {
 
   return (
     <span className={`rounded-full px-3 py-1 text-xs font-semibold ${styles}`}>
-      {priority}
+      {getPriorityLabel(priority, copy)}
     </span>
   );
 }
@@ -62,7 +78,9 @@ function SummaryCard({
 }) {
   return (
     <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
-      <p className="text-sm font-medium text-[var(--muted-foreground)]">{label}</p>
+      <p className="text-sm font-medium text-[var(--muted-foreground)]">
+        {label}
+      </p>
       <p
         className={`mt-3 text-3xl font-semibold tracking-[-0.04em] ${
           accent || "text-[var(--foreground)]"
@@ -78,12 +96,14 @@ export default function TasksClientPage({
   tasks: initialTasks,
   projects,
   workspaceName,
+  language,
 }: TasksPageProps) {
+  const copy = dashboardCopy[language].tasksPage;
+
   const [tasks, setTasks] = useState(initialTasks);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
-  const [priorityFilter, setPriorityFilter] =
-    useState<PriorityFilter>("all");
+  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -125,26 +145,28 @@ export default function TasksClientPage({
   }, [tasks, search, activeTab, priorityFilter, projectFilter]);
 
   const completedCount = tasks.filter((task) => task.completed).length;
-  const highPriorityCount = tasks.filter((task) => task.priority === "High").length;
+  const highPriorityCount = tasks.filter(
+    (task) => task.priority === "High"
+  ).length;
 
   return (
     <section className="space-y-6">
       <PageHeader
-        eyebrow="Workspace"
-        title="Tasks"
-        description="Track daily execution, manage deadlines and keep priority work under control."
-        actionLabel="New Task"
+        eyebrow={copy.eyebrow}
+        title={copy.title}
+        description={copy.description}
+        actionLabel={copy.newTask}
       />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <SummaryCard label="Total Tasks" value={String(tasks.length)} />
+        <SummaryCard label={copy.totalTasks} value={String(tasks.length)} />
         <SummaryCard
-          label="Completed"
+          label={copy.completed}
           value={String(completedCount)}
           accent="text-emerald-600"
         />
         <SummaryCard
-          label="High Priority"
+          label={copy.highPriority}
           value={String(highPriorityCount)}
           accent="text-red-500"
         />
@@ -154,10 +176,10 @@ export default function TasksClientPage({
         <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--muted)] p-5">
           <div className="mb-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
-              Create Task
+              {copy.createTask}
             </p>
             <h2 className="mt-2 text-lg font-semibold text-[var(--foreground)]">
-              Add a new task item
+              {copy.addNewTaskItem}
             </h2>
           </div>
 
@@ -168,7 +190,7 @@ export default function TasksClientPage({
             <input
               name="title"
               type="text"
-              placeholder="Task title"
+              placeholder={copy.taskTitle}
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
@@ -176,7 +198,7 @@ export default function TasksClientPage({
             <input
               name="dueDate"
               type="text"
-              placeholder="Due date"
+              placeholder={copy.dueDate}
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
@@ -186,9 +208,9 @@ export default function TasksClientPage({
               defaultValue="Medium"
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
+              <option value="High">{copy.high}</option>
+              <option value="Medium">{copy.medium}</option>
+              <option value="Low">{copy.low}</option>
             </select>
 
             <select
@@ -196,7 +218,7 @@ export default function TasksClientPage({
               defaultValue=""
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
-              <option value="">No project selected</option>
+              <option value="">{copy.noProjectSelected}</option>
               {projects.map((project) => (
                 <option key={project.id} value={project.id}>
                   {project.name}
@@ -208,14 +230,14 @@ export default function TasksClientPage({
               type="submit"
               className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
             >
-              Create Task
+              {copy.createTask}
             </button>
           </form>
         </div>
 
         <div className="mt-6 mb-5">
           <p className="text-sm text-[var(--muted-foreground)]">
-            Current workspace:{" "}
+            {copy.currentWorkspace}:{" "}
             <span className="font-semibold text-[var(--foreground)]">
               {workspaceName}
             </span>
@@ -226,7 +248,7 @@ export default function TasksClientPage({
           <div className="grid gap-3 xl:grid-cols-[1.2fr_auto_auto_auto_auto_auto]">
             <input
               type="text"
-              placeholder="Search tasks..."
+              placeholder={copy.searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
@@ -241,7 +263,7 @@ export default function TasksClientPage({
                   : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:bg-[var(--muted)]"
               }`}
             >
-              All
+              {copy.all}
             </button>
 
             <button
@@ -253,7 +275,7 @@ export default function TasksClientPage({
                   : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:bg-[var(--muted)]"
               }`}
             >
-              Active
+              {copy.active}
             </button>
 
             <button
@@ -265,7 +287,7 @@ export default function TasksClientPage({
                   : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:bg-[var(--muted)]"
               }`}
             >
-              Completed
+              {copy.completed}
             </button>
 
             <select
@@ -275,10 +297,10 @@ export default function TasksClientPage({
               }
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
-              <option value="all">All Priorities</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
+              <option value="all">{copy.allPriorities}</option>
+              <option value="High">{copy.high}</option>
+              <option value="Medium">{copy.medium}</option>
+              <option value="Low">{copy.low}</option>
             </select>
 
             <select
@@ -286,8 +308,8 @@ export default function TasksClientPage({
               onChange={(e) => setProjectFilter(e.target.value)}
               className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
-              <option value="all">All Projects</option>
-              <option value="none">No Project Linked</option>
+              <option value="all">{copy.allProjects}</option>
+              <option value="none">{copy.noProjectLinkedFilter}</option>
               {projects.map((project) => (
                 <option key={project.id} value={project.id}>
                   {project.name}
@@ -307,7 +329,7 @@ export default function TasksClientPage({
               }}
               className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
             >
-              Reset Filters
+              {copy.resetFilters}
             </button>
           </div>
         </div>
@@ -350,9 +372,9 @@ export default function TasksClientPage({
                         defaultValue={task.priority}
                         className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                       >
-                        <option value="High">High</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Low">Low</option>
+                        <option value="High">{copy.high}</option>
+                        <option value="Medium">{copy.medium}</option>
+                        <option value="Low">{copy.low}</option>
                       </select>
 
                       <select
@@ -360,7 +382,7 @@ export default function TasksClientPage({
                         defaultValue={task.projectId ?? ""}
                         className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                       >
-                        <option value="">No project selected</option>
+                        <option value="">{copy.noProjectSelected}</option>
                         {projects.map((project) => (
                           <option key={project.id} value={project.id}>
                             {project.name}
@@ -373,7 +395,7 @@ export default function TasksClientPage({
                           type="submit"
                           className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
                         >
-                          Save
+                          {copy.save}
                         </button>
 
                         <button
@@ -381,7 +403,7 @@ export default function TasksClientPage({
                           onClick={() => setEditingId(null)}
                           className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                         >
-                          Cancel
+                          {copy.cancel}
                         </button>
                       </div>
                     </form>
@@ -395,7 +417,7 @@ export default function TasksClientPage({
                   className={`fade-in-up flex items-center justify-between rounded-2xl border border-[var(--border)] p-4 ${
                     task.completed
                       ? "bg-[var(--muted)] opacity-80"
-                      :"bg-white hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]"
+                      : "bg-white hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]"
                   }`}
                 >
                   <div className="flex items-center gap-4">
@@ -423,27 +445,27 @@ export default function TasksClientPage({
                       </p>
 
                       <p className="text-sm text-[var(--muted-foreground)]">
-                        Due: {task.dueDate}
+                        {copy.due}: {task.dueDate}
                       </p>
 
                       <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-                        Project:{" "}
+                        {copy.projectLabel}:{" "}
                         <span className="font-medium text-[var(--foreground)]">
-                          {task.project?.name ?? "No project linked"}
+                          {task.project?.name ?? copy.noProjectLinked}
                         </span>
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <PriorityBadge priority={task.priority} />
+                    <PriorityBadge priority={task.priority} copy={copy} />
 
                     <button
                       type="button"
                       onClick={() => setEditingId(task.id)}
                       className="control-hover rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
                     >
-                      Edit
+                      {copy.edit}
                     </button>
 
                     <form action={deleteTask}>
@@ -452,7 +474,7 @@ export default function TasksClientPage({
                         type="submit"
                         className="control-hover rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
                       >
-                        Delete
+                        {copy.delete}
                       </button>
                     </form>
                   </div>
@@ -461,13 +483,13 @@ export default function TasksClientPage({
             })
           ) : (
             <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--muted)] px-6 py-12 text-center">
-  <p className="text-base font-semibold text-[var(--foreground)]">
-    No tasks found
-  </p>
-  <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-    Try changing your search, project filter or priority selection.
-  </p>
-</div>
+              <p className="text-base font-semibold text-[var(--foreground)]">
+                {copy.noTasksFound}
+              </p>
+              <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                {copy.noTasksDescription}
+              </p>
+            </div>
           )}
         </div>
       </div>

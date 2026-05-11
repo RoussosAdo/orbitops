@@ -5,13 +5,16 @@ import type { ReactNode } from "react";
 import Sidebar from "@/app/components/dashboard/sidebar";
 import Topbar from "@/app/components/dashboard/topbar";
 import MobileSidebar from "@/app/components/dashboard/mobile-sidebar";
+import type { AppLanguage } from "@/app/lib/i18n";
 
 type DashboardShellProps = {
   children: ReactNode;
+  language: AppLanguage;
 };
 
 export default function DashboardShell({
   children,
+  language,
 }: DashboardShellProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
@@ -20,13 +23,17 @@ export default function DashboardShell({
       <MobileSidebar
         isOpen={isMobileSidebarOpen}
         onClose={() => setIsMobileSidebarOpen(false)}
+        language={language}
       />
 
       <div className="mx-auto flex min-h-screen max-w-[1720px]">
-        <Sidebar />
+        <Sidebar language={language} />
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <Topbar onOpenMobileMenu={() => setIsMobileSidebarOpen(true)} />
+          <Topbar
+            onOpenMobileMenu={() => setIsMobileSidebarOpen(true)}
+            language={language}
+          />
 
           <main className="flex-1 px-5 py-5 md:px-6 md:py-6 xl:px-8 xl:py-8">
             <div className="mx-auto w-full max-w-[1380px]">{children}</div>

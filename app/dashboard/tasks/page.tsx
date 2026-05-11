@@ -1,9 +1,11 @@
 import { prisma } from "@/app/lib/prisma";
 import TasksClientPage from "./TasksClientPage";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
+import { getCurrentLanguage } from "@/app/lib/get-current-language";
 
 export default async function TasksPage() {
   const workspace = await requireCurrentWorkspace();
+  const language = await getCurrentLanguage();
 
   const [tasks, projects] = await Promise.all([
     prisma.task.findMany({
@@ -30,6 +32,7 @@ export default async function TasksPage() {
       tasks={tasks}
       projects={projects}
       workspaceName={workspace.name}
+      language={language}
     />
   );
 }
