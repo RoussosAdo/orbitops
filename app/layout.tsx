@@ -15,10 +15,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OrbitOps",
-  description: "Workspace platform for clients, projects, tasks and billing.",
+  title: "OrbitOps | Workspace Operations Platform",
+  description:
+    "OrbitOps helps small and growing teams manage clients, projects, tasks, team access and billing from one clean workspace.",
   icons: {
-    icon: "/orbitops-icon.png",
+    icon: [
+      {
+        url: "/orbitops-icon.png",
+        type: "image/png",
+        sizes: "32x32",
+      },
+      {
+        url: "/orbitops-icon.png",
+        type: "image/png",
+        sizes: "192x192",
+      },
+    ],
     shortcut: "/orbitops-icon.png",
     apple: "/orbitops-icon.png",
   },
