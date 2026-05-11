@@ -3,9 +3,10 @@ import { prisma } from "@/app/lib/prisma";
 import { updateBillingPlan } from "@/app/actions/billingActions";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
 import { getCurrentLanguage } from "@/app/lib/get-current-language";
+import type { AppLanguage } from "@/app/lib/i18n";
 import { dashboardCopy } from "@/app/lib/i18n";
 
-type BillingCopy = typeof dashboardCopy.en.billingPage;
+type BillingCopy = (typeof dashboardCopy)[AppLanguage]["billingPage"];
 
 function getInvoiceStatusLabel(status: string, copy: BillingCopy) {
   if (status === "Paid") return copy.paid;
