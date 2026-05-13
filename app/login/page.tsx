@@ -209,16 +209,30 @@ function LoginContent() {
                   {loginCopy.signInFailed}{" "}
                   {error === "OAuthAccountNotLinked"
                     ? loginCopy.accountNotLinked
-                    : loginCopy.githubError}
+                    : loginCopy.providerError}
                 </div>
               )}
 
-              <button
-                onClick={() => signIn("github", { callbackUrl })}
-                className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--foreground)] px-5 text-sm font-semibold text-white shadow-[var(--shadow-xs)] transition hover:bg-black"
-              >
-                {loginCopy.continueWithGithub}
-              </button>
+              <div className="mt-6 space-y-3">
+                <button
+                  type="button"
+                  onClick={() => signIn("google", { callbackUrl })}
+                  className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-[var(--border)] bg-white px-5 text-sm font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:bg-[var(--muted)]"
+                >
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full text-sm font-bold text-[#4285F4]">
+                    G
+                  </span>
+                  {loginCopy.continueWithGoogle}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => signIn("github", { callbackUrl })}
+                  className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--foreground)] px-5 text-sm font-semibold text-white shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:bg-black"
+                >
+                  {loginCopy.continueWithGithub}
+                </button>
+              </div>
 
               <div className="mt-6 rounded-[1.2rem] border border-[var(--border)] bg-[var(--muted)] px-4 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">

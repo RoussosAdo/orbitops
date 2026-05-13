@@ -1,22 +1,35 @@
 import type { NextAuthOptions } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/app/lib/prisma";
 import { ensureUserWorkspace } from "@/app/lib/ensure-user-workspace";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
+
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      allowDangerousEmailAccountLinking: true,
+    }),
+
     GitHubProvider({
       clientId: process.env.AUTH_GITHUB_ID!,
       clientSecret: process.env.AUTH_GITHUB_SECRET!,
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
+
   secret: process.env.NEXTAUTH_SECRET,
+
   pages: {
     signIn: "/login",
   },
+
   debug: true,
+
   callbacks: {
     async signIn({ user }) {
       if (!user.email) return false;
@@ -37,6 +50,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+
   events: {
     async createUser({ user }) {
       if (!user.email) return;

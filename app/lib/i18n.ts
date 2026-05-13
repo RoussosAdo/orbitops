@@ -106,41 +106,42 @@ export const dashboardCopy = {
     },
 
     loginPage: {
-      brandSubtitle: "Workspace platform",
-      eyebrow: "Modern SaaS Operations",
-      heroTitle: "Run clients, projects and billing in one place.",
-      heroDescription:
-        "OrbitOps helps teams manage delivery, workspace operations, subscriptions and team access with a clean product-first experience.",
+  brandSubtitle: "Workspace platform",
+  eyebrow: "Modern SaaS Operations",
+  heroTitle: "Run clients, projects and billing in one place.",
+  heroDescription:
+    "OrbitOps helps teams manage delivery, workspace operations, subscriptions and team access with a clean product-first experience.",
 
-      deliveryLabel: "Delivery",
-      deliveryTitle: "Projects",
-      deliveryDescription: "Track progress and linked clients.",
+  deliveryLabel: "Delivery",
+  deliveryTitle: "Projects",
+  deliveryDescription: "Track progress and linked clients.",
 
-      controlLabel: "Control",
-      controlTitle: "Billing",
-      controlDescription: "Plans, invoices and usage visibility.",
+  controlLabel: "Control",
+  controlTitle: "Billing",
+  controlDescription: "Plans, invoices and usage visibility.",
 
-      productAccess: "Product Access",
-      productAccessDescription:
-        "Sign in with your GitHub account to access your OrbitOps workspace securely.",
+  productAccess: "Product Access",
+  productAccessDescription:
+    "Sign in with Google or GitHub to access your OrbitOps workspace securely.",
 
-      welcomeBack: "Welcome back",
-      signIn: "Sign in",
-      signInDescription:
-        "Access your workspace dashboard securely and continue managing operations from one place.",
+  welcomeBack: "Welcome back",
+  signIn: "Sign in",
+  signInDescription:
+    "Access your workspace dashboard securely and continue managing operations from one place.",
 
-      signInFailed: "Sign-in failed:",
-      accountNotLinked: "Email already in use with another provider.",
-      githubError: "Something went wrong with GitHub.",
+  signInFailed: "Sign-in failed:",
+  accountNotLinked: "Email already in use with another provider.",
+  providerError: "Something went wrong with the sign-in provider.",
 
-      continueWithGithub: "Continue with GitHub",
+  continueWithGoogle: "Continue with Google",
+  continueWithGithub: "Continue with GitHub",
 
-      secureAccess: "Secure access",
-      secureAccessDescription:
-        "Authentication is handled through your GitHub account for a faster and safer sign-in flow.",
+  secureAccess: "Secure access",
+  secureAccessDescription:
+    "Authentication is handled through trusted providers for a faster and safer sign-in flow.",
 
-      languageLabel: "Switch language",
-    },
+  languageLabel: "Switch language",
+},
 
     overview: {
       operationsCenter: "Operations center",
@@ -651,41 +652,42 @@ export const dashboardCopy = {
     },
 
     loginPage: {
-      brandSubtitle: "Πλατφόρμα εργασίας",
-      eyebrow: "Σύγχρονη οργάνωση εταιρείας",
-      heroTitle: "Πελάτες, έργα και τιμολόγηση σε ένα σημείο.",
-      heroDescription:
-        "Το OrbitOps βοηθά ομάδες να διαχειρίζονται έργα, λειτουργίες workspace, συνδρομές και πρόσβαση ομάδας μέσα από ένα καθαρό product-first περιβάλλον.",
+  brandSubtitle: "Πλατφόρμα εργασίας",
+  eyebrow: "Σύγχρονη οργάνωση εταιρείας",
+  heroTitle: "Πελάτες, έργα και τιμολόγηση σε ένα σημείο.",
+  heroDescription:
+    "Το OrbitOps βοηθά ομάδες να διαχειρίζονται έργα, λειτουργίες workspace, συνδρομές και πρόσβαση ομάδας μέσα από ένα καθαρό product-first περιβάλλον.",
 
-      deliveryLabel: "Παράδοση",
-      deliveryTitle: "Έργα",
-      deliveryDescription: "Παρακολούθηση προόδου και συνδεδεμένων πελατών.",
+  deliveryLabel: "Παράδοση",
+  deliveryTitle: "Έργα",
+  deliveryDescription: "Παρακολούθηση προόδου και συνδεδεμένων πελατών.",
 
-      controlLabel: "Έλεγχος",
-      controlTitle: "Τιμολόγηση",
-      controlDescription: "Πλάνα, τιμολόγια και καθαρή εικόνα χρήσης.",
+  controlLabel: "Έλεγχος",
+  controlTitle: "Τιμολόγηση",
+  controlDescription: "Πλάνα, τιμολόγια και καθαρή εικόνα χρήσης.",
 
-      productAccess: "Πρόσβαση προϊόντος",
-      productAccessDescription:
-        "Συνδέσου με GitHub για ασφαλή πρόσβαση στο OrbitOps workspace σου.",
+  productAccess: "Πρόσβαση προϊόντος",
+  productAccessDescription:
+    "Συνδέσου με Google ή GitHub για ασφαλή πρόσβαση στο OrbitOps workspace σου.",
 
-      welcomeBack: "Καλώς ήρθες ξανά",
-      signIn: "Σύνδεση",
-      signInDescription:
-        "Μπες με ασφάλεια στο workspace dashboard σου και συνέχισε να οργανώνεις τις λειτουργίες από ένα σημείο.",
+  welcomeBack: "Καλώς ήρθες ξανά",
+  signIn: "Σύνδεση",
+  signInDescription:
+    "Μπες με ασφάλεια στο workspace dashboard σου και συνέχισε να οργανώνεις τις λειτουργίες από ένα σημείο.",
 
-      signInFailed: "Η σύνδεση απέτυχε:",
-      accountNotLinked: "Το email χρησιμοποιείται ήδη με άλλον provider.",
-      githubError: "Κάτι πήγε λάθος με το GitHub.",
+  signInFailed: "Η σύνδεση απέτυχε:",
+  accountNotLinked: "Το email χρησιμοποιείται ήδη με άλλον provider.",
+  providerError: "Κάτι πήγε λάθος με τον πάροχο σύνδεσης.",
 
-      continueWithGithub: "Συνέχεια με GitHub",
+  continueWithGoogle: "Συνέχεια με Google",
+  continueWithGithub: "Συνέχεια με GitHub",
 
-      secureAccess: "Ασφαλής πρόσβαση",
-      secureAccessDescription:
-        "Η σύνδεση γίνεται μέσω GitHub για πιο γρήγορη και ασφαλή πρόσβαση.",
+  secureAccess: "Ασφαλής πρόσβαση",
+  secureAccessDescription:
+    "Η σύνδεση γίνεται μέσω αξιόπιστων providers για πιο γρήγορη και ασφαλή πρόσβαση.",
 
-      languageLabel: "Αλλαγή γλώσσας",
-    },
+  languageLabel: "Αλλαγή γλώσσας",
+},
 
     overview: {
       operationsCenter: "Κέντρο λειτουργιών",
