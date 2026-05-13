@@ -58,7 +58,7 @@ function ProjectStatusBadge({
 
   return (
     <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
+      className={`inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
     >
       {getProjectStatusLabel(status, language)}
     </span>
@@ -196,6 +196,10 @@ export default async function ProjectsPage({
     (project) => project.status === "Planning"
   ).length;
 
+  const backToFilteredUrl = `/dashboard/projects?q=${encodeURIComponent(
+    searchQuery
+  )}&status=${encodeURIComponent(selectedStatus || "All")}`;
+
   return (
     <section className="space-y-6">
       <PageHeader
@@ -224,8 +228,8 @@ export default async function ProjectsPage({
         />
       </div>
 
-      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
-        <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--muted)] p-5">
+      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-sm)] sm:p-6">
+        <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--muted)] p-4 sm:p-5">
           <div className="mb-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
               {projectsCopy.createProject}
@@ -244,7 +248,7 @@ export default async function ProjectsPage({
               name="name"
               type="text"
               placeholder={projectsCopy.projectName}
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
@@ -252,7 +256,7 @@ export default async function ProjectsPage({
               name="budget"
               type="text"
               placeholder={projectsCopy.budgetPlaceholder}
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
@@ -260,7 +264,7 @@ export default async function ProjectsPage({
               name="dueDate"
               type="text"
               placeholder={projectsCopy.dueDate}
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
@@ -268,7 +272,7 @@ export default async function ProjectsPage({
               name="team"
               type="text"
               placeholder={projectsCopy.teamPlaceholder}
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
@@ -282,7 +286,7 @@ export default async function ProjectsPage({
             <select
               name="status"
               defaultValue="Planning"
-              className="h-[120px] rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none md:h-[120px]"
             >
               <option value="Planning">{projectsCopy.planning}</option>
               <option value="In Progress">{projectsCopy.inProgress}</option>
@@ -297,13 +301,13 @@ export default async function ProjectsPage({
               max="100"
               defaultValue="0"
               placeholder={projectsCopy.progressPlaceholder}
-              className="h-[120px] rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none md:h-[120px]"
             />
 
             <select
               name="clientId"
               defaultValue=""
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
               <option value="">{projectsCopy.noClientSelected}</option>
               {clients.map((client) => (
@@ -322,7 +326,7 @@ export default async function ProjectsPage({
           </form>
         </div>
 
-        <div className="mb-5 mt-6 flex items-center justify-between gap-4">
+        <div className="mb-5 mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-[var(--muted-foreground)]">
             {projectsCopy.currentWorkspace}:{" "}
             <span className="font-semibold text-[var(--foreground)]">
@@ -332,7 +336,7 @@ export default async function ProjectsPage({
 
           <button
             type="button"
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+            className="h-11 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)] sm:h-auto sm:py-2.5"
           >
             {projectsCopy.export}
           </button>
@@ -347,7 +351,7 @@ export default async function ProjectsPage({
             type="text"
             defaultValue={searchQuery}
             placeholder={projectsCopy.searchPlaceholder}
-            className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
           />
 
           <select
@@ -385,7 +389,7 @@ export default async function ProjectsPage({
               return (
                 <article
                   key={project.id}
-                  className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--muted)] p-5 shadow-sm xl:col-span-2"
+                  className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--muted)] p-4 shadow-sm sm:p-5 xl:col-span-2"
                 >
                   <form
                     action={updateProject}
@@ -397,7 +401,7 @@ export default async function ProjectsPage({
                       name="name"
                       type="text"
                       defaultValue={project.name}
-                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+                      className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                       required
                     />
 
@@ -405,7 +409,7 @@ export default async function ProjectsPage({
                       name="budget"
                       type="text"
                       defaultValue={project.budget}
-                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+                      className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                       required
                     />
 
@@ -413,7 +417,7 @@ export default async function ProjectsPage({
                       name="dueDate"
                       type="text"
                       defaultValue={project.dueDate}
-                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+                      className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                       required
                     />
 
@@ -421,7 +425,7 @@ export default async function ProjectsPage({
                       name="team"
                       type="text"
                       defaultValue={project.team}
-                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+                      className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                       required
                     />
 
@@ -438,7 +442,9 @@ export default async function ProjectsPage({
                       className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                     >
                       <option value="Planning">{projectsCopy.planning}</option>
-                      <option value="In Progress">{projectsCopy.inProgress}</option>
+                      <option value="In Progress">
+                        {projectsCopy.inProgress}
+                      </option>
                       <option value="In Review">{projectsCopy.inReview}</option>
                       <option value="Completed">{projectsCopy.completed}</option>
                     </select>
@@ -455,7 +461,7 @@ export default async function ProjectsPage({
                     <select
                       name="clientId"
                       defaultValue={project.clientId ?? ""}
-                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+                      className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                     >
                       <option value="">{projectsCopy.noClientSelected}</option>
                       {clients.map((client) => (
@@ -473,11 +479,7 @@ export default async function ProjectsPage({
                     </button>
 
                     <a
-                      href={`/dashboard/projects?q=${encodeURIComponent(
-                        searchQuery
-                      )}&status=${encodeURIComponent(
-                        selectedStatus || "All"
-                      )}`}
+                      href={backToFilteredUrl}
                       className="inline-flex h-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                     >
                       {projectsCopy.cancel}
@@ -490,11 +492,11 @@ export default async function ProjectsPage({
             return (
               <article
                 key={project.id}
-                className="card-hover fade-in-up rounded-[1.55rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]"
+                className="card-hover fade-in-up rounded-[1.55rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-xs)] sm:p-5"
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                   <div className="min-w-0">
-                    <h3 className="truncate text-xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
+                    <h3 className="break-words text-xl font-semibold tracking-[-0.03em] text-[var(--foreground)] sm:truncate">
                       {project.name}
                     </h3>
 
@@ -537,13 +539,13 @@ export default async function ProjectsPage({
                   </div>
                 </div>
 
-                <div className="mt-5 grid grid-cols-3 gap-4 rounded-2xl border border-[var(--border)] bg-[var(--muted)] p-4">
+                <div className="mt-5 grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--muted)] p-4 sm:grid-cols-3 sm:gap-4">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
                       {projectsCopy.budget}
                     </p>
 
-                    <p className="mt-2 text-sm font-semibold text-[var(--foreground)]">
+                    <p className="mt-2 break-words text-sm font-semibold text-[var(--foreground)]">
                       {project.budget}
                     </p>
                   </div>
@@ -553,7 +555,7 @@ export default async function ProjectsPage({
                       {projectsCopy.dueDate}
                     </p>
 
-                    <p className="mt-2 text-sm font-semibold text-[var(--foreground)]">
+                    <p className="mt-2 break-words text-sm font-semibold text-[var(--foreground)]">
                       {project.dueDate}
                     </p>
                   </div>
@@ -563,14 +565,14 @@ export default async function ProjectsPage({
                       {projectsCopy.team}
                     </p>
 
-                    <p className="mt-2 text-sm font-semibold text-[var(--foreground)]">
+                    <p className="mt-2 break-words text-sm font-semibold text-[var(--foreground)]">
                       {project.team}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-5 flex items-center gap-2">
-                  <button className="control-hover rounded-xl bg-[var(--foreground)] px-4 py-2 text-sm font-semibold text-white hover:bg-black">
+                <div className="mt-5 grid grid-cols-3 gap-2 sm:flex sm:items-center">
+                  <button className="control-hover rounded-xl bg-[var(--foreground)] px-3 py-2 text-xs font-semibold text-white hover:bg-black sm:px-4 sm:text-sm">
                     {projectsCopy.viewProject}
                   </button>
 
@@ -580,7 +582,7 @@ export default async function ProjectsPage({
                     )}&status=${encodeURIComponent(
                       selectedStatus || "All"
                     )}`}
-                    className="control-hover rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
+                    className="control-hover inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
                   >
                     {projectsCopy.edit}
                   </a>
@@ -590,7 +592,7 @@ export default async function ProjectsPage({
 
                     <button
                       type="submit"
-                      className="control-hover rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
+                      className="control-hover h-full w-full rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
                     >
                       {projectsCopy.delete}
                     </button>

@@ -63,7 +63,9 @@ function PriorityBadge({
       : "bg-emerald-100 text-emerald-700";
 
   return (
-    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${styles}`}>
+    <span
+      className={`inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
+    >
       {getPriorityLabel(priority, copy)}
     </span>
   );
@@ -174,8 +176,8 @@ export default function TasksClientPage({
         />
       </div>
 
-      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
-        <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--muted)] p-5">
+      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-sm)] sm:p-6">
+        <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--muted)] p-4 sm:p-5">
           <div className="mb-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
               {copy.createTask}
@@ -193,7 +195,7 @@ export default function TasksClientPage({
               name="title"
               type="text"
               placeholder={copy.taskTitle}
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
@@ -201,14 +203,14 @@ export default function TasksClientPage({
               name="dueDate"
               type="text"
               placeholder={copy.dueDate}
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
             <select
               name="priority"
               defaultValue="Medium"
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
               <option value="High">{copy.high}</option>
               <option value="Medium">{copy.medium}</option>
@@ -218,7 +220,7 @@ export default function TasksClientPage({
             <select
               name="projectId"
               defaultValue=""
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
               <option value="">{copy.noProjectSelected}</option>
               {projects.map((project) => (
@@ -237,7 +239,7 @@ export default function TasksClientPage({
           </form>
         </div>
 
-        <div className="mt-6 mb-5">
+        <div className="mb-5 mt-6">
           <p className="text-sm text-[var(--muted-foreground)]">
             {copy.currentWorkspace}:{" "}
             <span className="font-semibold text-[var(--foreground)]">
@@ -253,51 +255,53 @@ export default function TasksClientPage({
               placeholder={copy.searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
             />
 
-            <button
-              type="button"
-              onClick={() => setActiveTab("all")}
-              className={`h-12 rounded-2xl px-4 text-sm font-semibold transition ${
-                activeTab === "all"
-                  ? "bg-[var(--primary)] text-white"
-                  : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:bg-[var(--muted)]"
-              }`}
-            >
-              {copy.all}
-            </button>
+            <div className="grid grid-cols-3 gap-2 xl:contents">
+              <button
+                type="button"
+                onClick={() => setActiveTab("all")}
+                className={`h-12 rounded-2xl px-3 text-sm font-semibold transition xl:px-4 ${
+                  activeTab === "all"
+                    ? "bg-[var(--primary)] text-white"
+                    : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:bg-[var(--muted)]"
+                }`}
+              >
+                {copy.all}
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab("active")}
-              className={`h-12 rounded-2xl px-4 text-sm font-semibold transition ${
-                activeTab === "active"
-                  ? "bg-[var(--primary)] text-white"
-                  : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:bg-[var(--muted)]"
-              }`}
-            >
-              {copy.active}
-            </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("active")}
+                className={`h-12 rounded-2xl px-3 text-sm font-semibold transition xl:px-4 ${
+                  activeTab === "active"
+                    ? "bg-[var(--primary)] text-white"
+                    : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:bg-[var(--muted)]"
+                }`}
+              >
+                {copy.active}
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab("completed")}
-              className={`h-12 rounded-2xl px-4 text-sm font-semibold transition ${
-                activeTab === "completed"
-                  ? "bg-[var(--primary)] text-white"
-                  : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:bg-[var(--muted)]"
-              }`}
-            >
-              {copy.completed}
-            </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("completed")}
+                className={`h-12 rounded-2xl px-3 text-sm font-semibold transition xl:px-4 ${
+                  activeTab === "completed"
+                    ? "bg-[var(--primary)] text-white"
+                    : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:bg-[var(--muted)]"
+                }`}
+              >
+                {copy.completed}
+              </button>
+            </div>
 
             <select
               value={priorityFilter}
               onChange={(e) =>
                 setPriorityFilter(e.target.value as PriorityFilter)
               }
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
               <option value="all">{copy.allPriorities}</option>
               <option value="High">{copy.high}</option>
@@ -308,7 +312,7 @@ export default function TasksClientPage({
             <select
               value={projectFilter}
               onChange={(e) => setProjectFilter(e.target.value)}
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
             >
               <option value="all">{copy.allProjects}</option>
               <option value="none">{copy.noProjectLinkedFilter}</option>
@@ -329,7 +333,7 @@ export default function TasksClientPage({
                 setPriorityFilter("all");
                 setProjectFilter("all");
               }}
-              className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+              className="h-12 w-full rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)] sm:w-auto"
             >
               {copy.resetFilters}
             </button>
@@ -357,7 +361,7 @@ export default function TasksClientPage({
                         name="title"
                         type="text"
                         defaultValue={task.title}
-                        className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+                        className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                         required
                       />
 
@@ -365,14 +369,14 @@ export default function TasksClientPage({
                         name="dueDate"
                         type="text"
                         defaultValue={task.dueDate}
-                        className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+                        className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                         required
                       />
 
                       <select
                         name="priority"
                         defaultValue={task.priority}
-                        className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+                        className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                       >
                         <option value="High">{copy.high}</option>
                         <option value="Medium">{copy.medium}</option>
@@ -382,7 +386,7 @@ export default function TasksClientPage({
                       <select
                         name="projectId"
                         defaultValue={task.projectId ?? ""}
-                        className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+                        className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
                       >
                         <option value="">{copy.noProjectSelected}</option>
                         {projects.map((project) => (
@@ -392,7 +396,7 @@ export default function TasksClientPage({
                         ))}
                       </select>
 
-                      <div className="flex items-center gap-2">
+                      <div className="grid grid-cols-2 gap-2 xl:flex xl:items-center">
                         <button
                           type="submit"
                           className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
@@ -416,69 +420,71 @@ export default function TasksClientPage({
               return (
                 <div
                   key={task.id}
-                  className={`fade-in-up flex items-center justify-between rounded-2xl border border-[var(--border)] p-4 ${
+                  className={`fade-in-up rounded-2xl border border-[var(--border)] p-4 transition ${
                     task.completed
                       ? "bg-[var(--muted)] opacity-80"
                       : "bg-white hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]"
                   }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <button
-                      type="button"
-                      onClick={() => toggleTask(task.id, task.completed)}
-                      className={`flex h-6 w-6 items-center justify-center rounded-lg border text-xs font-bold transition ${
-                        task.completed
-                          ? "border-[var(--primary)] bg-[var(--primary)] text-white"
-                          : "border-[var(--border)] bg-white"
-                      }`}
-                    >
-                      {task.completed ? "✓" : ""}
-                    </button>
-
-                    <div>
-                      <p
-                        className={`font-semibold ${
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex min-w-0 items-start gap-4 sm:items-center">
+                      <button
+                        type="button"
+                        onClick={() => toggleTask(task.id, task.completed)}
+                        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-xs font-bold transition sm:mt-0 ${
                           task.completed
-                            ? "text-[var(--muted-foreground)] line-through"
-                            : "text-[var(--foreground)]"
+                            ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                            : "border-[var(--border)] bg-white"
                         }`}
                       >
-                        {task.title}
-                      </p>
-
-                      <p className="text-sm text-[var(--muted-foreground)]">
-                        {copy.due}: {task.dueDate}
-                      </p>
-
-                      <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-                        {copy.projectLabel}:{" "}
-                        <span className="font-medium text-[var(--foreground)]">
-                          {task.project?.name ?? copy.noProjectLinked}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <PriorityBadge priority={task.priority} copy={copy} />
-
-                    <button
-                      type="button"
-                      onClick={() => setEditingId(task.id)}
-                      className="control-hover rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
-                    >
-                      {copy.edit}
-                    </button>
-
-                    <form action={deleteTask}>
-                      <input type="hidden" name="taskId" value={task.id} />
-                      <button
-                        type="submit"
-                        className="control-hover rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
-                      >
-                        {copy.delete}
+                        {task.completed ? "✓" : ""}
                       </button>
-                    </form>
+
+                      <div className="min-w-0">
+                        <p
+                          className={`break-words font-semibold sm:truncate ${
+                            task.completed
+                              ? "text-[var(--muted-foreground)] line-through"
+                              : "text-[var(--foreground)]"
+                          }`}
+                        >
+                          {task.title}
+                        </p>
+
+                        <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                          {copy.due}: {task.dueDate}
+                        </p>
+
+                        <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+                          {copy.projectLabel}:{" "}
+                          <span className="font-medium text-[var(--foreground)]">
+                            {task.project?.name ?? copy.noProjectLinked}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:gap-3">
+                      <PriorityBadge priority={task.priority} copy={copy} />
+
+                      <button
+                        type="button"
+                        onClick={() => setEditingId(task.id)}
+                        className="control-hover rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
+                      >
+                        {copy.edit}
+                      </button>
+
+                      <form action={deleteTask}>
+                        <input type="hidden" name="taskId" value={task.id} />
+                        <button
+                          type="submit"
+                          className="control-hover rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
+                        >
+                          {copy.delete}
+                        </button>
+                      </form>
+                    </div>
                   </div>
                 </div>
               );

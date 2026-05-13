@@ -17,9 +17,11 @@ function PreferenceRow({
   name: string;
 }) {
   return (
-    <label className="card-hover flex items-center justify-between gap-4 rounded-[1.25rem] border border-[var(--border)] bg-white px-4 py-4">
-      <div>
-        <p className="text-sm font-semibold text-[var(--foreground)]">{label}</p>
+    <label className="card-hover flex items-start justify-between gap-4 rounded-[1.25rem] border border-[var(--border)] bg-white px-4 py-4">
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-[var(--foreground)]">
+          {label}
+        </p>
         <p className="mt-1 text-xs leading-6 text-[var(--muted-foreground)]">
           {description}
         </p>
@@ -29,7 +31,7 @@ function PreferenceRow({
         type="checkbox"
         name={name}
         defaultChecked={checked}
-        className="h-5 w-5 rounded"
+        className="mt-1 h-5 w-5 shrink-0 rounded"
       />
     </label>
   );
@@ -47,7 +49,8 @@ function SummaryCard({
       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
         {label}
       </p>
-      <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">
+
+      <p className="mt-2 break-words text-lg font-semibold text-[var(--foreground)]">
         {value}
       </p>
     </div>
@@ -66,13 +69,16 @@ function StatusRow({
   disabledLabel: string;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 transition hover:bg-white">
+    <div className="flex flex-col gap-2 rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3 transition hover:bg-white sm:flex-row sm:items-center sm:justify-between">
       <span className="text-sm font-medium text-[var(--foreground)]">
         {label}
       </span>
+
       <span
-        className={`text-sm font-semibold ${
-          enabled ? "text-emerald-600" : "text-[var(--muted-foreground)]"
+        className={`w-fit rounded-full px-2.5 py-1 text-xs font-semibold sm:text-sm ${
+          enabled
+            ? "bg-emerald-100 text-emerald-700"
+            : "bg-white text-[var(--muted-foreground)]"
         }`}
       >
         {enabled ? enabledLabel : disabledLabel}
@@ -103,10 +109,11 @@ export default async function SettingsPage() {
           actionLabel={settingsCopy.settings}
         />
 
-        <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4">
+        <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-5">
           <p className="text-lg font-semibold text-[var(--foreground)]">
             {settingsCopy.noSettingsFound}
           </p>
+
           <p className="mt-2 text-sm text-[var(--muted-foreground)]">
             {settingsCopy.noSettingsDescription}
           </p>
@@ -124,13 +131,16 @@ export default async function SettingsPage() {
         actionLabel={settingsCopy.saveSettings}
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <SummaryCard label={settingsCopy.workspace} value={settings.workspaceName} />
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+        <SummaryCard
+          label={settingsCopy.workspace}
+          value={settings.workspaceName}
+        />
         <SummaryCard label={settingsCopy.brand} value={settings.brandColor} />
         <SummaryCard label={settingsCopy.timezone} value={settings.timezone} />
       </div>
 
-      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-sm)] sm:p-6">
         <div className="mb-5">
           <p className="text-sm text-[var(--muted-foreground)]">
             {settingsCopy.currentWorkspace}:{" "}
@@ -141,10 +151,11 @@ export default async function SettingsPage() {
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.25fr_0.9fr]">
-          <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+          <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-xs)] sm:p-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
               {settingsCopy.workspacePreferences}
             </p>
+
             <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
               {settingsCopy.generalSettings}
             </h3>
@@ -155,6 +166,7 @@ export default async function SettingsPage() {
                   <label className="mb-2 block text-sm font-medium text-[var(--foreground)]">
                     {settingsCopy.workspaceName}
                   </label>
+
                   <input
                     name="workspaceName"
                     defaultValue={settings.workspaceName}
@@ -166,6 +178,7 @@ export default async function SettingsPage() {
                   <label className="mb-2 block text-sm font-medium text-[var(--foreground)]">
                     {settingsCopy.companyEmail}
                   </label>
+
                   <input
                     name="companyEmail"
                     type="email"
@@ -178,6 +191,7 @@ export default async function SettingsPage() {
                   <label className="mb-2 block text-sm font-medium text-[var(--foreground)]">
                     {settingsCopy.timezone}
                   </label>
+
                   <select
                     name="timezone"
                     defaultValue={settings.timezone}
@@ -194,6 +208,7 @@ export default async function SettingsPage() {
                   <label className="mb-2 block text-sm font-medium text-[var(--foreground)]">
                     {settingsCopy.brandColor}
                   </label>
+
                   <select
                     name="brandColor"
                     defaultValue={settings.brandColor}
@@ -207,10 +222,11 @@ export default async function SettingsPage() {
                 </div>
               </div>
 
-              <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+              <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-xs)] sm:p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
                   {settingsCopy.notifications}
                 </p>
+
                 <h4 className="mt-2 text-lg font-semibold text-[var(--foreground)]">
                   {settingsCopy.communicationPreferences}
                 </h4>
@@ -241,7 +257,7 @@ export default async function SettingsPage() {
 
               <button
                 type="submit"
-                className="rounded-2xl bg-[var(--foreground)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-black"
+                className="h-12 w-full rounded-2xl bg-[var(--foreground)] px-5 text-sm font-semibold text-white transition hover:bg-black sm:w-auto"
               >
                 {settingsCopy.saveChanges}
               </button>
@@ -249,25 +265,36 @@ export default async function SettingsPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+            <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-xs)] sm:p-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
                 {settingsCopy.workspaceSummary}
               </p>
+
               <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
                 {settingsCopy.currentConfiguration}
               </h3>
 
               <div className="mt-5 space-y-4">
-                <SummaryCard label={settingsCopy.workspace} value={settings.workspaceName} />
-                <SummaryCard label={settingsCopy.brand} value={settings.brandColor} />
-                <SummaryCard label={settingsCopy.timezone} value={settings.timezone} />
+                <SummaryCard
+                  label={settingsCopy.workspace}
+                  value={settings.workspaceName}
+                />
+                <SummaryCard
+                  label={settingsCopy.brand}
+                  value={settings.brandColor}
+                />
+                <SummaryCard
+                  label={settingsCopy.timezone}
+                  value={settings.timezone}
+                />
               </div>
             </div>
 
-            <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
+            <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-xs)] sm:p-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
                 {settingsCopy.status}
               </p>
+
               <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
                 {settingsCopy.preferencesStatus}
               </h3>
@@ -279,12 +306,14 @@ export default async function SettingsPage() {
                   enabledLabel={settingsCopy.enabled}
                   disabledLabel={settingsCopy.disabled}
                 />
+
                 <StatusRow
                   label={settingsCopy.productUpdates}
                   enabled={settings.productUpdates}
                   enabledLabel={settingsCopy.enabled}
                   disabledLabel={settingsCopy.disabled}
                 />
+
                 <StatusRow
                   label={settingsCopy.weeklyReports}
                   enabled={settings.weeklyReports}

@@ -63,13 +63,13 @@ function LoginContent() {
   const loginCopy = copy.loginPage;
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--background)] px-6 py-10">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--background)] px-4 py-6 sm:px-6 sm:py-10">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-[-8rem] top-[-8rem] h-72 w-72 rounded-full bg-[rgba(109,94,252,0.10)] blur-3xl" />
         <div className="absolute bottom-[-10rem] right-[-8rem] h-80 w-80 rounded-full bg-[rgba(59,130,246,0.08)] blur-3xl" />
       </div>
 
-      <div className="relative grid w-full max-w-6xl overflow-hidden rounded-[2rem] border border-[var(--border)] bg-white shadow-[var(--shadow-lg)] lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="relative grid w-full max-w-6xl overflow-hidden rounded-[1.6rem] border border-[var(--border)] bg-white shadow-[var(--shadow-lg)] sm:rounded-[2rem] lg:grid-cols-[1.05fr_0.95fr]">
         <div className="hidden border-r border-[var(--border)] bg-[linear-gradient(180deg,#ffffff_0%,#f8faff_100%)] p-10 lg:flex lg:flex-col lg:justify-between">
           <div>
             <div className="flex items-center gap-4">
@@ -144,11 +144,11 @@ function LoginContent() {
           </div>
         </div>
 
-        <div className="flex items-center justify-center p-6 sm:p-8 lg:p-10">
+        <div className="flex items-center justify-center p-4 sm:p-8 lg:p-10">
           <div className="w-full max-w-md">
-            <div className="mb-8 flex items-center justify-between gap-3 lg:hidden">
-              <div className="flex items-center gap-3">
-                <div className="relative h-12 w-12 overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-[var(--shadow-xs)]">
+            <div className="mb-6 flex items-center justify-between gap-3 lg:hidden">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-[var(--shadow-xs)] sm:h-12 sm:w-12">
                   <Image
                     src="/orbitops-logo.png"
                     alt="OrbitOps logo"
@@ -158,11 +158,11 @@ function LoginContent() {
                   />
                 </div>
 
-                <div>
-                  <p className="text-base font-semibold text-[var(--foreground)]">
+                <div className="min-w-0">
+                  <p className="truncate text-base font-semibold text-[var(--foreground)]">
                     OrbitOps
                   </p>
-                  <p className="text-xs text-[var(--muted-foreground)]">
+                  <p className="truncate text-xs text-[var(--muted-foreground)]">
                     {loginCopy.brandSubtitle}
                   </p>
                 </div>
@@ -172,7 +172,7 @@ function LoginContent() {
                 type="button"
                 onClick={toggleLanguage}
                 aria-label={loginCopy.languageLabel}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-white px-3 text-sm font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:border-[var(--primary-light)] hover:text-[var(--primary)]"
+                className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-white px-3 text-sm font-semibold text-[var(--foreground)] shadow-[var(--shadow-xs)] transition hover:-translate-y-0.5 hover:border-[var(--primary-light)] hover:text-[var(--primary)]"
               >
                 <Languages className="h-4 w-4" />
                 {copy.languageShort}
@@ -191,12 +191,12 @@ function LoginContent() {
               </button>
             </div>
 
-            <div className="rounded-[1.6rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)] sm:p-8">
+            <div className="rounded-[1.45rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-sm)] sm:rounded-[1.6rem] sm:p-8">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
                 {loginCopy.welcomeBack}
               </p>
 
-              <h2 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[var(--foreground)]">
+              <h2 className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[var(--foreground)] sm:text-4xl">
                 {loginCopy.signIn}
               </h2>
 
@@ -204,14 +204,14 @@ function LoginContent() {
                 {loginCopy.signInDescription}
               </p>
 
-              {error && (
+              {error ? (
                 <div className="mt-5 rounded-[1.2rem] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
                   {loginCopy.signInFailed}{" "}
                   {error === "OAuthAccountNotLinked"
                     ? loginCopy.accountNotLinked
                     : loginCopy.providerError}
                 </div>
-              )}
+              ) : null}
 
               <div className="mt-6 space-y-3">
                 <button

@@ -143,6 +143,10 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
     (client) => client.status === "Inactive"
   ).length;
 
+  const backToFilteredUrl = `/dashboard/clients?q=${encodeURIComponent(
+    searchQuery
+  )}&status=${encodeURIComponent(selectedStatus || "All")}`;
+
   return (
     <section className="space-y-6">
       <PageHeader
@@ -171,8 +175,8 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
         />
       </div>
 
-      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
-        <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--muted)] p-5">
+      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-sm)] sm:p-6">
+        <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--muted)] p-4 sm:p-5">
           <div className="mb-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
               {clientsCopy.createClient}
@@ -230,7 +234,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
           </form>
         </div>
 
-        <div className="mb-5 mt-6 flex items-center justify-between gap-4">
+        <div className="mb-5 mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-[var(--muted-foreground)]">
             {clientsCopy.currentWorkspace}:{" "}
             <span className="font-semibold text-[var(--foreground)]">
@@ -240,7 +244,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
 
           <button
             type="button"
-            className="rounded-2xl border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+            className="h-11 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)] sm:h-auto sm:py-2.5"
           >
             {clientsCopy.export}
           </button>
@@ -255,7 +259,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             type="text"
             defaultValue={searchQuery}
             placeholder={clientsCopy.searchPlaceholder}
-            className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+            className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
           />
 
           <select
@@ -284,7 +288,145 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
           </a>
         </form>
 
-        <div className="overflow-hidden rounded-[1.5rem] border border-[var(--border)]">
+        {/* Mobile cards */}
+        <div className="space-y-4 md:hidden">
+          {clients.map((client) => {
+            const isEditing = editingId === client.id;
+
+            if (isEditing) {
+              return (
+                <div
+                  key={client.id}
+                  className="rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-4"
+                >
+                  <form action={updateClient} className="grid gap-3">
+                    <input type="hidden" name="clientId" value={client.id} />
+
+                    <input
+                      name="name"
+                      type="text"
+                      defaultValue={client.name}
+                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+                      required
+                    />
+
+                    <input
+                      name="company"
+                      type="text"
+                      defaultValue={client.company}
+                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+                      required
+                    />
+
+                    <input
+                      name="email"
+                      type="email"
+                      defaultValue={client.email}
+                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+                      required
+                    />
+
+                    <select
+                      name="status"
+                      defaultValue={client.status}
+                      className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+                    >
+                      <option value="Active">{clientsCopy.active}</option>
+                      <option value="Pending">{clientsCopy.pending}</option>
+                      <option value="Inactive">{clientsCopy.inactive}</option>
+                    </select>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="submit"
+                        className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
+                      >
+                        {clientsCopy.save}
+                      </button>
+
+                      <a
+                        href={backToFilteredUrl}
+                        className="inline-flex h-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
+                      >
+                        {clientsCopy.cancel}
+                      </a>
+                    </div>
+                  </form>
+                </div>
+              );
+            }
+
+            return (
+              <div
+                key={client.id}
+                className="rounded-[1.35rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-xs)]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="break-words text-base font-semibold text-[var(--foreground)]">
+                      {client.name}
+                    </p>
+                    <p className="mt-1 break-words text-sm text-[var(--muted-foreground)]">
+                      {client.company}
+                    </p>
+                  </div>
+
+                  <StatusBadge status={client.status} language={language} />
+                </div>
+
+                <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+                    {clientsCopy.email}
+                  </p>
+                  <p className="mt-1 break-words text-sm font-medium text-[var(--foreground)]">
+                    {client.email}
+                  </p>
+                </div>
+
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  <button className="control-hover rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]">
+                    {clientsCopy.view}
+                  </button>
+
+                  <a
+                    href={`/dashboard/clients?edit=${client.id}&q=${encodeURIComponent(
+                      searchQuery
+                    )}&status=${encodeURIComponent(selectedStatus || "All")}`}
+                    className="control-hover inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)]"
+                  >
+                    {clientsCopy.edit}
+                  </a>
+
+                  <form action={deleteClient}>
+                    <input type="hidden" name="clientId" value={client.id} />
+
+                    <button
+                      type="submit"
+                      className="control-hover h-full w-full rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
+                    >
+                      {clientsCopy.delete}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            );
+          })}
+
+          {clients.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--muted)] px-6 py-12 text-center">
+              <p className="text-base font-semibold text-[var(--foreground)]">
+                {clientsCopy.noClientsFound}
+              </p>
+
+              <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                {clientsCopy.noClientsDescription}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop / tablet table - unchanged for md+ */}
+        <div className="hidden overflow-hidden rounded-[1.5rem] border border-[var(--border)] md:block">
           <table className="w-full border-collapse">
             <thead className="bg-[var(--muted)]">
               <tr className="text-left">
@@ -377,11 +519,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
                           </button>
 
                           <a
-                            href={`/dashboard/clients?q=${encodeURIComponent(
-                              searchQuery
-                            )}&status=${encodeURIComponent(
-                              selectedStatus || "All"
-                            )}`}
+                            href={backToFilteredUrl}
                             className="inline-flex h-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--muted)]"
                           >
                             {clientsCopy.cancel}

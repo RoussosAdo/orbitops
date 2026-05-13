@@ -63,7 +63,7 @@ function RoleBadge({ role, copy }: { role: string; copy: TeamCopy }) {
 
   return (
     <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
+      className={`inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
     >
       {getRoleLabel(role, copy)}
     </span>
@@ -78,7 +78,7 @@ function StatusBadge({ status, copy }: { status: string; copy: TeamCopy }) {
 
   return (
     <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
+      className={`inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
     >
       {getStatusLabel(status, copy)}
     </span>
@@ -150,7 +150,7 @@ export default async function TeamPage() {
         actionLabel={copy.inviteMember}
       />
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
         <TeamStatCard
           label={copy.activeMembers}
           value={String(activeMembers.length)}
@@ -179,7 +179,7 @@ export default async function TeamPage() {
         />
       </div>
 
-      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-sm)] sm:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="max-w-2xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
@@ -217,14 +217,14 @@ export default async function TeamPage() {
               name="email"
               type="email"
               placeholder={copy.inviteByEmail}
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
               required
             />
 
             <select
               name="role"
               defaultValue="MEMBER"
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-medium text-[var(--foreground)] outline-none"
+              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-medium text-[var(--foreground)] outline-none"
             >
               {isOwner ? <option value="OWNER">{copy.owner}</option> : null}
               <option value="ADMIN">{copy.admin}</option>
@@ -246,7 +246,7 @@ export default async function TeamPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.95fr]">
-        <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+        <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-sm)] sm:p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
@@ -258,12 +258,12 @@ export default async function TeamPage() {
               </h3>
             </div>
 
-            <span className="rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
+            <span className="shrink-0 rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
               {members.length} {copy.total}
             </span>
           </div>
 
-          <div className="mt-5 overflow-hidden rounded-[1.25rem] border border-[var(--border)]">
+          <div className="mt-5 hidden overflow-hidden rounded-[1.25rem] border border-[var(--border)] md:block">
             <table className="w-full border-collapse">
               <thead className="bg-[var(--muted)]">
                 <tr className="text-left">
@@ -376,10 +376,106 @@ export default async function TeamPage() {
               </tbody>
             </table>
           </div>
+
+          <div className="mt-5 space-y-4 md:hidden">
+            {members.length > 0 ? (
+              members.map((member) => {
+                const isLastOwner =
+                  member.role === "OWNER" &&
+                  member.status === "ACTIVE" &&
+                  ownersCount <= 1;
+
+                const isSelf = actorMembership?.id === member.id;
+                const targetIsOwner = member.role === "OWNER";
+
+                const canEditRole =
+                  canManageTeam &&
+                  !isLastOwner &&
+                  !isSelf &&
+                  !(actorRole === "ADMIN" && targetIsOwner);
+
+                const canRemoveMember =
+                  canManageTeam &&
+                  !isLastOwner &&
+                  !isSelf &&
+                  !(actorRole === "ADMIN" && targetIsOwner);
+
+                return (
+                  <div
+                    key={member.id}
+                    className="rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="break-words text-sm font-semibold text-[var(--foreground)]">
+                          {member.user.name || copy.unnamedUser}
+                        </p>
+                        <p className="mt-1 break-all text-sm text-[var(--muted-foreground)]">
+                          {member.user.email || copy.noEmail}
+                        </p>
+                      </div>
+
+                      <StatusBadge status={member.status} copy={copy} />
+                    </div>
+
+                    <div className="mt-4 grid gap-3">
+                      <div className="rounded-2xl border border-[var(--border)] bg-white p-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
+                          {copy.role}
+                        </p>
+
+                        <div className="mt-2">
+                          {canManageTeam ? (
+                            <TeamRoleForm
+                              membershipId={member.id}
+                              defaultRole={member.role}
+                              disabled={!canEditRole}
+                            />
+                          ) : (
+                            <RoleBadge role={member.role} copy={copy} />
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl border border-[var(--border)] bg-white p-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
+                          {copy.joined}
+                        </p>
+                        <p className="mt-2 text-sm font-semibold text-[var(--foreground)]">
+                          {new Date(member.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-white p-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
+                          {copy.actions}
+                        </p>
+
+                        {canManageTeam ? (
+                          <RemoveMemberForm
+                            membershipId={member.id}
+                            disabled={!canRemoveMember}
+                          />
+                        ) : (
+                          <span className="text-xs font-medium text-[var(--muted-foreground)]">
+                            {copy.noAccess}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="rounded-[1.35rem] border border-dashed border-[var(--border)] bg-[var(--muted)] px-4 py-10 text-center text-sm text-[var(--muted-foreground)]">
+                {copy.noTeamMembers}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+          <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-sm)] sm:p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
@@ -391,7 +487,7 @@ export default async function TeamPage() {
                 </h3>
               </div>
 
-              <span className="rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
+              <span className="shrink-0 rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
                 {pendingInvites.length} {copy.pending}
               </span>
             </div>
@@ -408,9 +504,9 @@ export default async function TeamPage() {
                       key={invite.id}
                       className="card-hover rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-4"
                     >
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-[var(--foreground)]">
+                          <p className="break-all text-sm font-semibold text-[var(--foreground)] sm:truncate">
                             {invite.email}
                           </p>
 
@@ -423,7 +519,7 @@ export default async function TeamPage() {
                         <StatusBadge status={invite.status} copy={copy} />
                       </div>
 
-                      <div className="mt-4 flex items-center justify-between gap-3">
+                      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                         <RoleBadge role={invite.role} copy={copy} />
 
                         {canRevoke ? (
@@ -448,7 +544,7 @@ export default async function TeamPage() {
             </div>
           </div>
 
-          <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
+          <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-sm)] sm:p-6">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
               {copy.accessSummary}
             </p>

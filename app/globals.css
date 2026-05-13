@@ -323,3 +323,56 @@ textarea:focus {
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+
+/* ========================================
+   RESPONSIVE FIXES
+======================================== */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  min-width: 320px;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+table {
+  min-width: 720px;
+}
+
+@media (max-width: 767px) {
+  .card-hover:hover,
+  .control-hover:hover {
+    transform: none;
+  }
+
+  .card-hover:hover {
+    box-shadow: var(--shadow-sm);
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  .data-row:hover {
+    transform: none;
+  }
+}
+
+/* Utility για sections που έχουν tables */
+.mobile-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

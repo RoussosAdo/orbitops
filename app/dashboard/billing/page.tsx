@@ -31,7 +31,7 @@ function InvoiceStatusBadge({
 
   return (
     <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
+      className={`inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${styles}`}
     >
       {getInvoiceStatusLabel(status, copy)}
     </span>
@@ -52,9 +52,11 @@ function UsageCard({
       <p className="text-sm font-medium text-[var(--muted-foreground)]">
         {label}
       </p>
+
       <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
         {value}
       </p>
+
       {sublabel ? (
         <p className="mt-2 text-sm font-medium text-[var(--primary)]">
           {sublabel}
@@ -142,10 +144,11 @@ export default async function BillingPage() {
           actionLabel={copy.billing}
         />
 
-        <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-10 text-center shadow-[var(--shadow-sm)]">
+        <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 text-center shadow-[var(--shadow-sm)] sm:p-10">
           <p className="text-lg font-semibold text-[var(--foreground)]">
             {copy.noBillingProfile}
           </p>
+
           <p className="mt-2 text-sm text-[var(--muted-foreground)]">
             {copy.noBillingProfileDescription}
           </p>
@@ -169,29 +172,32 @@ export default async function BillingPage() {
         actionLabel={copy.manageBilling}
       />
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
         <UsageCard
           label={copy.planPrice}
           value={`€${profile.monthlyPrice}`}
           sublabel={`${profile.billingCycle} ${copy.billingLower}`}
         />
+
         <UsageCard
           label={copy.paidInvoices}
           value={String(paidInvoices.length)}
           sublabel={`${pendingInvoices.length} ${copy.pendingLower}`}
         />
+
         <UsageCard
           label={copy.projectsUsage}
           value={`${projectsCount}/${profile.projectsIncluded}`}
         />
+
         <UsageCard
           label={copy.seatsUsage}
           value={`${seatsUsed}/${profile.seatsIncluded}`}
         />
       </div>
 
-      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 shadow-[var(--shadow-sm)]">
-        <div className="mb-5 flex items-center justify-between gap-4">
+      <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-sm)] sm:p-6">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-[var(--muted-foreground)]">
             {copy.currentWorkspace}:{" "}
             <span className="font-semibold text-[var(--foreground)]">
@@ -199,7 +205,7 @@ export default async function BillingPage() {
             </span>
           </p>
 
-          <span className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+          <span className="inline-flex w-fit rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
             {profile.status}
           </span>
         </div>
@@ -216,15 +222,18 @@ export default async function BillingPage() {
                   <h2 className="text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
                     {profile.planName}
                   </h2>
+
                   <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-                    {profile.billingCycle} {copy.billingLower} · {profile.status}
+                    {profile.billingCycle} {copy.billingLower} ·{" "}
+                    {profile.status}
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-right">
+                <div className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-left md:text-right">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
                     {copy.billingPeriod}
                   </p>
+
                   <p className="mt-2 text-sm font-semibold text-[var(--foreground)]">
                     {profile.currentPeriod}
                   </p>
@@ -238,12 +247,13 @@ export default async function BillingPage() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
                     {copy.usageOverview}
                   </p>
+
                   <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
                     {copy.planUsage}
                   </h3>
                 </div>
 
-                <span className="rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
+                <span className="shrink-0 rounded-full border border-[var(--border)] bg-[var(--muted)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
                   {copy.liveUsage}
                 </span>
               </div>
@@ -255,12 +265,14 @@ export default async function BillingPage() {
                   max={profile.seatsIncluded}
                   tone="purple"
                 />
+
                 <ProgressRow
                   label={copy.projectsUsage}
                   value={projectsCount}
                   max={profile.projectsIncluded}
                   tone="blue"
                 />
+
                 <ProgressRow
                   label={copy.paidInvoices}
                   value={paidInvoices.length}
@@ -271,34 +283,38 @@ export default async function BillingPage() {
             </div>
 
             <div className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
                     {copy.invoiceHistory}
                   </p>
+
                   <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
                     {copy.invoices}
                   </h3>
                 </div>
 
-                <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)] px-3 py-2 text-xs font-semibold text-[var(--foreground)]">
+                <div className="w-fit rounded-xl border border-[var(--border)] bg-[var(--muted)] px-3 py-2 text-xs font-semibold text-[var(--foreground)]">
                   €{totalBilled} {copy.totalBilledLower}
                 </div>
               </div>
 
-              <div className="mt-5 overflow-hidden rounded-[1.25rem] border border-[var(--border)]">
+              <div className="mt-5 hidden overflow-hidden rounded-[1.25rem] border border-[var(--border)] md:block">
                 <table className="w-full border-collapse">
                   <thead className="bg-[var(--muted)]">
                     <tr className="text-left">
                       <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
                         {copy.invoice}
                       </th>
+
                       <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
                         {copy.amount}
                       </th>
+
                       <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
                         {copy.issued}
                       </th>
+
                       <th className="px-5 py-4 text-sm font-semibold text-[var(--foreground)]">
                         {copy.status}
                       </th>
@@ -328,7 +344,10 @@ export default async function BillingPage() {
                         </td>
 
                         <td className="px-5 py-4">
-                          <InvoiceStatusBadge status={invoice.status} copy={copy} />
+                          <InvoiceStatusBadge
+                            status={invoice.status}
+                            copy={copy}
+                          />
                         </td>
                       </tr>
                     ))}
@@ -340,6 +359,7 @@ export default async function BillingPage() {
                             <p className="text-base font-semibold text-[var(--foreground)]">
                               {copy.noInvoicesYet}
                             </p>
+
                             <p className="mt-2 text-sm text-[var(--muted-foreground)]">
                               {copy.noInvoicesDescription}
                             </p>
@@ -350,6 +370,66 @@ export default async function BillingPage() {
                   </tbody>
                 </table>
               </div>
+
+              <div className="mt-5 space-y-4 md:hidden">
+                {invoices.length > 0 ? (
+                  invoices.map((invoice) => (
+                    <div
+                      key={invoice.id}
+                      className="rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
+                            {copy.invoice}
+                          </p>
+
+                          <p className="mt-2 text-sm font-semibold text-[var(--foreground)]">
+                            {invoice.invoiceNo}
+                          </p>
+                        </div>
+
+                        <InvoiceStatusBadge
+                          status={invoice.status}
+                          copy={copy}
+                        />
+                      </div>
+
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        <div className="rounded-2xl border border-[var(--border)] bg-white p-3">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
+                            {copy.amount}
+                          </p>
+
+                          <p className="mt-2 text-sm font-semibold text-[var(--foreground)]">
+                            €{invoice.amount}
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl border border-[var(--border)] bg-white p-3">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
+                            {copy.issued}
+                          </p>
+
+                          <p className="mt-2 text-sm font-semibold text-[var(--foreground)]">
+                            {invoice.issuedDate}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-[1.35rem] border border-dashed border-[var(--border)] bg-[var(--muted)] px-4 py-10 text-center">
+                    <p className="text-base font-semibold text-[var(--foreground)]">
+                      {copy.noInvoicesYet}
+                    </p>
+
+                    <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+                      {copy.noInvoicesDescription}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -358,6 +438,7 @@ export default async function BillingPage() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
                 {copy.payment}
               </p>
+
               <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
                 {copy.paymentMethod}
               </h3>
@@ -366,7 +447,8 @@ export default async function BillingPage() {
                 <p className="text-sm text-[var(--muted-foreground)]">
                   {copy.savedCard}
                 </p>
-                <p className="mt-2 text-lg font-semibold text-[var(--foreground)]">
+
+                <p className="mt-2 break-words text-lg font-semibold text-[var(--foreground)]">
                   {profile.cardBrand} {copy.endingIn} {profile.cardLast4}
                 </p>
               </div>
@@ -376,6 +458,7 @@ export default async function BillingPage() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
                 {copy.planControls}
               </p>
+
               <h3 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[var(--foreground)]">
                 {copy.updatePlan}
               </h3>

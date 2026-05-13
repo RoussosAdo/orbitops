@@ -43,14 +43,14 @@ export default function Sidebar({
     <aside
       className={`${
         isMobile
-          ? "flex h-full w-[88vw] max-w-80 flex-col bg-[#fcfdff]"
-          : "hidden w-[276px] shrink-0 border-r border-[var(--border)] bg-[#fcfdff] xl:flex xl:flex-col"
+          ? "flex min-h-full w-full flex-col overflow-y-auto bg-[#fcfdff]"
+          : "hidden h-screen w-[276px] shrink-0 border-r border-[var(--border)] bg-[#fcfdff] xl:sticky xl:top-0 xl:flex xl:flex-col"
       }`}
     >
-      <div className="px-5 pb-5 pt-6">
-        <div className="rounded-[1.6rem] border border-[var(--border)] bg-white px-4 py-4 shadow-[var(--shadow-xs)]">
+      <div className="px-4 pb-3 pt-4 sm:px-5">
+        <div className="rounded-[1.35rem] border border-[var(--border)] bg-white px-4 py-3 shadow-[var(--shadow-xs)]">
           <div className="flex items-center gap-3">
-            <div className="relative h-12 w-12 overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-[var(--shadow-sm)]">
+            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-[var(--shadow-sm)]">
               <Image
                 src="/orbitops-logo.png"
                 alt="OrbitOps logo"
@@ -64,37 +64,40 @@ export default function Sidebar({
               <p className="truncate text-sm font-semibold tracking-[-0.02em] text-[var(--foreground)]">
                 OrbitOps
               </p>
-              <p className="text-xs text-[var(--muted-foreground)]">
+              <p className="truncate text-xs text-[var(--muted-foreground)]">
                 {copy.brandSubtitle}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="mt-5 rounded-[1.6rem] border border-[var(--border)] bg-[linear-gradient(180deg,#ffffff_0%,#f8faff_100%)] p-5 shadow-[var(--shadow-xs)]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+        <div className="mt-3 rounded-[1.35rem] border border-[var(--border)] bg-[linear-gradient(180deg,#ffffff_0%,#f8faff_100%)] p-4 shadow-[var(--shadow-xs)]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
             {copy.currentWorkspace}
           </p>
 
-          <h2 className="mt-3 text-[2rem] font-semibold tracking-[-0.04em] text-[var(--foreground)]">
+          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
             {copy.workspaceTitle}
           </h2>
 
-          <p className="mt-2 text-sm leading-7 text-[var(--muted-foreground)]">
+          <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
             {copy.workspaceDescription}
           </p>
         </div>
       </div>
 
-      <div className="px-5">
-        <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted-foreground)]">
+      <div className="px-4 sm:px-5">
+        <p className="px-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
           {copy.mainMenu}
         </p>
       </div>
 
-      <nav className="flex-1 space-y-1.5 px-4 py-4">
+      <nav className="flex-1 space-y-1 px-3 py-3 sm:px-4">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive =
+            pathname === item.href ||
+            (item.href !== "/dashboard" && pathname.startsWith(item.href));
+
           const Icon = item.icon;
           const label = copy.nav[item.labelKey];
 
@@ -104,15 +107,15 @@ export default function Sidebar({
               href={item.href}
               prefetch={true}
               onClick={onNavigate}
-              className={`group flex items-center justify-between rounded-2xl px-4 py-3 transition ${
+              className={`group flex items-center justify-between rounded-2xl px-4 py-2.5 transition ${
                 isActive
                   ? "bg-[var(--foreground)] text-white shadow-[var(--shadow-md)]"
                   : "text-[var(--foreground)] hover:bg-white hover:shadow-[var(--shadow-xs)]"
               }`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 items-center gap-3">
                 <div
-                  className={`flex h-9 w-9 items-center justify-center rounded-xl border transition ${
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition ${
                     isActive
                       ? "border-white/10 bg-white/10 text-white"
                       : "border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)] group-hover:border-[var(--primary-light)] group-hover:text-[var(--primary)]"
@@ -121,11 +124,11 @@ export default function Sidebar({
                   <Icon className="h-4 w-4" />
                 </div>
 
-                <span className="text-sm font-semibold">{label}</span>
+                <span className="truncate text-sm font-semibold">{label}</span>
               </div>
 
               <span
-                className={`h-2 w-2 rounded-full transition ${
+                className={`ml-3 h-2 w-2 shrink-0 rounded-full transition ${
                   isActive
                     ? "bg-white"
                     : "bg-[var(--border-strong)] group-hover:bg-[var(--primary-light)]"
@@ -137,7 +140,7 @@ export default function Sidebar({
       </nav>
 
       <div className="p-4 pt-0">
-        <div className="overflow-hidden rounded-[1.6rem] border border-[var(--border)] bg-white shadow-[var(--shadow-sm)]">
+        <div className="overflow-hidden rounded-[1.35rem] border border-[var(--border)] bg-white shadow-[var(--shadow-sm)]">
           <div className="bg-[linear-gradient(135deg,rgba(109,94,252,0.10)_0%,rgba(79,70,229,0.06)_100%)] p-4">
             <p className="text-sm font-semibold text-[var(--foreground)]">
               {copy.upgradeTitle}
