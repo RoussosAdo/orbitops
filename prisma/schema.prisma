@@ -65,24 +65,37 @@ model Task {
 }
 
 model BillingProfile {
-  id               String   @id @default(cuid())
-  workspaceId      String   @unique
-  planName         String
-  billingCycle     String
-  status           String
-  cardBrand        String
-  cardLast4        String
-  currentPeriod    String
-  monthlyPrice     Int
-  seatsUsed        Int
-  seatsIncluded    Int
-  projectsUsed     Int
-  projectsIncluded Int
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                     String    @id @default(cuid())
+  workspaceId            String    @unique
+
+  planName               String
+  billingCycle           String
+  status                 String
+
+  cardBrand              String
+  cardLast4              String
+
+  currentPeriod          String
+  currentPeriodEnd       DateTime?
+
+  monthlyPrice           Int
+  seatsUsed              Int
+  seatsIncluded          Int
+  projectsUsed           Int
+  projectsIncluded       Int
+
+  stripeCustomerId       String?
+  stripeSubscriptionId   String?
+  stripePriceId          String?
+
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   invoices  Invoice[]
+
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
 }
 
 model Invoice {
@@ -90,11 +103,15 @@ model Invoice {
   workspaceId      String
   billingProfileId String?
   clientId         String?
+
+  stripeInvoiceId  String?
+
   invoiceNo        String
   amount           Int
   status           String
   issuedDate       String
   dueDate          String
+
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -103,6 +120,7 @@ model Invoice {
   client         Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   @@unique([workspaceId, invoiceNo])
+  @@unique([stripeInvoiceId])
   @@index([workspaceId])
   @@index([billingProfileId])
   @@index([clientId])

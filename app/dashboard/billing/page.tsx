@@ -1,12 +1,18 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
-import { updateBillingPlan } from "@/app/actions/billingActions";
+import { createCheckoutSession } from "@/app/actions/billingActions";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
 import { getCurrentLanguage } from "@/app/lib/get-current-language";
 import type { AppLanguage } from "@/app/lib/i18n";
 import { dashboardCopy } from "@/app/lib/i18n";
 
 type BillingCopy = (typeof dashboardCopy)[AppLanguage]["billingPage"];
+
+type BillingPageProps = {
+  searchParams?: Promise<{
+    checkout?: string;
+  }>;
+};
 
 function getInvoiceStatusLabel(status: string, copy: BillingCopy) {
   if (status === "Paid") return copy.paid;
@@ -104,10 +110,11 @@ function ProgressRow({
   );
 }
 
-export default async function BillingPage() {
+export default async function BillingPage({ searchParams }: BillingPageProps) {
   const workspace = await requireCurrentWorkspace();
   const language = await getCurrentLanguage();
   const copy = dashboardCopy[language].billingPage;
+  const params = searchParams ? await searchParams : undefined;
 
   const [profile, invoices, projectsCount, seatsUsed] = await Promise.all([
     prisma.billingProfile.findUnique({
@@ -171,6 +178,30 @@ export default async function BillingPage() {
         description={copy.description}
         actionLabel={copy.manageBilling}
       />
+
+      {params?.checkout === "success" ? (
+  <div className="rounded-[1.35rem] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
+    Payment completed. Your subscription has been activated.
+  </div>
+) : null}
+
+{params?.checkout === "cancelled" ? (
+  <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-700">
+    Checkout was cancelled. No changes were made.
+  </div>
+) : null}
+
+{params?.checkout === "current" ? (
+  <div className="rounded-[1.35rem] border border-sky-200 bg-sky-50 px-5 py-4 text-sm font-medium text-sky-700">
+    You are already on this plan.
+  </div>
+) : null}
+
+{params?.checkout === "free" ? (
+  <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-medium text-slate-700">
+    Your workspace has been moved to the Free plan.
+  </div>
+) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
         <UsageCard
@@ -449,7 +480,15 @@ export default async function BillingPage() {
                 </p>
 
                 <p className="mt-2 break-words text-lg font-semibold text-[var(--foreground)]">
-                  {profile.cardBrand} {copy.endingIn} {profile.cardLast4}
+                  {profile.cardBrand &&
+profile.cardLast4 &&
+profile.cardBrand !== "-" &&
+profile.cardLast4 !== "-" &&
+profile.cardLast4 !== "Active"
+  ? `${profile.cardBrand} ${copy.endingIn} ${profile.cardLast4}`
+  : profile.status === "Free"
+  ? "No payment method required"
+  : "Payment active through Stripe"}
                 </p>
               </div>
             </div>
@@ -463,7 +502,7 @@ export default async function BillingPage() {
                 {copy.updatePlan}
               </h3>
 
-              <form action={updateBillingPlan} className="mt-5 space-y-4">
+              <form action={createCheckoutSession} className="mt-5 space-y-4">
                 <select
                   name="planName"
                   defaultValue={profile.planName}
@@ -488,9 +527,14 @@ export default async function BillingPage() {
                   type="submit"
                   className="h-12 w-full rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
                 >
-                  {copy.saveBillingChanges}
+                  Continue to Checkout
                 </button>
               </form>
+
+              <p className="mt-4 text-xs leading-5 text-[var(--muted-foreground)]">
+                Paid plans redirect to Stripe Checkout. Free plan updates
+                instantly.
+              </p>
             </div>
           </div>
         </div>
