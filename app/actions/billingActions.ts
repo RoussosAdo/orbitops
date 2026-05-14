@@ -85,6 +85,16 @@ function getStripePriceId(plan: PlanConfig, billingCycle: BillingCycle) {
   return plan.priceId[billingCycle];
 }
 
+function getCleanAppUrl() {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+
+  if (!appUrl) {
+    throw new Error("Missing NEXT_PUBLIC_APP_URL in environment variables.");
+  }
+
+  return appUrl.replace(/\/$/, "");
+}
+
 export async function updateBillingPlan(formData: FormData) {
   const workspace = await requireCurrentWorkspace();
 
@@ -114,9 +124,9 @@ export async function updateBillingPlan(formData: FormData) {
       cardLast4: planName === "Free" ? "-" : "Active",
       currentPeriod: planName === "Free" ? "Free plan" : "Active subscription",
       currentPeriodEnd: null,
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
-      stripePriceId: null,
+      stripeCustomerId: planName === "Free" ? null : undefined,
+      stripeSubscriptionId: planName === "Free" ? null : undefined,
+      stripePriceId: planName === "Free" ? null : undefined,
     },
     create: {
       workspaceId: workspace.id,
@@ -184,17 +194,14 @@ export async function createCheckoutSession(formData: FormData) {
     );
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-
-  if (!appUrl) {
-    throw new Error("Missing NEXT_PUBLIC_APP_URL in environment variables.");
-  }
-
-  const cleanAppUrl = appUrl.replace(/\/$/, "");
+  const cleanAppUrl = getCleanAppUrl();
 
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "subscription",
-    customer_email: session?.user?.email ?? undefined,
+    customer: existingProfile?.stripeCustomerId ?? undefined,
+    customer_email: existingProfile?.stripeCustomerId
+      ? undefined
+      : session?.user?.email ?? undefined,
     line_items: [
       {
         price: priceId,
@@ -222,4 +229,27 @@ export async function createCheckoutSession(formData: FormData) {
   }
 
   redirect(checkoutSession.url);
+}
+
+export async function createBillingPortalSession() {
+  const workspace = await requireCurrentWorkspace();
+
+  const profile = await prisma.billingProfile.findUnique({
+    where: {
+      workspaceId: workspace.id,
+    },
+  });
+
+  if (!profile?.stripeCustomerId) {
+    redirect("/dashboard/billing?checkout=no-customer");
+  }
+
+  const cleanAppUrl = getCleanAppUrl();
+
+  const portalSession = await stripe.billingPortal.sessions.create({
+    customer: profile.stripeCustomerId,
+    return_url: `${cleanAppUrl}/dashboard/billing`,
+  });
+
+  redirect(portalSession.url);
 }

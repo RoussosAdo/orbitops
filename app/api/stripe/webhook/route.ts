@@ -71,6 +71,8 @@ function getStripeStatusLabel(status: string) {
   if (status === "past_due") return "Past Due";
   if (status === "canceled") return "Canceled";
   if (status === "unpaid") return "Unpaid";
+  if (status === "incomplete") return "Incomplete";
+  if (status === "incomplete_expired") return "Incomplete Expired";
 
   return status;
 }
@@ -178,7 +180,9 @@ async function updateBillingFromSubscription(subscriptionId: string) {
       status: getStripeStatusLabel(subscription.status),
       cardBrand,
       cardLast4,
-      currentPeriod: formatDateFromUnix(subscriptionWithPeriod.current_period_end),
+      currentPeriod: formatDateFromUnix(
+        subscriptionWithPeriod.current_period_end
+      ),
       currentPeriodEnd: dateFromUnix(subscriptionWithPeriod.current_period_end),
       stripeCustomerId: customerId,
       stripeSubscriptionId: subscription.id,
@@ -196,7 +200,9 @@ async function updateBillingFromSubscription(subscriptionId: string) {
       status: getStripeStatusLabel(subscription.status),
       cardBrand,
       cardLast4,
-      currentPeriod: formatDateFromUnix(subscriptionWithPeriod.current_period_end),
+      currentPeriod: formatDateFromUnix(
+        subscriptionWithPeriod.current_period_end
+      ),
       currentPeriodEnd: dateFromUnix(subscriptionWithPeriod.current_period_end),
       stripeCustomerId: customerId,
       stripeSubscriptionId: subscription.id,
@@ -283,6 +289,46 @@ async function createPaidInvoiceFromStripeInvoice(stripeInvoice: Stripe.Invoice)
   });
 }
 
+async function downgradeWorkspaceToFree(subscriptionId: string) {
+  const profile = await prisma.billingProfile.findFirst({
+    where: {
+      stripeSubscriptionId: subscriptionId,
+    },
+  });
+
+  if (!profile) {
+    console.warn("No billing profile found for canceled subscription:", {
+      subscriptionId,
+    });
+    return;
+  }
+
+  await prisma.billingProfile.update({
+    where: {
+      workspaceId: profile.workspaceId,
+    },
+    data: {
+      planName: "Free",
+      billingCycle: "Monthly",
+      monthlyPrice: 0,
+      seatsIncluded: 1,
+      projectsIncluded: 3,
+      status: "Free",
+      cardBrand: "-",
+      cardLast4: "-",
+      currentPeriod: "Free plan",
+      currentPeriodEnd: null,
+      stripeSubscriptionId: null,
+      stripePriceId: null,
+    },
+  });
+
+  console.log("Workspace downgraded to Free:", {
+    workspaceId: profile.workspaceId,
+    subscriptionId,
+  });
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
@@ -332,12 +378,17 @@ export async function POST(req: Request) {
 
     if (
       event.type === "customer.subscription.created" ||
-      event.type === "customer.subscription.updated" ||
-      event.type === "customer.subscription.deleted"
+      event.type === "customer.subscription.updated"
     ) {
       const subscription = event.data.object as Stripe.Subscription;
 
       await updateBillingFromSubscription(subscription.id);
+    }
+
+    if (event.type === "customer.subscription.deleted") {
+      const subscription = event.data.object as Stripe.Subscription;
+
+      await downgradeWorkspaceToFree(subscription.id);
     }
 
     if (

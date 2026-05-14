@@ -1,8 +1,11 @@
+import type { ReactNode } from "react";
+
 type PageHeaderProps = {
   eyebrow?: string;
   title: string;
   description: string;
   actionLabel?: string;
+  actionSlot?: ReactNode;
 };
 
 export default function PageHeader({
@@ -10,6 +13,7 @@ export default function PageHeader({
   title,
   description,
   actionLabel,
+  actionSlot,
 }: PageHeaderProps) {
   return (
     <div className="fade-in-up overflow-hidden rounded-[1.35rem] border border-[var(--border)] bg-white shadow-[var(--shadow-sm)] sm:rounded-[1.75rem]">
@@ -33,7 +37,9 @@ export default function PageHeader({
             </p>
           </div>
 
-          {actionLabel ? (
+          {actionSlot ? (
+            <div className="w-full md:w-auto">{actionSlot}</div>
+          ) : actionLabel ? (
             <button
               type="button"
               className="control-hover soft-ring inline-flex h-11 w-full items-center justify-center rounded-2xl bg-[var(--foreground)] px-5 text-sm font-semibold text-white shadow-[var(--shadow-xs)] hover:bg-black sm:h-12 sm:w-auto sm:px-6"

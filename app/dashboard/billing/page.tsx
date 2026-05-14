@@ -1,6 +1,9 @@
 import PageHeader from "@/app/components/dashboard/PageHeader";
 import { prisma } from "@/app/lib/prisma";
-import { createCheckoutSession } from "@/app/actions/billingActions";
+import {
+  createCheckoutSession,
+  createBillingPortalSession,
+} from "@/app/actions/billingActions";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
 import { getCurrentLanguage } from "@/app/lib/get-current-language";
 import type { AppLanguage } from "@/app/lib/i18n";
@@ -110,6 +113,84 @@ function ProgressRow({
   );
 }
 
+function CheckoutMessage({ checkout }: { checkout?: string }) {
+  if (checkout === "success") {
+    return (
+      <div className="rounded-[1.35rem] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
+        Payment completed. Your subscription has been activated.
+      </div>
+    );
+  }
+
+  if (checkout === "cancelled") {
+    return (
+      <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-700">
+        Checkout was cancelled. No changes were made.
+      </div>
+    );
+  }
+
+  if (checkout === "current") {
+    return (
+      <div className="rounded-[1.35rem] border border-sky-200 bg-sky-50 px-5 py-4 text-sm font-medium text-sky-700">
+        You are already on this plan.
+      </div>
+    );
+  }
+
+  if (checkout === "free") {
+    return (
+      <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-medium text-slate-700">
+        Your workspace has been moved to the Free plan.
+      </div>
+    );
+  }
+
+  if (checkout === "no-customer") {
+    return (
+      <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-700">
+        No Stripe customer found yet. Choose a paid plan first to activate
+        billing management.
+      </div>
+    );
+  }
+
+  return null;
+}
+
+function PaymentMethodText({
+  cardBrand,
+  cardLast4,
+  status,
+  endingIn,
+}: {
+  cardBrand: string;
+  cardLast4: string;
+  status: string;
+  endingIn: string;
+}) {
+  const hasRealCard =
+    cardBrand &&
+    cardLast4 &&
+    cardBrand !== "-" &&
+    cardLast4 !== "-" &&
+    cardLast4 !== "Active";
+
+  if (hasRealCard) {
+    return (
+      <>
+        {cardBrand} {endingIn} {cardLast4}
+      </>
+    );
+  }
+
+  if (status === "Free") {
+    return <>No payment method required</>;
+  }
+
+  return <>Payment active through Stripe</>;
+}
+
 export default async function BillingPage({ searchParams }: BillingPageProps) {
   const workspace = await requireCurrentWorkspace();
   const language = await getCurrentLanguage();
@@ -148,7 +229,6 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
           eyebrow={copy.eyebrow}
           title={copy.title}
           description={copy.emptyDescription}
-          actionLabel={copy.billing}
         />
 
         <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-6 text-center shadow-[var(--shadow-sm)] sm:p-10">
@@ -169,39 +249,34 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
     (invoice) => invoice.status === "Pending"
   );
   const totalBilled = invoices.reduce((sum, invoice) => sum + invoice.amount, 0);
+  const canManageBilling = Boolean(profile.stripeCustomerId);
 
   return (
     <section className="space-y-6">
       <PageHeader
-        eyebrow={copy.eyebrow}
-        title={copy.title}
-        description={copy.description}
-        actionLabel={copy.manageBilling}
-      />
+  eyebrow={copy.eyebrow}
+  title={copy.title}
+  description={copy.description}
+  actionSlot={
+    <form action={createBillingPortalSession}>
+      <button
+        type="submit"
+        disabled={!canManageBilling}
+        className={`inline-flex h-11 w-full items-center justify-center rounded-2xl px-5 text-sm font-semibold shadow-[var(--shadow-xs)] transition sm:h-12 md:w-auto ${
+          canManageBilling
+            ? "bg-[var(--foreground)] text-white hover:bg-black"
+            : "cursor-not-allowed border border-[var(--border)] bg-white text-[var(--muted-foreground)]"
+        }`}
+      >
+        Manage Billing
+      </button>
+    </form>
+  }
+/>
 
-      {params?.checkout === "success" ? (
-  <div className="rounded-[1.35rem] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
-    Payment completed. Your subscription has been activated.
-  </div>
-) : null}
+      
+        <CheckoutMessage checkout={params?.checkout} />
 
-{params?.checkout === "cancelled" ? (
-  <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-700">
-    Checkout was cancelled. No changes were made.
-  </div>
-) : null}
-
-{params?.checkout === "current" ? (
-  <div className="rounded-[1.35rem] border border-sky-200 bg-sky-50 px-5 py-4 text-sm font-medium text-sky-700">
-    You are already on this plan.
-  </div>
-) : null}
-
-{params?.checkout === "free" ? (
-  <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-medium text-slate-700">
-    Your workspace has been moved to the Free plan.
-  </div>
-) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
         <UsageCard
@@ -480,15 +555,12 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
                 </p>
 
                 <p className="mt-2 break-words text-lg font-semibold text-[var(--foreground)]">
-                  {profile.cardBrand &&
-profile.cardLast4 &&
-profile.cardBrand !== "-" &&
-profile.cardLast4 !== "-" &&
-profile.cardLast4 !== "Active"
-  ? `${profile.cardBrand} ${copy.endingIn} ${profile.cardLast4}`
-  : profile.status === "Free"
-  ? "No payment method required"
-  : "Payment active through Stripe"}
+                  <PaymentMethodText
+                    cardBrand={profile.cardBrand}
+                    cardLast4={profile.cardLast4}
+                    status={profile.status}
+                    endingIn={copy.endingIn}
+                  />
                 </p>
               </div>
             </div>
