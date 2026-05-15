@@ -258,7 +258,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
   title={copy.title}
   description={copy.description}
   actionSlot={
-    <form action={createBillingPortalSession}>
+    <form action={createBillingPortalSession} className="w-full md:w-auto">
       <button
         type="submit"
         disabled={!canManageBilling}

@@ -1,16 +1,19 @@
 "use client";
 
 import { useActionState } from "react";
-import {
-  initialTeamActionState,
-  updateMemberRole,
-} from "@/app/actions/teamActions";
+import { updateMemberRole } from "@/app/actions/teamActions";
+import type { TeamActionState } from "@/app/types/team";
 import TeamActionFeedback from "./team-action-feedback";
 
 type TeamRoleFormProps = {
   membershipId: string;
   defaultRole: string;
   disabled?: boolean;
+};
+
+const initialTeamActionState: TeamActionState = {
+  ok: false,
+  message: "",
 };
 
 export default function TeamRoleForm({

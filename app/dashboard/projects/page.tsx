@@ -14,6 +14,7 @@ type ProjectsPageProps = {
     edit?: string;
     q?: string;
     status?: string;
+    billing?: string;
   }>;
 };
 
@@ -104,85 +105,100 @@ export default async function ProjectsPage({
   const editingId = params?.edit ?? null;
   const searchQuery = (params?.q ?? "").trim();
   const selectedStatus = (params?.status ?? "").trim();
+  const billingMessage = params?.billing ?? null;
 
-  const [projects, clients] = await Promise.all([
-    prisma.project.findMany({
-      where: {
-        workspaceId: workspace.id,
-        ...(searchQuery
-          ? {
-              OR: [
-                {
-                  name: {
-                    contains: searchQuery,
-                    mode: "insensitive",
+  const [projects, clients, billingProfile, totalProjectsCount] =
+    await Promise.all([
+      prisma.project.findMany({
+        where: {
+          workspaceId: workspace.id,
+          ...(searchQuery
+            ? {
+                OR: [
+                  {
+                    name: {
+                      contains: searchQuery,
+                      mode: "insensitive",
+                    },
                   },
-                },
-                {
-                  description: {
-                    contains: searchQuery,
-                    mode: "insensitive",
+                  {
+                    description: {
+                      contains: searchQuery,
+                      mode: "insensitive",
+                    },
                   },
-                },
-                {
-                  budget: {
-                    contains: searchQuery,
-                    mode: "insensitive",
+                  {
+                    budget: {
+                      contains: searchQuery,
+                      mode: "insensitive",
+                    },
                   },
-                },
-                {
-                  dueDate: {
-                    contains: searchQuery,
-                    mode: "insensitive",
+                  {
+                    dueDate: {
+                      contains: searchQuery,
+                      mode: "insensitive",
+                    },
                   },
-                },
-                {
-                  team: {
-                    contains: searchQuery,
-                    mode: "insensitive",
+                  {
+                    team: {
+                      contains: searchQuery,
+                      mode: "insensitive",
+                    },
                   },
-                },
-                {
-                  client: {
-                    is: {
-                      name: {
-                        contains: searchQuery,
-                        mode: "insensitive",
+                  {
+                    client: {
+                      is: {
+                        name: {
+                          contains: searchQuery,
+                          mode: "insensitive",
+                        },
                       },
                     },
                   },
-                },
-                {
-                  client: {
-                    is: {
-                      company: {
-                        contains: searchQuery,
-                        mode: "insensitive",
+                  {
+                    client: {
+                      is: {
+                        company: {
+                          contains: searchQuery,
+                          mode: "insensitive",
+                        },
                       },
                     },
                   },
-                },
-              ],
-            }
-          : {}),
-        ...(selectedStatus && selectedStatus !== "All"
-          ? {
-              status: selectedStatus,
-            }
-          : {}),
-      },
-      include: {
-        client: true,
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.client.findMany({
-      where: {
-        workspaceId: workspace.id,
-      },
-      orderBy: { name: "asc" },
-    }),
-  ]);
+                ],
+              }
+            : {}),
+          ...(selectedStatus && selectedStatus !== "All"
+            ? {
+                status: selectedStatus,
+              }
+            : {}),
+        },
+        include: {
+          client: true,
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.client.findMany({
+        where: {
+          workspaceId: workspace.id,
+        },
+        orderBy: { name: "asc" },
+      }),
+      prisma.billingProfile.findUnique({
+        where: {
+          workspaceId: workspace.id,
+        },
+      }),
+      prisma.project.count({
+        where: {
+          workspaceId: workspace.id,
+        },
+      }),
+    ]);
+
+  const projectLimit = billingProfile?.projectsIncluded ?? 3;
+  const projectLimitReached = totalProjectsCount >= projectLimit;
 
   const completedProjects = projects.filter(
     (project) => project.status === "Completed"
@@ -228,6 +244,19 @@ export default async function ProjectsPage({
         />
       </div>
 
+      {billingMessage === "project-limit" ? (
+        <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-700">
+          Project limit reached. Upgrade your plan to create more projects.
+        </div>
+      ) : null}
+
+      {projectLimitReached ? (
+        <div className="rounded-[1.35rem] border border-sky-200 bg-sky-50 px-5 py-4 text-sm font-medium text-sky-700">
+          Your workspace is using {totalProjectsCount}/{projectLimit} project
+          slots. Upgrade your plan if you need more project capacity.
+        </div>
+      ) : null}
+
       <div className="rounded-[1.75rem] border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-sm)] sm:p-6">
         <div className="rounded-[1.4rem] border border-[var(--border)] bg-[var(--muted)] p-4 sm:p-5">
           <div className="mb-4">
@@ -240,89 +269,95 @@ export default async function ProjectsPage({
             </h2>
           </div>
 
-          <form
-            action={createProject}
-            className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
-          >
-            <input
-              name="name"
-              type="text"
-              placeholder={projectsCopy.projectName}
-              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
-              required
-            />
-
-            <input
-              name="budget"
-              type="text"
-              placeholder={projectsCopy.budgetPlaceholder}
-              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
-              required
-            />
-
-            <input
-              name="dueDate"
-              type="text"
-              placeholder={projectsCopy.dueDate}
-              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
-              required
-            />
-
-            <input
-              name="team"
-              type="text"
-              placeholder={projectsCopy.teamPlaceholder}
-              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
-              required
-            />
-
-            <textarea
-              name="description"
-              placeholder={projectsCopy.projectDescription}
-              className="min-h-[120px] rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] md:col-span-2 xl:col-span-2"
-              required
-            />
-
-            <select
-              name="status"
-              defaultValue="Planning"
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none md:h-[120px]"
+          <form action={createProject}>
+            <fieldset
+              disabled={projectLimitReached}
+              className={`grid gap-3 md:grid-cols-2 xl:grid-cols-4 ${
+                projectLimitReached ? "opacity-60" : ""
+              }`}
             >
-              <option value="Planning">{projectsCopy.planning}</option>
-              <option value="In Progress">{projectsCopy.inProgress}</option>
-              <option value="In Review">{projectsCopy.inReview}</option>
-              <option value="Completed">{projectsCopy.completed}</option>
-            </select>
+              <input
+                name="name"
+                type="text"
+                placeholder={projectsCopy.projectName}
+                className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+                required
+              />
 
-            <input
-              name="progress"
-              type="number"
-              min="0"
-              max="100"
-              defaultValue="0"
-              placeholder={projectsCopy.progressPlaceholder}
-              className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none md:h-[120px]"
-            />
+              <input
+                name="budget"
+                type="text"
+                placeholder={projectsCopy.budgetPlaceholder}
+                className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+                required
+              />
 
-            <select
-              name="clientId"
-              defaultValue=""
-              className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
-            >
-              <option value="">{projectsCopy.noClientSelected}</option>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name} — {client.company}
-                </option>
-              ))}
-            </select>
+              <input
+                name="dueDate"
+                type="text"
+                placeholder={projectsCopy.dueDate}
+                className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+                required
+              />
 
-            <button
-              type="submit"
-              className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black"
-            >
-              {projectsCopy.createProject}
-            </button>
+              <input
+                name="team"
+                type="text"
+                placeholder={projectsCopy.teamPlaceholder}
+                className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
+                required
+              />
+
+              <textarea
+                name="description"
+                placeholder={projectsCopy.projectDescription}
+                className="min-h-[120px] rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] md:col-span-2 xl:col-span-2"
+                required
+              />
+
+              <select
+                name="status"
+                defaultValue="Planning"
+                className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none md:h-[120px]"
+              >
+                <option value="Planning">{projectsCopy.planning}</option>
+                <option value="In Progress">{projectsCopy.inProgress}</option>
+                <option value="In Review">{projectsCopy.inReview}</option>
+                <option value="Completed">{projectsCopy.completed}</option>
+              </select>
+
+              <input
+                name="progress"
+                type="number"
+                min="0"
+                max="100"
+                defaultValue="0"
+                placeholder={projectsCopy.progressPlaceholder}
+                className="h-12 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none md:h-[120px]"
+              />
+
+              <select
+                name="clientId"
+                defaultValue=""
+                className="h-12 min-w-0 rounded-2xl border border-[var(--border)] bg-white px-4 text-sm text-[var(--foreground)] outline-none"
+              >
+                <option value="">{projectsCopy.noClientSelected}</option>
+                {clients.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.name} — {client.company}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="submit"
+                className="h-12 rounded-2xl bg-[var(--foreground)] px-4 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-slate-400"
+              >
+                {projectLimitReached
+                  ? "Project limit reached"
+                  : projectsCopy.createProject}
+              </button>
+            </fieldset>
           </form>
         </div>
 

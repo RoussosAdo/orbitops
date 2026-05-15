@@ -4,6 +4,23 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import crypto from "crypto";
 import { sendInviteEmail } from "@/app/lib/mail";
+import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
+
+const DEFAULT_FREE_SEAT_LIMIT = 1;
+
+function redirectToTeam(req: Request, status?: string) {
+  const url = new URL("/dashboard/team", req.url);
+
+  if (status) {
+    url.searchParams.set("team", status);
+  }
+
+  return NextResponse.redirect(url);
+}
+
+function canManageTeam(role: string) {
+  return role === "OWNER" || role === "ADMIN";
+}
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -12,46 +29,56 @@ export async function POST(req: Request) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
+  const workspace = await requireCurrentWorkspace();
+
   const formData = await req.formData();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const role = String(formData.get("role") ?? "MEMBER").trim().toUpperCase();
 
   if (!email) {
-    return NextResponse.redirect(new URL("/dashboard/team", req.url));
+    return redirectToTeam(req, "missing-email");
   }
 
   const allowedRoles = new Set(["OWNER", "ADMIN", "MEMBER"]);
 
   if (!allowedRoles.has(role)) {
-    return NextResponse.redirect(new URL("/dashboard/team", req.url));
+    return redirectToTeam(req, "invalid-role");
   }
 
   const currentUser = await prisma.user.findUnique({
-    where: { email: session.user.email.toLowerCase() },
-    include: {
-      memberships: {
-        where: {
-          status: "ACTIVE",
-        },
-        include: {
-          workspace: true,
-        },
-        orderBy: {
-          createdAt: "asc",
-        },
-      },
+    where: {
+      email: session.user.email.toLowerCase(),
     },
   });
 
-  if (!currentUser || currentUser.memberships.length === 0) {
-    return NextResponse.redirect(new URL("/dashboard/team", req.url));
+  if (!currentUser) {
+    return redirectToTeam(req, "no-user");
   }
 
-  const activeMembership = currentUser.memberships[0];
-  const workspace = activeMembership.workspace;
+  const actorMembership = await prisma.membership.findFirst({
+    where: {
+      userId: currentUser.id,
+      workspaceId: workspace.id,
+      status: "ACTIVE",
+    },
+  });
+
+  if (!actorMembership) {
+    return redirectToTeam(req, "no-access");
+  }
+
+  if (!canManageTeam(actorMembership.role)) {
+    return redirectToTeam(req, "no-permission");
+  }
+
+  if (actorMembership.role === "ADMIN" && role === "OWNER") {
+    return redirectToTeam(req, "owner-invite-blocked");
+  }
 
   const existingMember = await prisma.user.findUnique({
-    where: { email },
+    where: {
+      email,
+    },
     include: {
       memberships: {
         where: {
@@ -62,7 +89,7 @@ export async function POST(req: Request) {
   });
 
   if (existingMember && existingMember.memberships.length > 0) {
-    return NextResponse.redirect(new URL("/dashboard/team", req.url));
+    return redirectToTeam(req, "already-member");
   }
 
   const existingInvitation = await prisma.invitation.findFirst({
@@ -76,6 +103,36 @@ export async function POST(req: Request) {
   let invitation = existingInvitation;
 
   if (!invitation) {
+    const [billingProfile, activeMembersCount, pendingInvitesCount] =
+      await Promise.all([
+        prisma.billingProfile.findUnique({
+          where: {
+            workspaceId: workspace.id,
+          },
+        }),
+        prisma.membership.count({
+          where: {
+            workspaceId: workspace.id,
+            status: "ACTIVE",
+          },
+        }),
+        prisma.invitation.count({
+          where: {
+            workspaceId: workspace.id,
+            status: "PENDING",
+          },
+        }),
+      ]);
+
+    const seatsIncluded =
+      billingProfile?.seatsIncluded ?? DEFAULT_FREE_SEAT_LIMIT;
+
+    const usedSeats = activeMembersCount + pendingInvitesCount;
+
+    if (usedSeats >= seatsIncluded) {
+      return redirectToTeam(req, "seat-limit");
+    }
+
     const token = crypto.randomBytes(32).toString("hex");
 
     invitation = await prisma.invitation.create({
@@ -96,7 +153,8 @@ export async function POST(req: Request) {
     process.env.AUTH_URL ||
     new URL(req.url).origin;
 
-  const inviteLink = `${baseUrl}/accept-invite?token=${invitation.token}`;
+  const cleanBaseUrl = baseUrl.replace(/\/$/, "");
+  const inviteLink = `${cleanBaseUrl}/accept-invite?token=${invitation.token}`;
 
   try {
     await sendInviteEmail({
@@ -106,10 +164,11 @@ export async function POST(req: Request) {
       invitedByName: currentUser.name,
     });
 
-    console.log("✅ Invite email sent:", email);
+    console.log("Invite email sent:", email);
   } catch (error) {
-    console.error("❌ Failed to send invite email:", error);
+    console.error("Failed to send invite email:", error);
+    return redirectToTeam(req, "email-failed");
   }
 
-  return NextResponse.redirect(new URL("/dashboard/team", req.url));
+  return redirectToTeam(req, existingInvitation ? "invite-resent" : "invite-sent");
 }

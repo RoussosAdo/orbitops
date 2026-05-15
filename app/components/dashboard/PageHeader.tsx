@@ -42,7 +42,7 @@ export default function PageHeader({
           ) : actionLabel ? (
             <button
               type="button"
-              className="control-hover soft-ring inline-flex h-11 w-full items-center justify-center rounded-2xl bg-[var(--foreground)] px-5 text-sm font-semibold text-white shadow-[var(--shadow-xs)] hover:bg-black sm:h-12 sm:w-auto sm:px-6"
+              className="control-hover soft-ring inline-flex h-11 w-full items-center justify-center rounded-2xl bg-[var(--foreground)] px-5 text-sm font-semibold text-white shadow-[var(--shadow-xs)] hover:bg-black sm:h-12 md:w-auto md:px-6"
             >
               {actionLabel}
             </button>

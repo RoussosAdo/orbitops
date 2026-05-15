@@ -1,15 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { TeamActionState } from "@/app/actions/teamActions";
+import type { TeamActionState } from "@/app/types/team";
 
 type TeamActionFeedbackProps = {
   state: TeamActionState;
 };
 
-export default function TeamActionFeedback({
-  state,
-}: TeamActionFeedbackProps) {
+export default function TeamActionFeedback({ state }: TeamActionFeedbackProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -39,6 +37,7 @@ export default function TeamActionFeedback({
       <p className="text-sm font-semibold">
         {state.ok ? "Success" : "Action blocked"}
       </p>
+
       <p className="mt-1 text-sm">{state.message}</p>
     </div>
   );

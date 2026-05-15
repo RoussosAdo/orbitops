@@ -1,5 +1,6 @@
 "use server";
 
+import type { TeamActionState } from "@/app/types/team";
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
@@ -8,16 +9,6 @@ import { authOptions } from "@/auth";
 
 type WorkspaceRole = "OWNER" | "ADMIN" | "MEMBER";
 
-export type TeamActionState = {
-  ok: boolean;
-  message: string;
-};
-
-const defaultState: TeamActionState = {
-  ok: false,
-  message: "",
-};
-
 async function getActorMembership(workspaceId: string) {
   const session = await getServerSession(authOptions);
 
@@ -25,7 +16,7 @@ async function getActorMembership(workspaceId: string) {
     return null;
   }
 
-  const actorMembership = await prisma.membership.findFirst({
+  return prisma.membership.findFirst({
     where: {
       workspaceId,
       status: "ACTIVE",
@@ -37,8 +28,6 @@ async function getActorMembership(workspaceId: string) {
       user: true,
     },
   });
-
-  return actorMembership;
 }
 
 function canManageTeam(role: string) {
@@ -54,24 +43,38 @@ export async function updateMemberRole(
     const actorMembership = await getActorMembership(workspace.id);
 
     if (!actorMembership) {
-      return { ok: false, message: "You must be signed in to manage team members." };
+      return {
+        ok: false,
+        message: "You must be signed in to manage team members.",
+      };
     }
 
     if (!canManageTeam(actorMembership.role)) {
-      return { ok: false, message: "You do not have permission to manage team members." };
+      return {
+        ok: false,
+        message: "You do not have permission to manage team members.",
+      };
     }
 
     const membershipId = String(formData.get("membershipId") ?? "").trim();
-    const role = String(formData.get("role") ?? "").trim().toUpperCase() as WorkspaceRole;
+    const role = String(formData.get("role") ?? "")
+      .trim()
+      .toUpperCase() as WorkspaceRole;
 
     if (!membershipId || !role) {
-      return { ok: false, message: "Membership id and role are required." };
+      return {
+        ok: false,
+        message: "Membership id and role are required.",
+      };
     }
 
     const allowedRoles = new Set<WorkspaceRole>(["OWNER", "ADMIN", "MEMBER"]);
 
     if (!allowedRoles.has(role)) {
-      return { ok: false, message: "Invalid role." };
+      return {
+        ok: false,
+        message: "Invalid role.",
+      };
     }
 
     const targetMembership = await prisma.membership.findFirst({
@@ -85,11 +88,17 @@ export async function updateMemberRole(
     });
 
     if (!targetMembership) {
-      return { ok: false, message: "Member not found in current workspace." };
+      return {
+        ok: false,
+        message: "Member not found in current workspace.",
+      };
     }
 
     if (targetMembership.status !== "ACTIVE") {
-      return { ok: false, message: "Only active members can be updated." };
+      return {
+        ok: false,
+        message: "Only active members can be updated.",
+      };
     }
 
     const actorIsAdmin = actorMembership.role === "ADMIN";
@@ -97,16 +106,25 @@ export async function updateMemberRole(
     const targetIsSelf = targetMembership.id === actorMembership.id;
 
     if (targetIsSelf) {
-      return { ok: false, message: "You cannot change your own role." };
+      return {
+        ok: false,
+        message: "You cannot change your own role.",
+      };
     }
 
     if (actorIsAdmin) {
       if (targetIsOwner) {
-        return { ok: false, message: "Admins cannot change an owner's role." };
+        return {
+          ok: false,
+          message: "Admins cannot change an owner's role.",
+        };
       }
 
       if (role === "OWNER") {
-        return { ok: false, message: "Admins cannot promote members to owner." };
+        return {
+          ok: false,
+          message: "Admins cannot promote members to owner.",
+        };
       }
     }
 
@@ -120,7 +138,10 @@ export async function updateMemberRole(
       });
 
       if (ownersCount <= 1) {
-        return { ok: false, message: "You cannot demote the last owner." };
+        return {
+          ok: false,
+          message: "You cannot demote the last owner.",
+        };
       }
     }
 
@@ -136,10 +157,17 @@ export async function updateMemberRole(
     revalidatePath("/dashboard/team");
     revalidatePath("/dashboard");
 
-    return { ok: true, message: "Member role updated successfully." };
+    return {
+      ok: true,
+      message: "Member role updated successfully.",
+    };
   } catch (error) {
     console.error("updateMemberRole error:", error);
-    return { ok: false, message: "Something went wrong while updating the member role." };
+
+    return {
+      ok: false,
+      message: "Something went wrong while updating the member role.",
+    };
   }
 }
 
@@ -152,17 +180,26 @@ export async function removeMember(
     const actorMembership = await getActorMembership(workspace.id);
 
     if (!actorMembership) {
-      return { ok: false, message: "You must be signed in to manage team members." };
+      return {
+        ok: false,
+        message: "You must be signed in to manage team members.",
+      };
     }
 
     if (!canManageTeam(actorMembership.role)) {
-      return { ok: false, message: "You do not have permission to remove team members." };
+      return {
+        ok: false,
+        message: "You do not have permission to remove team members.",
+      };
     }
 
     const membershipId = String(formData.get("membershipId") ?? "").trim();
 
     if (!membershipId) {
-      return { ok: false, message: "Membership id is required." };
+      return {
+        ok: false,
+        message: "Membership id is required.",
+      };
     }
 
     const targetMembership = await prisma.membership.findFirst({
@@ -173,7 +210,10 @@ export async function removeMember(
     });
 
     if (!targetMembership) {
-      return { ok: false, message: "Member not found in current workspace." };
+      return {
+        ok: false,
+        message: "Member not found in current workspace.",
+      };
     }
 
     const actorIsAdmin = actorMembership.role === "ADMIN";
@@ -181,11 +221,17 @@ export async function removeMember(
     const targetIsSelf = targetMembership.id === actorMembership.id;
 
     if (targetIsSelf) {
-      return { ok: false, message: "You cannot remove yourself from the workspace." };
+      return {
+        ok: false,
+        message: "You cannot remove yourself from the workspace.",
+      };
     }
 
     if (actorIsAdmin && targetIsOwner) {
-      return { ok: false, message: "Admins cannot remove an owner." };
+      return {
+        ok: false,
+        message: "Admins cannot remove an owner.",
+      };
     }
 
     if (targetMembership.role === "OWNER") {
@@ -198,7 +244,10 @@ export async function removeMember(
       });
 
       if (ownersCount <= 1) {
-        return { ok: false, message: "You cannot remove the last owner." };
+        return {
+          ok: false,
+          message: "You cannot remove the last owner.",
+        };
       }
     }
 
@@ -211,10 +260,17 @@ export async function removeMember(
     revalidatePath("/dashboard/team");
     revalidatePath("/dashboard");
 
-    return { ok: true, message: "Member removed successfully." };
+    return {
+      ok: true,
+      message: "Member removed successfully.",
+    };
   } catch (error) {
     console.error("removeMember error:", error);
-    return { ok: false, message: "Something went wrong while removing the member." };
+
+    return {
+      ok: false,
+      message: "Something went wrong while removing the member.",
+    };
   }
 }
 
@@ -227,17 +283,26 @@ export async function revokeInvitation(
     const actorMembership = await getActorMembership(workspace.id);
 
     if (!actorMembership) {
-      return { ok: false, message: "You must be signed in to manage invitations." };
+      return {
+        ok: false,
+        message: "You must be signed in to manage invitations.",
+      };
     }
 
     if (!canManageTeam(actorMembership.role)) {
-      return { ok: false, message: "You do not have permission to revoke invitations." };
+      return {
+        ok: false,
+        message: "You do not have permission to revoke invitations.",
+      };
     }
 
     const invitationId = String(formData.get("invitationId") ?? "").trim();
 
     if (!invitationId) {
-      return { ok: false, message: "Invitation id is required." };
+      return {
+        ok: false,
+        message: "Invitation id is required.",
+      };
     }
 
     const invitation = await prisma.invitation.findFirst({
@@ -248,11 +313,17 @@ export async function revokeInvitation(
     });
 
     if (!invitation) {
-      return { ok: false, message: "Invitation not found in current workspace." };
+      return {
+        ok: false,
+        message: "Invitation not found in current workspace.",
+      };
     }
 
     if (actorMembership.role === "ADMIN" && invitation.role === "OWNER") {
-      return { ok: false, message: "Admins cannot revoke owner invitations." };
+      return {
+        ok: false,
+        message: "Admins cannot revoke owner invitations.",
+      };
     }
 
     await prisma.invitation.delete({
@@ -264,11 +335,16 @@ export async function revokeInvitation(
     revalidatePath("/dashboard/team");
     revalidatePath("/dashboard");
 
-    return { ok: true, message: "Invitation revoked successfully." };
+    return {
+      ok: true,
+      message: "Invitation revoked successfully.",
+    };
   } catch (error) {
     console.error("revokeInvitation error:", error);
-    return { ok: false, message: "Something went wrong while revoking the invitation." };
+
+    return {
+      ok: false,
+      message: "Something went wrong while revoking the invitation.",
+    };
   }
 }
-
-export const initialTeamActionState = defaultState;

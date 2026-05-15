@@ -12,6 +12,13 @@ import RevokeInvitationForm from "@/app/components/dashboard/team/revoke-initati
 
 type TeamCopy = (typeof dashboardCopy)[AppLanguage]["teamPage"];
 
+type TeamPageProps = {
+  searchParams?: Promise<{
+    billing?: string;
+    team?: string;
+  }>;
+};
+
 function TeamStatCard({
   label,
   value,
@@ -85,40 +92,93 @@ function StatusBadge({ status, copy }: { status: string; copy: TeamCopy }) {
   );
 }
 
-export default async function TeamPage() {
+function TeamMessage({
+  billingMessage,
+  teamMessage,
+}: {
+  billingMessage: string | null;
+  teamMessage: string | null;
+}) {
+  if (billingMessage === "seat-limit") {
+    return (
+      <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-700">
+        Your workspace has reached its seat limit. Upgrade your plan to invite
+        more team members.
+      </div>
+    );
+  }
+
+  if (teamMessage === "invite-sent") {
+    return (
+      <div className="rounded-[1.35rem] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
+        Invitation sent successfully.
+      </div>
+    );
+  }
+
+  if (teamMessage === "already-member") {
+    return (
+      <div className="rounded-[1.35rem] border border-sky-200 bg-sky-50 px-5 py-4 text-sm font-medium text-sky-700">
+        This user is already part of the workspace.
+      </div>
+    );
+  }
+
+  if (teamMessage === "no-access") {
+    return (
+      <div className="rounded-[1.35rem] border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-600">
+        You do not have permission to perform this team action.
+      </div>
+    );
+  }
+
+  return null;
+}
+
+export default async function TeamPage({ searchParams }: TeamPageProps) {
   const workspace = await requireCurrentWorkspace();
   const language = await getCurrentLanguage();
   const copy = dashboardCopy[language].teamPage;
   const session = await getServerSession(authOptions);
+  const params = searchParams ? await searchParams : undefined;
 
-  const [members, invitations, actorMembership] = await Promise.all([
-    prisma.membership.findMany({
-      where: {
-        workspaceId: workspace.id,
-      },
-      include: {
-        user: true,
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.invitation.findMany({
-      where: {
-        workspaceId: workspace.id,
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-    session?.user?.email
-      ? prisma.membership.findFirst({
-          where: {
-            workspaceId: workspace.id,
-            status: "ACTIVE",
-            user: {
-              email: session.user.email.toLowerCase(),
+  const billingMessage = params?.billing ?? null;
+  const teamMessage = params?.team ?? null;
+
+  const [members, invitations, actorMembership, billingProfile] =
+    await Promise.all([
+      prisma.membership.findMany({
+        where: {
+          workspaceId: workspace.id,
+        },
+        include: {
+          user: true,
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.invitation.findMany({
+        where: {
+          workspaceId: workspace.id,
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      session?.user?.email
+        ? prisma.membership.findFirst({
+            where: {
+              workspaceId: workspace.id,
+              status: "ACTIVE",
+              user: {
+                email: session.user.email.toLowerCase(),
+              },
             },
-          },
-        })
-      : null,
-  ]);
+          })
+        : null,
+      prisma.billingProfile.findUnique({
+        where: {
+          workspaceId: workspace.id,
+        },
+      }),
+    ]);
 
   const actorRole = actorMembership?.role ?? "MEMBER";
   const canManageTeam = actorRole === "OWNER" || actorRole === "ADMIN";
@@ -128,6 +188,11 @@ export default async function TeamPage() {
   const pendingInvites = invitations.filter(
     (invite) => invite.status === "PENDING"
   );
+
+  const seatsIncluded = billingProfile?.seatsIncluded ?? 1;
+  const seatsReserved = activeMembers.length + pendingInvites.length;
+  const seatsRemaining = Math.max(seatsIncluded - seatsReserved, 0);
+  const hasReachedSeatLimit = seatsReserved >= seatsIncluded;
 
   const ownersCount = members.filter(
     (member) => member.role === "OWNER" && member.status === "ACTIVE"
@@ -150,17 +215,21 @@ export default async function TeamPage() {
         actionLabel={copy.inviteMember}
       />
 
+      <TeamMessage billingMessage={billingMessage} teamMessage={teamMessage} />
+
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
         <TeamStatCard
           label={copy.activeMembers}
-          value={String(activeMembers.length)}
-          meta={copy.currentlyActive}
+          value={`${activeMembers.length}/${seatsIncluded}`}
+          meta={`${seatsRemaining} seat${
+            seatsRemaining === 1 ? "" : "s"
+          } remaining`}
         />
 
         <TeamStatCard
           label={copy.pendingInvites}
           value={String(pendingInvites.length)}
-          meta={copy.awaitingAcceptance}
+          meta={`${seatsReserved}/${seatsIncluded} seats reserved`}
           accent="text-amber-600"
         />
 
@@ -207,7 +276,15 @@ export default async function TeamPage() {
           </div>
         </div>
 
-        {canManageTeam ? (
+        <div className="mt-6 rounded-[1.35rem] border border-[var(--border)] bg-[var(--muted)] px-4 py-3 text-sm text-[var(--muted-foreground)]">
+          Your workspace is using{" "}
+          <span className="font-semibold text-[var(--foreground)]">
+            {seatsReserved}/{seatsIncluded}
+          </span>{" "}
+          seats including pending invitations.
+        </div>
+
+        {canManageTeam && !hasReachedSeatLimit ? (
           <form
             action="/api/team/invite"
             method="POST"
@@ -238,6 +315,11 @@ export default async function TeamPage() {
               {copy.sendInvite}
             </button>
           </form>
+        ) : canManageTeam && hasReachedSeatLimit ? (
+          <div className="mt-6 rounded-[1.5rem] border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-700">
+            Seat limit reached. Upgrade your plan from Billing to invite more
+            team members.
+          </div>
         ) : (
           <div className="mt-6 rounded-[1.5rem] border border-dashed border-[var(--border)] bg-[var(--muted)] px-5 py-4 text-sm text-[var(--muted-foreground)]">
             {copy.viewOnlyMessage}

@@ -2,10 +2,33 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
+
+const DEFAULT_FREE_PROJECT_LIMIT = 3;
 
 export async function createProject(formData: FormData) {
   const workspace = await requireCurrentWorkspace();
+
+  const [billingProfile, projectsCount] = await Promise.all([
+    prisma.billingProfile.findUnique({
+      where: {
+        workspaceId: workspace.id,
+      },
+    }),
+    prisma.project.count({
+      where: {
+        workspaceId: workspace.id,
+      },
+    }),
+  ]);
+
+  const projectsIncluded =
+    billingProfile?.projectsIncluded ?? DEFAULT_FREE_PROJECT_LIMIT;
+
+  if (projectsCount >= projectsIncluded) {
+    redirect("/dashboard/projects?billing=project-limit");
+  }
 
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();

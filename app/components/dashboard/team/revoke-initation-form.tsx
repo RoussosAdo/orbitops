@@ -1,14 +1,17 @@
 "use client";
 
 import { useActionState } from "react";
-import {
-  initialTeamActionState,
-  revokeInvitation,
-} from "@/app/actions/teamActions";
+import { revokeInvitation } from "@/app/actions/teamActions";
+import type { TeamActionState } from "@/app/types/team";
 import TeamActionFeedback from "./team-action-feedback";
 
 type RevokeInvitationFormProps = {
   invitationId: string;
+};
+
+const initialTeamActionState: TeamActionState = {
+  ok: false,
+  message: "",
 };
 
 export default function RevokeInvitationForm({
@@ -23,6 +26,7 @@ export default function RevokeInvitationForm({
     <>
       <form action={formAction}>
         <input type="hidden" name="invitationId" value={invitationId} />
+
         <button
           type="submit"
           disabled={pending}

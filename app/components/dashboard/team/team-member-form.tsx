@@ -1,15 +1,18 @@
 "use client";
 
 import { useActionState } from "react";
-import {
-  initialTeamActionState,
-  removeMember,
-} from "@/app/actions/teamActions";
+import { removeMember } from "@/app/actions/teamActions";
+import type { TeamActionState } from "@/app/types/team";
 import TeamActionFeedback from "./team-action-feedback";
 
 type RemoveMemberFormProps = {
   membershipId: string;
   disabled?: boolean;
+};
+
+const initialTeamActionState: TeamActionState = {
+  ok: false,
+  message: "",
 };
 
 export default function RemoveMemberForm({
@@ -25,6 +28,7 @@ export default function RemoveMemberForm({
     <>
       <form action={formAction}>
         <input type="hidden" name="membershipId" value={membershipId} />
+
         <button
           type="submit"
           disabled={disabled || pending}
