@@ -2,7 +2,12 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
+
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
 export async function updateWorkspaceSettings(formData: FormData) {
   const workspace = await requireCurrentWorkspace();
@@ -17,32 +22,55 @@ export async function updateWorkspaceSettings(formData: FormData) {
   const weeklyReports = formData.get("weeklyReports") === "on";
 
   if (!workspaceName || !companyEmail || !timezone || !brandColor) {
-    throw new Error("All settings fields are required.");
+    redirect("/dashboard/settings?settings=missing-fields");
   }
 
-  const settings = await prisma.workspaceSettings.findUnique({
-    where: {
-      workspaceId: workspace.id,
-    },
-  });
-
-  if (!settings) {
-    throw new Error("Workspace settings not found.");
+  if (!isValidEmail(companyEmail)) {
+    redirect("/dashboard/settings?settings=invalid-email");
   }
 
-  await prisma.workspaceSettings.update({
-    where: { workspaceId: workspace.id },
-    data: {
-      workspaceName,
-      companyEmail,
-      timezone,
-      brandColor,
-      emailNotifications,
-      productUpdates,
-      weeklyReports,
-    },
-  });
+  await prisma.$transaction([
+    prisma.workspace.update({
+      where: {
+        id: workspace.id,
+      },
+      data: {
+        name: workspaceName,
+      },
+    }),
+
+    prisma.workspaceSettings.upsert({
+      where: {
+        workspaceId: workspace.id,
+      },
+      update: {
+        workspaceName,
+        companyEmail,
+        timezone,
+        brandColor,
+        emailNotifications,
+        productUpdates,
+        weeklyReports,
+      },
+      create: {
+        workspaceId: workspace.id,
+        workspaceName,
+        companyEmail,
+        timezone,
+        brandColor,
+        emailNotifications,
+        productUpdates,
+        weeklyReports,
+      },
+    }),
+  ]);
 
   revalidatePath("/dashboard/settings");
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/projects");
+  revalidatePath("/dashboard/clients");
+  revalidatePath("/dashboard/team");
+  revalidatePath("/dashboard/billing");
+
+  redirect("/dashboard/settings?settings=updated");
 }

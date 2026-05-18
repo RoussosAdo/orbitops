@@ -4,6 +4,41 @@ import { updateWorkspaceSettings } from "@/app/actions/settingsActions";
 import { requireCurrentWorkspace } from "@/app/lib/get-current-workspace";
 import { getCurrentLanguage } from "@/app/lib/get-current-language";
 import { dashboardCopy } from "@/app/lib/i18n";
+import { getBrandThemeStyles } from "@/app/lib/brand-theme";
+
+type SettingsPageProps = {
+  searchParams?: Promise<{
+    settings?: string;
+  }>;
+};
+
+function SettingsMessage({ status }: { status?: string }) {
+  if (status === "updated") {
+    return (
+      <div className="rounded-[1.35rem] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
+        Settings updated successfully.
+      </div>
+    );
+  }
+
+  if (status === "missing-fields") {
+    return (
+      <div className="rounded-[1.35rem] border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-600">
+        Please fill in all required settings fields.
+      </div>
+    );
+  }
+
+  if (status === "invalid-email") {
+    return (
+      <div className="rounded-[1.35rem] border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-600">
+        Please enter a valid company email address.
+      </div>
+    );
+  }
+
+  return null;
+}
 
 function PreferenceRow({
   label,
@@ -31,19 +66,13 @@ function PreferenceRow({
         type="checkbox"
         name={name}
         defaultChecked={checked}
-        className="mt-1 h-5 w-5 shrink-0 rounded"
+        className="mt-1 h-5 w-5 shrink-0 rounded accent-[var(--primary)]"
       />
     </label>
   );
 }
 
-function SummaryCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="card-hover rounded-[1.35rem] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-xs)]">
       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
@@ -77,7 +106,7 @@ function StatusRow({
       <span
         className={`w-fit rounded-full px-2.5 py-1 text-xs font-semibold sm:text-sm ${
           enabled
-            ? "bg-emerald-100 text-emerald-700"
+            ? "bg-[color-mix(in_srgb,var(--primary)_16%,white)] text-[var(--primary-dark)]"
             : "bg-white text-[var(--muted-foreground)]"
         }`}
       >
@@ -87,49 +116,48 @@ function StatusRow({
   );
 }
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: SettingsPageProps) {
   const workspace = await requireCurrentWorkspace();
   const language = await getCurrentLanguage();
   const copy = dashboardCopy[language];
   const settingsCopy = copy.settingsPage;
+  const params = searchParams ? await searchParams : undefined;
 
-  const settings = await prisma.workspaceSettings.findUnique({
+  const savedSettings = await prisma.workspaceSettings.findUnique({
     where: {
       workspaceId: workspace.id,
     },
   });
 
-  if (!settings) {
-    return (
-      <section className="space-y-6">
-        <PageHeader
-          eyebrow={settingsCopy.eyebrow}
-          title={settingsCopy.title}
-          description={settingsCopy.emptyDescription}
-          actionLabel={settingsCopy.settings}
-        />
-
-        <div className="rounded-[1.25rem] border border-[var(--border)] bg-[var(--muted)] p-5">
-          <p className="text-lg font-semibold text-[var(--foreground)]">
-            {settingsCopy.noSettingsFound}
-          </p>
-
-          <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-            {settingsCopy.noSettingsDescription}
-          </p>
-        </div>
-      </section>
-    );
-  }
+  const settings = {
+    workspaceName: savedSettings?.workspaceName ?? workspace.name,
+    companyEmail: savedSettings?.companyEmail ?? "",
+    timezone: savedSettings?.timezone ?? "Europe/Athens",
+    brandColor: savedSettings?.brandColor ?? "Neo Mint",
+    emailNotifications: savedSettings?.emailNotifications ?? true,
+    productUpdates: savedSettings?.productUpdates ?? true,
+    weeklyReports: savedSettings?.weeklyReports ?? false,
+  };
 
   return (
-    <section className="space-y-6">
+    <section
+      className="space-y-6"
+      style={getBrandThemeStyles(settings.brandColor)}
+    >
       <PageHeader
         eyebrow={settingsCopy.eyebrow}
         title={settingsCopy.title}
-        description={settingsCopy.description}
+        description={
+          savedSettings
+            ? settingsCopy.description
+            : settingsCopy.emptyDescription
+        }
         actionLabel={settingsCopy.saveSettings}
       />
+
+      <SettingsMessage status={params?.settings} />
 
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
         <SummaryCard
@@ -170,6 +198,7 @@ export default async function SettingsPage() {
                   <input
                     name="workspaceName"
                     defaultValue={settings.workspaceName}
+                    required
                     className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 text-sm text-[var(--foreground)] outline-none"
                   />
                 </div>
@@ -183,6 +212,8 @@ export default async function SettingsPage() {
                     name="companyEmail"
                     type="email"
                     defaultValue={settings.companyEmail}
+                    required
+                    placeholder="company@example.com"
                     className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 text-sm text-[var(--foreground)] outline-none"
                   />
                 </div>
@@ -195,10 +226,13 @@ export default async function SettingsPage() {
                   <select
                     name="timezone"
                     defaultValue={settings.timezone}
+                    required
                     className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 text-sm text-[var(--foreground)] outline-none"
                   >
                     <option value="Europe/Athens">Europe/Athens</option>
                     <option value="Europe/London">Europe/London</option>
+                    <option value="Europe/Berlin">Europe/Berlin</option>
+                    <option value="Europe/Paris">Europe/Paris</option>
                     <option value="America/New_York">America/New_York</option>
                     <option value="UTC">UTC</option>
                   </select>
@@ -212,6 +246,7 @@ export default async function SettingsPage() {
                   <select
                     name="brandColor"
                     defaultValue={settings.brandColor}
+                    required
                     className="h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--muted)] px-4 text-sm text-[var(--foreground)] outline-none"
                   >
                     <option value="Neo Mint">Neo Mint</option>
